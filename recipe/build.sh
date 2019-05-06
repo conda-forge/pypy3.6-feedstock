@@ -8,7 +8,7 @@ PYPY3_SRC_DIR=$SRC_DIR/pypy3
 
 if [ $(uname) == Darwin ]; then
     export CC=$CLANG
-    export PYTHON=$SRC_DIR/pypy2-osx/bin/pypy
+    export PYTHON=${PREFIX}/bin/python
 fi
 
 if [ $(uname) == Linux ]; then
