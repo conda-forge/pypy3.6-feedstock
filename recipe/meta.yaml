@@ -1,13 +1,12 @@
 {% set name = "pypy3.6" %}
-{% set version = "7.1.1b" %}
+{% set version = "7.1.1" %}
 
 package:
   name: {{ name }}
-  version: {{ version }}
+  version: {{ version }}b
 
 source:
-  - url: https://bitbucket.org/pypy/pypy/downloads/pypy3.6-v7.1.1-src.tar.bz2
-    fn: pypy3.6-v7.1.1-src.tar.bz2
+  - url: https://bitbucket.org/pypy/pypy/downloads/{{ name }}-v{{ version }}-src.tar.bz2
     sha256: 6a3ef876e3691a54f4cff045028ec3be94ab9beb2e99f051b83175302c1899a8
     folder: pypy3
     patches:
