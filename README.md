@@ -15,6 +15,8 @@ How to use this package?
 
 Since PyPy is an alternative *interpreter*, using this package is different than other conda-forge packages.
 
+Note that currently this package only works for macOS and Linux.
+
 You want to create an **empty** Conda environment:
 
 ```
