@@ -1,6 +1,6 @@
 --- pypy3/lib_pypy/_tkinter/tklib_build.py	2018-01-10 15:58:49.000000000 +0100
 +++ pypy3/lib_pypy/_tkinter/tklib_build.py	2018-02-23 10:46:06.000000000 +0100
-@@ -18,31 +18,13 @@
+@@ -18,34 +18,13 @@
      linklibs = ['tcl85', 'tk85']
      libdirs = []
  elif sys.platform == 'darwin':
@@ -25,8 +25,11 @@
 -        for _ver in ['8.6', '8.5', '']:
 -            incdirs = []
 -            linklibs = ['tcl' + _ver, 'tk' + _ver]
--            if os.path.isfile(''.join(['/usr/lib/lib', linklibs[1], '.so'])):
--                found = True
+-            for lib in ['/usr/lib/lib', '/usr/lib64/lib']:
+-                if os.path.isfile(''.join([lib, linklibs[1], '.so'])):
+-                    found = True
+-                    break
+-            if found:
 -                break
 -    if not found:
 -        sys.stderr.write("*** TCL libraries not found!  Falling back...\n")

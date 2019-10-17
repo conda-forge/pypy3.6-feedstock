@@ -1,13 +1,13 @@
 {% set name = "pypy3.6" %}
-{% set version = "7.1.1" %}
+{% set version = "7.2.0" %}
 
 package:
   name: {{ name }}
-  version: {{ version }}b
+  version: {{ version }}
 
 source:
   - url: https://bitbucket.org/pypy/pypy/downloads/{{ name }}-v{{ version }}-src.tar.bz2
-    sha256: 6a3ef876e3691a54f4cff045028ec3be94ab9beb2e99f051b83175302c1899a8
+    sha256: 0d7c707df5041f1593fe82f29c40056c21e4d6cb66554bbd66769bd80bcbfafc
     folder: pypy3
     patches:
       - fficurses.patch
