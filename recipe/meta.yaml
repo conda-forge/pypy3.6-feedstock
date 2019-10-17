@@ -15,6 +15,7 @@ source:
       - tklib_build.patch
       - clibffi.patch  # [osx]
       - darwin.patch  # [osx]
+      - pyconfig.patch  # [osx]
 
 build:
   number: 0
