@@ -1,10 +1,10 @@
 --- pypy3/pypy/module/cpyext/include/pyconfig.h	2019-10-17 16:00:43.000000000 +0200
 +++ pypy3/pypy/module/cpyext/include/pyconfig.h	2019-10-17 16:00:48.000000000 +0200
-@@ -28,7 +28,6 @@
+@@ -28,8 +28,10 @@
  
  #ifndef _WIN32
  #define VA_LIST_IS_ARRAY
--#define HAVE_CLOCK_GETTIME
++#ifndef __APPLE__
+ #define HAVE_CLOCK_GETTIME
  #endif
- 
- #ifndef Py_BUILD_CORE /* not building the core - must be an ext */
++#endif
