@@ -7,7 +7,7 @@ Package license: MIT
 
 Feedstock license: BSD 3-Clause
 
-Summary: PyPy is a Python interpreter and just-in-time compiler. This is a Python3.6 compatible version, in beta quality.
+Summary: PyPy is a Python interpreter and just-in-time compiler. This is a Python3.6 compatible version.
 
 
 How to use this package?
@@ -101,7 +101,12 @@ Current build status
       <img src="https://img.shields.io/badge/Windows-disabled-lightgrey.svg" alt="Windows disabled">
     </td>
   </tr>
-![ppc64le disabled](https://img.shields.io/badge/ppc64le-disabled-lightgrey.svg)
+  <tr>
+    <td>Linux_ppc64le</td>
+    <td>
+      <img src="https://img.shields.io/badge/ppc64le-disabled-lightgrey.svg" alt="ppc64le disabled">
+    </td>
+  </tr>
 </table>
 
 Current release info
