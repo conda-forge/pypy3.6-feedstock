@@ -38,7 +38,7 @@ requirements:
     - bzip2
     - expat
     - ncurses >=6.0
-    - gdbm  # [linux]
+    - gdbm
     - xz
     - tk
     - bzip2
@@ -52,7 +52,7 @@ requirements:
     - zlib
     - bzip2
     - ncurses >=6.0
-    - gdbm  # [linux]
+    - gdbm
     - xz
     - expat
     - bzip2
