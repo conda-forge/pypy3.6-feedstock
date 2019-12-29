@@ -1,5 +1,5 @@
 {% set name = "pypy3.6" %}
-{% set version = "7.2.0" %}
+{% set version = "7.3.0" %}
 
 package:
   name: {{ name }}
@@ -7,15 +7,13 @@ package:
 
 source:
   - url: https://bitbucket.org/pypy/pypy/downloads/{{ name }}-v{{ version }}-src.tar.bz2
-    sha256: 0d7c707df5041f1593fe82f29c40056c21e4d6cb66554bbd66769bd80bcbfafc
+    sha256: 48d12c15fbcbcf4a32882a883195e1f922997cde78e7a16d4342b9b521eefcfa
     folder: pypy3
     patches:
       - fficurses.patch
-      - minimal_curses.patch
       - tklib_build.patch
       - clibffi.patch  # [osx]
       - darwin.patch  # [osx]
-      - pyconfig.patch  # [osx]
 
 build:
   number: 0
@@ -40,7 +38,7 @@ requirements:
     - bzip2
     - expat
     - ncurses >=6.0
-    - gdbm
+    - gdbm  # [linux]
     - xz
     - tk
     - bzip2
@@ -54,7 +52,7 @@ requirements:
     - zlib
     - bzip2
     - ncurses >=6.0
-    - gdbm
+    - gdbm  # [linux]
     - xz
     - expat
     - bzip2
