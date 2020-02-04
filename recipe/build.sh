@@ -1,24 +1,20 @@
 #!/bin/bash
 
-export LDFLAGS="${LDFLAGS} -L${PREFIX}/lib"
-export CFLAGS="${CFLAGS} -I${PREFIX}/include"
-export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
-
 PYPY3_SRC_DIR=$SRC_DIR/pypy3
 
-if [ $(uname) == Darwin ]; then
+if [[ "$target_platform" == "osx-64" ]]; then
     export CC=$CLANG
-    export PYTHON=${PREFIX}/bin/python
+    export PYTHON=${BUILD_PREFIX}/bin/python
 fi
 
-if [ $(uname) == Linux ]; then
+if [[ "$target_platform" == "linux"* ]]; then
    # Some ffi deps are expecting 'cc', so we give it to them.
    export FAKE_CC_LINK=${PREFIX}/bin/cc
    ln -s $CC $FAKE_CC_LINK
    export PATH="${PATH}/bin:${PATH}"
 
    export CC=$GCC
-   export PYTHON=${PREFIX}/bin/python
+   export PYTHON=${BUILD_PREFIX}/bin/python
 
    # Prevent linking to libncurses, forces libncursesw.
    rm -f ${PREFIX}/lib/libncurses.*
@@ -43,7 +39,7 @@ ARCHIVE_NAME="${PKG_NAME}-${PKG_VERSION}"
 cd $GOAL_DIR
 ${PYTHON} ../../rpython/bin/rpython --make-jobs 4 --shared -Ojit targetpypystandalone.py
 
-if [ $(uname) == Darwin ]; then
+if [[ "$target_platform" == "osx-64" ]]; then
     # Temporally set the @rpath of the generated PyPy binary to ${PREFIX}.
     cp ./${PKG_NAME}-c ./${PKG_NAME}-c.bak
     ${INSTALL_NAME_TOOL} -add_rpath "${PREFIX}/lib" ./${PKG_NAME}-c
@@ -64,7 +60,7 @@ tar -xvf $ARCHIVE_NAME.tar.bz2
 # Move all files from the package to conda's $PREFIX.
 cp -r $TARGET_DIR/$ARCHIVE_NAME/* $PREFIX
 
-if [ $(uname) == Darwin ]; then
+if [[ "$target_platform" == "osx-64" ]]; then
     # Move the dylib to lib folder.
     mv $PREFIX/bin/libpypy3-c.dylib $PREFIX/lib/libpypy3-c.dylib
 
@@ -74,7 +70,7 @@ if [ $(uname) == Darwin ]; then
 fi
 
 
-if [ $(uname) == Linux ]; then
+if [[ "$target_platform" == "linux"* ]]; then
     # Show links.
     ldd $PREFIX/bin/pypy3
     ldd $PREFIX/bin/libpypy3-c.so
