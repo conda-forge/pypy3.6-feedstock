@@ -84,3 +84,15 @@ if [[ "$target_platform" == "linux"* ]]; then
     # Conda will complain if a symlink exists.
     rm -f $FAKE_CC_LINK
 fi
+
+# Move the generic file name to somewhere that's specific to pypy
+mv $PREFIX/README.rst $PREFIX/lib_pypy/
+# License is packaged separately
+rm $PREFIX/LICENSE
+
+# Make sure the site-packages dir match with cpython
+PY_VERSION=$(echo $PKG_NAME | cut -c 5-)
+mkdir -p $PREFIX/lib/${PY_VERSION}/site-packages
+mv $PREFIX/site-packages/README $PREFIX/lib/${PY_VERSION}/site-packages/
+rm -rf $PREFIX/site-packages
+ln -sf $PREFIX/lib/${PY_VERSION}/site-packages $PREFIX/site-packages
