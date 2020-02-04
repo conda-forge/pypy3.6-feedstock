@@ -37,7 +37,7 @@ ARCHIVE_NAME="${PKG_NAME}-${PKG_VERSION}"
 
 # Build PyPy.
 cd $GOAL_DIR
-${PYTHON} ../../rpython/bin/rpython --make-jobs 4 --shared -Ojit targetpypystandalone.py
+${PYTHON} ../../rpython/bin/rpython --make-jobs ${CPU_COUNT} --shared -Ojit targetpypystandalone.py
 
 if [[ "$target_platform" == "osx-64" ]]; then
     # Temporally set the @rpath of the generated PyPy binary to ${PREFIX}.
