@@ -9,9 +9,8 @@ fi
 
 if [[ "$target_platform" == "linux"* ]]; then
    # Some ffi deps are expecting 'cc', so we give it to them.
-   export FAKE_CC_LINK=${PREFIX}/bin/cc
-   ln -s $CC $FAKE_CC_LINK
-   export PATH="${PATH}/bin:${PATH}"
+   ln -s $CC ${BUILD_PREFIX}/bin/gcc
+   ln -s $CC ${BUILD_PREFIX}/bin/cc
 
    export CC=$GCC
    export PYTHON=${BUILD_PREFIX}/bin/python
@@ -19,12 +18,12 @@ if [[ "$target_platform" == "linux"* ]]; then
    # Prevent linking to libncurses, forces libncursesw.
    rm -f ${PREFIX}/lib/libncurses.*
 
-    # PyPy translation looks for this.
-    export PYPY_LOCALBASE="$PREFIX"
+   # PyPy translation looks for this.
+   export PYPY_LOCALBASE="$PREFIX"
 
-    export LIBRARY_PATH=${PREFIX}/lib
-    export C_INCLUDE_PATH=${PREFIX}/include
-    export CPATH=${PREFIX}/include
+   export LIBRARY_PATH=${PREFIX}/lib
+   export C_INCLUDE_PATH=${PREFIX}/include
+   export CPATH=${PREFIX}/include
 fi
 
 GOAL_DIR=$PYPY3_SRC_DIR/pypy/goal
