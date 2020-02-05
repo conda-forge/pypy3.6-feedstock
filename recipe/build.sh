@@ -1,24 +1,20 @@
 #!/bin/bash
 
-export LDFLAGS="${LDFLAGS} -L${PREFIX}/lib"
-export CFLAGS="${CFLAGS} -I${PREFIX}/include"
-export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
-
 PYPY3_SRC_DIR=$SRC_DIR/pypy3
 
-if [ $(uname) == Darwin ]; then
+if [[ "$target_platform" == "osx-64" ]]; then
     export CC=$CLANG
-    export PYTHON=${PREFIX}/bin/python
+    export PYTHON=${BUILD_PREFIX}/bin/python
 fi
 
-if [ $(uname) == Linux ]; then
+if [[ "$target_platform" == "linux"* ]]; then
    # Some ffi deps are expecting 'cc', so we give it to them.
    export FAKE_CC_LINK=${PREFIX}/bin/cc
    ln -s $CC $FAKE_CC_LINK
    export PATH="${PATH}/bin:${PATH}"
 
    export CC=$GCC
-   export PYTHON=${PREFIX}/bin/python
+   export PYTHON=${BUILD_PREFIX}/bin/python
 
    # Prevent linking to libncurses, forces libncursesw.
    rm -f ${PREFIX}/lib/libncurses.*
@@ -41,9 +37,9 @@ ARCHIVE_NAME="${PKG_NAME}-${PKG_VERSION}"
 
 # Build PyPy.
 cd $GOAL_DIR
-${PYTHON} ../../rpython/bin/rpython --make-jobs 4 --shared -Ojit targetpypystandalone.py
+${PYTHON} ../../rpython/bin/rpython --make-jobs ${CPU_COUNT} --shared -Ojit targetpypystandalone.py
 
-if [ $(uname) == Darwin ]; then
+if [[ "$target_platform" == "osx-64" ]]; then
     # Temporally set the @rpath of the generated PyPy binary to ${PREFIX}.
     cp ./${PKG_NAME}-c ./${PKG_NAME}-c.bak
     ${INSTALL_NAME_TOOL} -add_rpath "${PREFIX}/lib" ./${PKG_NAME}-c
@@ -64,7 +60,7 @@ tar -xvf $ARCHIVE_NAME.tar.bz2
 # Move all files from the package to conda's $PREFIX.
 cp -r $TARGET_DIR/$ARCHIVE_NAME/* $PREFIX
 
-if [ $(uname) == Darwin ]; then
+if [[ "$target_platform" == "osx-64" ]]; then
     # Move the dylib to lib folder.
     mv $PREFIX/bin/libpypy3-c.dylib $PREFIX/lib/libpypy3-c.dylib
 
@@ -74,7 +70,7 @@ if [ $(uname) == Darwin ]; then
 fi
 
 
-if [ $(uname) == Linux ]; then
+if [[ "$target_platform" == "linux"* ]]; then
     # Show links.
     ldd $PREFIX/bin/pypy3
     ldd $PREFIX/bin/libpypy3-c.so
@@ -88,3 +84,15 @@ if [ $(uname) == Linux ]; then
     # Conda will complain if a symlink exists.
     rm -f $FAKE_CC_LINK
 fi
+
+# Move the generic file name to somewhere that's specific to pypy
+mv $PREFIX/README.rst $PREFIX/lib_pypy/
+# License is packaged separately
+rm $PREFIX/LICENSE
+
+# Make sure the site-packages dir match with cpython
+PY_VERSION=$(echo $PKG_NAME | cut -c 5-)
+mkdir -p $PREFIX/lib/${PY_VERSION}/site-packages
+mv $PREFIX/site-packages/README $PREFIX/lib/${PY_VERSION}/site-packages/
+rm -rf $PREFIX/site-packages
+ln -sf $PREFIX/lib/${PY_VERSION}/site-packages $PREFIX/site-packages

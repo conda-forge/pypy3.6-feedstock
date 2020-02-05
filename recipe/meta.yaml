@@ -16,7 +16,7 @@ source:
       - darwin.patch  # [osx]
 
 build:
-  number: 0
+  number: 1
   skip: True  # [win]
   skip_compile_pyc:
     - lib*
@@ -25,11 +25,9 @@ requirements:
   build:
     - {{ compiler('c') }}
     - python >=2.7,<3
-  host:
-    - python >=2.7,<3
-    - libunwind >=4.0  # [osx]
     - pkg-config
     - pycparser
+  host:
     - openssl
     - libffi
     - sqlite
@@ -37,21 +35,20 @@ requirements:
     - zlib
     - bzip2
     - expat
-    - ncurses >=6.0
+    - ncurses
     - gdbm
     - xz
     - tk
     - bzip2
     - xorg-libx11  # [linux]
   run:
-    - libunwind >=4.0  # [osx]
     - openssl
     - libffi
     - sqlite
     - tk
     - zlib
     - bzip2
-    - ncurses >=6.0
+    - ncurses
     - gdbm
     - xz
     - expat
