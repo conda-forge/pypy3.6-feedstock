@@ -9,9 +9,8 @@ fi
 
 if [[ "$target_platform" == "linux"* ]]; then
    # Some ffi deps are expecting 'cc', so we give it to them.
-   export FAKE_CC_LINK=${PREFIX}/bin/cc
-   ln -s $CC $FAKE_CC_LINK
-   export PATH="${PATH}/bin:${PATH}"
+   ln -s $CC ${BUILD_PREFIX}/bin/gcc
+   ln -s $CC ${BUILD_PREFIX}/bin/cc
 
    export CC=$GCC
    export PYTHON=${BUILD_PREFIX}/bin/python
@@ -19,21 +18,21 @@ if [[ "$target_platform" == "linux"* ]]; then
    # Prevent linking to libncurses, forces libncursesw.
    rm -f ${PREFIX}/lib/libncurses.*
 
-    # PyPy translation looks for this.
-    export PYPY_LOCALBASE="$PREFIX"
+   # PyPy translation looks for this.
+   export PYPY_LOCALBASE="$PREFIX"
 
-    export LIBRARY_PATH=${PREFIX}/lib
-    export C_INCLUDE_PATH=${PREFIX}/include
-    export CPATH=${PREFIX}/include
+   export LIBRARY_PATH=${PREFIX}/lib
+   export C_INCLUDE_PATH=${PREFIX}/include
+   export CPATH=${PREFIX}/include
 fi
 
 GOAL_DIR=$PYPY3_SRC_DIR/pypy/goal
 RELEASE_DIR=$PYPY3_SRC_DIR/pypy/tool/release
 
-PKG_NAME=pypy3
+PYPY_PKG_NAME=pypy3
 BUILD_DIR=${PREFIX}/../build
 TARGET_DIR=${PREFIX}/../target
-ARCHIVE_NAME="${PKG_NAME}-${PKG_VERSION}"
+ARCHIVE_NAME="${PYPY_PKG_NAME}-${PKG_VERSION}"
 
 # Build PyPy.
 cd $GOAL_DIR
@@ -41,12 +40,12 @@ ${PYTHON} ../../rpython/bin/rpython --make-jobs ${CPU_COUNT} --shared -Ojit targ
 
 if [[ "$target_platform" == "osx-64" ]]; then
     # Temporally set the @rpath of the generated PyPy binary to ${PREFIX}.
-    cp ./${PKG_NAME}-c ./${PKG_NAME}-c.bak
-    ${INSTALL_NAME_TOOL} -add_rpath "${PREFIX}/lib" ./${PKG_NAME}-c
+    cp ./${PYPY_PKG_NAME}-c ./${PYPY_PKG_NAME}-c.bak
+    ${INSTALL_NAME_TOOL} -add_rpath "${PREFIX}/lib" ./${PYPY_PKG_NAME}-c
 fi
 
 # Build cffi imports using the generated PyPy.
-PYTHONPATH=../.. ./${PKG_NAME}-c ../tool/build_cffi_imports.py
+PYTHONPATH=../.. ./${PYPY_PKG_NAME}-c ../tool/build_cffi_imports.py
 
 # Package PyPy.
 cd $RELEASE_DIR
@@ -66,7 +65,7 @@ if [[ "$target_platform" == "osx-64" ]]; then
 
     # Change @rpath to be relative to match conda's structure.
     ${INSTALL_NAME_TOOL} -rpath "${PREFIX}/lib" "@loader_path/../lib" $PREFIX/bin/pypy3
-    rm $GOAL_DIR/${PKG_NAME}-c.bak
+    rm $GOAL_DIR/${PYPY_PKG_NAME}-c.bak
 fi
 
 
@@ -92,7 +91,7 @@ rm $PREFIX/LICENSE
 
 # Make sure the site-packages dir match with cpython
 PY_VERSION=$(echo $PKG_NAME | cut -c 5-)
-mkdir -p $PREFIX/lib/${PY_VERSION}/site-packages
-mv $PREFIX/site-packages/README $PREFIX/lib/${PY_VERSION}/site-packages/
+mkdir -p $PREFIX/lib/python${PY_VERSION}/site-packages
+mv $PREFIX/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
 rm -rf $PREFIX/site-packages
-ln -sf $PREFIX/lib/${PY_VERSION}/site-packages $PREFIX/site-packages
+ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/site-packages
