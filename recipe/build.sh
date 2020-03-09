@@ -95,3 +95,6 @@ mkdir -p $PREFIX/lib/python${PY_VERSION}/site-packages
 mv $PREFIX/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
 rm -rf $PREFIX/site-packages
 ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/site-packages
+
+# Build the cache for the standard library
+pypy3 -m test --pgo -j${CPU_COUNT} || true;
