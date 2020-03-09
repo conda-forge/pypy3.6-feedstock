@@ -97,4 +97,4 @@ rm -rf $PREFIX/site-packages
 ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/site-packages
 
 # Build the cache for the standard library
-pypy3 -m test --pgo -j${CPU_COUNT} || true;
+timeout 60m pypy3 -m test --pgo -j${CPU_COUNT} || true;
