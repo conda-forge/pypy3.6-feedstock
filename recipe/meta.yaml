@@ -16,7 +16,7 @@ source:
       - darwin.patch  # [osx]
 
 build:
-  number: 4
+  number: 5
   skip: True  # [win]
   skip_compile_pyc:
     - lib*
