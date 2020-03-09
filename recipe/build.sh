@@ -99,6 +99,6 @@ ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/site-packages
 # Build the cache for the standard library
 timeout 60m pypy3 -m test --pgo -j${CPU_COUNT} || true;
 cd $PREFIX/lib-python
-pypy3 -m compileall .
+pypy3 -m compileall . || true;
 cd $PREFIX/lib_pypy
-pypy3 -m compileall .
+pypy3 -m compileall . || true;
