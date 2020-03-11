@@ -15,6 +15,7 @@ source:
       - patches/clibffi.patch  # [osx]
       - patches/darwin.patch  # [osx]
       - patches/distutils.patch
+      # Patches by @mingwandroid from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
