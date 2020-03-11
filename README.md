@@ -7,54 +7,7 @@ Package license: MIT
 
 Feedstock license: BSD 3-Clause
 
-Summary: PyPy is a Python interpreter and just-in-time compiler. This is a Python3.6 compatible version.
-
-
-How to use this package?
-========================
-
-Since PyPy is an alternative *interpreter*, using this package is different than other conda-forge packages.
-
-Note that currently this package only works for macOS and Linux.
-
-You want to create an **empty** Conda environment:
-
-```
-conda create -n pypyenv
-conda activate pypyenv
-```
-
-(🔴️ you might still have `python` or `pip` binaries in your $PATH, but those are the system's and you MUST NOT use them!️)
-
-Then, install this package:
-
-```
-conda install -c conda-forge pypy3.6
-```
-
-Now you can install `pip`:
-
-```
-pypy3 -m ensurepip
-```
-
-🎉 using this `pip` you can install any package you like! 
-For example, to update `pip` itself (which you should do!):
-
-```
-pypy3 -m pip install -U pip
-```
-
-or
-
-```
-pip3 install ...
-```
-
-(You can verify that it's the correct `pip3`/`pip` using `which {pip3,pip}`. It should be something like `.../miniconda3/envs/pypyenv/bin/pip` )
-
-🔴 You CANNOT use `conda install x` to install anything,
-because Conda provides pre-built package for the regular CPython interpreter, which are incompatible with PyPy.
+Summary: PyPy is a Python interpreter and just-in-time compiler.
 
 
 
@@ -201,6 +154,8 @@ In order to produce a uniquely identifiable distribution:
 Feedstock Maintainers
 =====================
 
+* [@isuruf](https://github.com/isuruf/)
+* [@ocefpaf](https://github.com/ocefpaf/)
 * [@ohadravid](https://github.com/ohadravid/)
 * [@omerbenamram](https://github.com/omerbenamram/)
 
