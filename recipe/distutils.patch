@@ -1,3 +1,17 @@
+diff --git a/lib-python/3/distutils/sysconfig_cpython.py b/lib-python/3/distutils/sysconfig_cpython.py
+index b8340f1..bf936e9 100644
+--- a/lib-python/3/distutils/sysconfig_cpython.py
++++ b/lib-python/3/distutils/sysconfig_cpython.py
+@@ -176,8 +176,7 @@ def customize_compiler(compiler):
+ 
+         if 'CC' in os.environ:
+             newcc = os.environ['CC']
+-            if (sys.platform == 'darwin'
+-                    and 'LDSHARED' not in os.environ
++            if ('LDSHARED' not in os.environ
+                     and ldshared.startswith(cc)):
+                 # On OS X, if CC is overridden, use that as the default
+                 #       command for LDSHARED as well
 diff --git a/lib-python/3/distutils/sysconfig_pypy.py b/lib-python/3/distutils/sysconfig_pypy.py
 index bf1748e..1d93731 100644
 --- a/lib-python/3/distutils/sysconfig_pypy.py
