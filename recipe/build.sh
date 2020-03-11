@@ -8,10 +8,6 @@ if [[ "$target_platform" == "osx-64" ]]; then
 fi
 
 if [[ "$target_platform" == "linux"* ]]; then
-   # Some ffi deps are expecting 'cc', so we give it to them.
-   ln -s $CC ${BUILD_PREFIX}/bin/gcc
-   ln -s $CC ${BUILD_PREFIX}/bin/cc
-
    export CC=$GCC
    export PYTHON=${BUILD_PREFIX}/bin/python
 
@@ -77,11 +73,8 @@ if [[ "$target_platform" == "linux"* ]]; then
     # Move the so to lib folder.
     mv $PREFIX/bin/libpypy3-c.so $PREFIX/lib/libpypy3-c.so
 
-    # Conda tries to `patchself` this file, which fails.
+    # Conda tries to `patchelf` this file, which fails.
     rm -f $PREFIX/bin/pypy3.debug
-
-    # Conda will complain if a symlink exists.
-    rm -f $FAKE_CC_LINK
 fi
 
 # Move the generic file name to somewhere that's specific to pypy
