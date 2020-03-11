@@ -10,14 +10,18 @@ source:
     sha256: 48d12c15fbcbcf4a32882a883195e1f922997cde78e7a16d4342b9b521eefcfa
     folder: pypy3
     patches:
-      - fficurses.patch
-      - tklib_build.patch
-      - clibffi.patch  # [osx]
-      - darwin.patch  # [osx]
-      - distutils.patch
+      - patches/fficurses.patch
+      - patches/tklib_build.patch
+      - patches/clibffi.patch  # [osx]
+      - patches/darwin.patch  # [osx]
+      - patches/distutils.patch
+      - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
+      - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
+      - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
+      - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
 
 build:
-  number: 6
+  number: 7
   skip: True  # [win]
   skip_compile_pyc:
     - lib*
@@ -73,3 +77,4 @@ extra:
     - omerbenamram
     - ohadravid
     - isuruf
+    - ocefpaf

@@ -1,0 +1,4 @@
+194a195,197
+>         if 'RANLIB' in os.environ and 'ranlib' in compiler.executables:
+>             compiler.set_executables(ranlib=os.environ['RANLIB'])
+> 
