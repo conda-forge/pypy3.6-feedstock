@@ -14,9 +14,10 @@ source:
       - tklib_build.patch
       - clibffi.patch  # [osx]
       - darwin.patch  # [osx]
+      - distutils.patch
 
 build:
-  number: 5
+  number: 6
   skip: True  # [win]
   skip_compile_pyc:
     - lib*
