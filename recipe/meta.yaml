@@ -22,7 +22,7 @@ source:
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
 
 build:
-  number: 7
+  number: 8
   skip: True  # [win]
   skip_compile_pyc:
     - lib*
