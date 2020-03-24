@@ -27,7 +27,8 @@ index bf1748e..1d93731 100644
 -                # On OS X, if CC is overridden, use that as the default
 +                # If CC is overridden, use that as the default
                  #       command for LDSHARED as well
-                 ldshared = newcc + ldshared[len(cc):]
+-                ldshared = newcc + ldshared[len(cc):]
++                ldshared = newcc + ' -pthread ' + ldshared[len(cc):]
              cc = newcc
 diff --git a/lib_pypy/_sysconfigdata.py b/lib_pypy/_sysconfigdata.py
 index 4d2b0bc..b2051f4 100644
