@@ -40,6 +40,9 @@ if [[ "$target_platform" == "osx-64" ]]; then
     ${INSTALL_NAME_TOOL} -add_rpath "${PREFIX}/lib" ./${PYPY_PKG_NAME}-c
 fi
 
+# Build cffi imports using the generated PyPy.
+PYTHONPATH=../.. ./${PYPY_PKG_NAME}-c ../../lib_pypy/tools/build_cffi_imports.py
+
 # Package PyPy.
 cd $RELEASE_DIR
 mkdir -p $TARGET_DIR
