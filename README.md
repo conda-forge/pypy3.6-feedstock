@@ -7,7 +7,8 @@ Package license: MIT
 
 Feedstock license: BSD 3-Clause
 
-Summary: PyPy is a Python interpreter and just-in-time compiler.
+Summary: PyPy is a Python interpreter and just-in-time compiler. See https://conda-forge.org/blog/posts/2020-03-10-pypy for more information about using PyPy in conda
+
 
 
 
