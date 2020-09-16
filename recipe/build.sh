@@ -2,7 +2,7 @@
 
 PYPY3_SRC_DIR=$SRC_DIR/pypy3
 
-if [[ "$target_platform" == "osx-64" ]]; then
+if [[ "$target_platform" == osx-* ]]; then
     export CC=$CLANG
     export PYTHON=${BUILD_PREFIX}/bin/python
 fi
@@ -34,7 +34,7 @@ ARCHIVE_NAME="${PYPY_PKG_NAME}-${PKG_VERSION}"
 cd $GOAL_DIR
 ${PYTHON} ../../rpython/bin/rpython --make-jobs ${CPU_COUNT} --shared -Ojit targetpypystandalone.py
 
-if [[ "$target_platform" == "osx-64" ]]; then
+if [[ "$target_platform" == osx-* ]]; then
     # Temporally set the @rpath of the generated PyPy binary to ${PREFIX}.
     cp ./${PYPY_PKG_NAME}-c ./${PYPY_PKG_NAME}-c.bak
     ${INSTALL_NAME_TOOL} -add_rpath "${PREFIX}/lib" ./${PYPY_PKG_NAME}-c
@@ -55,7 +55,7 @@ tar -xvf $ARCHIVE_NAME.tar.bz2
 # Move all files from the package to conda's $PREFIX.
 cp -r $TARGET_DIR/$ARCHIVE_NAME/* $PREFIX
 
-if [[ "$target_platform" == "osx-64" ]]; then
+if [[ "$target_platform" == osx-* ]]; then
     # Move the dylib to lib folder.
     mv $PREFIX/bin/libpypy3-c.dylib $PREFIX/lib/libpypy3-c.dylib
 

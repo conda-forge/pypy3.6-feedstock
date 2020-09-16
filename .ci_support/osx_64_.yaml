@@ -5,7 +5,7 @@ bzip2:
 c_compiler:
 - clang
 c_compiler_version:
-- '9'
+- '10'
 channel_sources:
 - conda-forge,defaults
 channel_targets:
@@ -19,7 +19,7 @@ macos_machine:
 macos_min_version:
 - '10.9'
 ncurses:
-- '6.1'
+- '6.2'
 openssl:
 - 1.1.1
 pin_run_as_build:
@@ -43,6 +43,8 @@ pin_run_as_build:
     max_pin: x.x
 sqlite:
 - '3'
+target_platform:
+- osx-64
 tk:
 - '8.6'
 xz:
