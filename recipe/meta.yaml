@@ -6,7 +6,7 @@ package:
   version: {{ version }}
 
 source:
-  - url: https:/downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
+  - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
     sha256: fd6175fed63ff9fccd7886068078853078948d98afae9bd4f5554c6f7873c10d
     folder: pypy3
     patches:
