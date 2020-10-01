@@ -34,14 +34,14 @@ diff --git a/lib_pypy/_sysconfigdata.py b/lib_pypy/_sysconfigdata.py
 index 4d2b0bc..b2051f4 100644
 --- a/lib_pypy/_sysconfigdata.py
 +++ b/lib_pypy/_sysconfigdata.py
-@@ -43,8 +43,8 @@ if sys.platform[:6] == "darwin":
+@@ -54,8 +54,8 @@ if sys.platform[:6] == "darwin":
      else:
          # just a guess
-         arch = platform.machine()
+         arch = machine
 -    build_time_vars['LDSHARED'] += ' -undefined dynamic_lookup'
      build_time_vars['CC'] += ' -arch %s' % (arch,)
 +    build_time_vars['LDSHARED'] = build_time_vars['CC'] + ' -shared -undefined dynamic_lookup'
      if "CXX" in build_time_vars:
-         build_time_vars['CXX'] += ' -arch %s' % (arch,)
+        build_time_vars['CXX'] += ' -arch %s' % (arch,)
  
 
