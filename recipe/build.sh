@@ -41,7 +41,7 @@ if [[ "$target_platform" == "osx-64" ]]; then
 fi
 
 # Build cffi imports using the generated PyPy.
-PYTHONPATH=../.. ./${PYPY_PKG_NAME}-c ../../lib_pypy/tools/build_cffi_imports.py
+PYTHONPATH=../.. ./${PYPY_PKG_NAME}-c ../../lib_pypy/pypy_tools/build_cffi_imports.py
 
 # Package PyPy.
 cd $RELEASE_DIR
