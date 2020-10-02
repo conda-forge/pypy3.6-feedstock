@@ -12,7 +12,6 @@ Summary: PyPy is a Python interpreter and just-in-time compiler. See https://con
 
 
 
-
 Current build status
 ====================
 
@@ -145,6 +144,7 @@ Feedstock Maintainers
 =====================
 
 * [@isuruf](https://github.com/isuruf/)
+* [@mattip](https://github.com/mattip/)
 * [@ocefpaf](https://github.com/ocefpaf/)
 * [@ohadravid](https://github.com/ohadravid/)
 * [@omerbenamram](https://github.com/omerbenamram/)
