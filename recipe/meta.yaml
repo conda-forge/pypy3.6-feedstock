@@ -21,7 +21,7 @@ source:
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0020-ppc-jit-fix
-      - patches/0021-ooc-test-fix1
+      - patches/0021-ppc-test-fix1
       - patches/0022-ppc-test-fix2
     
 
