@@ -20,6 +20,10 @@ source:
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
+      - patches/0020-ppc-jit-fix
+      - patches/0021-ooc-test-fix1
+      - patches/0022-ppc-test-fix2
+    
 
 build:
   number: 1
