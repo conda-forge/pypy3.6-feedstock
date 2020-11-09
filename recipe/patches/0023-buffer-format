@@ -1,0 +1,13 @@
+diff -r b6277db08da8 -r f03656fb7117 pypy/module/cpyext/parse/cpyext_object.h
+--- pypy/module/cpyext/parse/cpyext_object.h  Fri Oct 23 02:58:46 2020 +0300
++++ pypy/module/cpyext/parse/cpyext_object.h  Thu Oct 29 14:12:14 2020 +0200
+@@ -70,7 +70,7 @@
+ /* Py3k buffer interface, adapted for PyPy */
+ /* XXX remove this constant, us a PyObject_VAR_HEAD instead */
+ #define Py_MAX_NDIMS 36
+-#define Py_MAX_FMT 128
++#define Py_MAX_FMT 512
+ typedef struct bufferinfo {
+     void *buf;
+     PyObject *obj;        /* owned reference */
+
