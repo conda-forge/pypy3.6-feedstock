@@ -1,5 +1,5 @@
 {% set name = "pypy3.6" %}
-{% set version = "7.3.2" %}
+{% set version = "7.3.3" %}
 
 package:
   name: {{ name }}
@@ -7,7 +7,7 @@ package:
 
 source:
   - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
-    sha256: fd6175fed63ff9fccd7886068078853078948d98afae9bd4f5554c6f7873c10d
+    sha256: a23d21ca0de0f613732af4b4abb0b0db1cc56134b5bf0e33614eca87ab8805af
     folder: pypy3
     patches:
       - patches/fficurses.patch
@@ -20,14 +20,10 @@ source:
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
-      - patches/0020-ppc-jit-fix
-      - patches/0021-ppc-test-fix1
-      - patches/0022-ppc-test-fix2
-      - patches/0023-buffer-format
     
 
 build:
-  number: 2
+  number: 1
   skip: True  # [win]
   skip_compile_pyc:
     - lib*

@@ -11,7 +11,7 @@ jobs:
       linux_64_:
         CONFIG: linux_64_
         UPLOAD_PACKAGES: 'True'
-        DOCKER_IMAGE: condaforge/linux-anvil-comp7
+        DOCKER_IMAGE: quay.io/condaforge/linux-anvil-comp7
   timeoutInMinutes: 360
 
   steps:
@@ -39,6 +39,9 @@ jobs:
       FEEDSTOCK_TOKEN: $(FEEDSTOCK_TOKEN)
       STAGING_BINSTAR_TOKEN: $(STAGING_BINSTAR_TOKEN)
   - script: |
+        full_artifact_name="conda_artifacts_$(build.BuildId)_$(CONFIG)"
+        artifact_name=`echo "$full_artifact_name" | head -c 80`
+        echo "##vso[task.setVariable variable=ARTIFACT_NAME]$artifact_name"
         if [ -d build_artifacts ]; then
           echo "##vso[task.setVariable variable=CONDA_BLD_DIR_EXISTS]true"
         fi
@@ -46,5 +49,5 @@ jobs:
     condition: succeededOrFailed()
 
   - publish: build_artifacts/
-    artifact: conda_artifacts_$(CONFIG)_$(system.JobId)
+    artifact: $(ARTIFACT_NAME)
     condition: eq(variables.CONDA_BLD_DIR_EXISTS, 'true')
