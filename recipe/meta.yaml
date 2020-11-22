@@ -1,4 +1,7 @@
-{% set name = "pypy3.6" %}
+{% if name_suffix is not defined %}
+{% set name_suffix = "3.6" %}
+{% endif %}
+{% set name = "pypy" ~ name_suffix %}
 {% set version = "7.3.3" %}
 
 package:
@@ -7,7 +10,8 @@ package:
 
 source:
   - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
-    sha256: a23d21ca0de0f613732af4b4abb0b0db1cc56134b5bf0e33614eca87ab8805af
+    sha256: a23d21ca0de0f613732af4b4abb0b0db1cc56134b5bf0e33614eca87ab8805af  # [name_suffix == "3.6"]
+    sha256: f6c96401f76331e474cca2d14437eb3b2f68a0f27220a6dcbc537445fe9d5b78  # [name_suffix == "3.7"]
     folder: pypy3
     patches:
       - patches/fficurses.patch
@@ -62,6 +66,8 @@ requirements:
     - bzip2
   run_constrained:
     - pypy3.5 ==99999999999
+    - pypy3.6 ==99999999999  # [name_suffix=="3.7"]
+    - pypy3.7 ==99999999999  # [name_suffix=="3.6"]
 
 test:
   commands:
