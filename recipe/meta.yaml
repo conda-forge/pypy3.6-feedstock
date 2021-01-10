@@ -21,7 +21,6 @@ source:
       # Patches to be removed in the next version
       - patches/distutils.patch
       - patches/0021-add-sysconfig-LDLIBRARY.patch
-      - patches/0022-make-symlinks-for-python.patch
       # Patches by @mingwandroid from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
@@ -71,6 +70,7 @@ requirements:
     - pypy3.5 ==99999999999
     - pypy3.6 ==99999999999  # [name_suffix=="3.7"]
     - pypy3.7 ==99999999999  # [name_suffix=="3.6"]
+    - python 3.7.* *_{{ "".join(version.split(".")[:2]) }}_pypy
 
 test:
   commands:
