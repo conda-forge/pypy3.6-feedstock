@@ -1,0 +1,22 @@
+diff --git a/lib_pypy/_sysconfigdata.py b/lib_pypy/_sysconfigdata.py
+--- a/lib_pypy/_sysconfigdata.py
++++ b/lib_pypy/_sysconfigdata.py
+@@ -5,6 +5,7 @@
+ 
+ so_ext = _imp.extension_suffixes()[0]
+ 
++mybase = os.path.dirname(os.path.dirname(__file__))
+ 
+ build_time_vars = {
+     # SOABI is PEP 3149 compliant, but CPython3 has so_ext.split('.')[1]
+@@ -25,7 +26,9 @@
+     'AR': "ar",
+     'ARFLAGS': "rc",
+     'EXE': "",
+-    'LIBDIR': os.path.join(sys.prefix, 'bin'),
++    'LIBDIR': os.path.join(mybase, 'lib'),
++    'INCLUDEPY': os.path.join(mybase, 'include'),
++    'LDLIBRARY': 'libpypy3-c.so'
+ }
+ 
+ if find_executable("gcc"):
