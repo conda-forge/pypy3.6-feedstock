@@ -13,7 +13,7 @@ channel_targets:
 docker_image:
 - quay.io/condaforge/linux-anvil-comp7
 expat:
-- '2.2'
+- '2.3'
 libffi:
 - '3.3'
 name_suffix:
@@ -49,5 +49,8 @@ tk:
 - '8.6'
 xz:
 - '5.2'
+zip_keys:
+- - cdt_name
+  - docker_image
 zlib:
 - '1.2'
