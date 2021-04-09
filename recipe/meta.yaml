@@ -27,7 +27,7 @@ source:
 
 build:
   number: 4
-  skip: True  # [name_suffix=="3.6"]
+  skip: True  # [win or name_suffix=="3.6"]
   skip_compile_pyc:
     - lib*
 
