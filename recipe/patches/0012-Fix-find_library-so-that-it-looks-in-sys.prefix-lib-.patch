@@ -1,7 +1,7 @@
 diff -Naur pypy3.6-v7.3.0-src.orig/lib-python/3/ctypes/macholib/dyld.py pypy3.6-v7.3.0-src/lib-python/3/ctypes/macholib/dyld.py
 --- pypy3.6-v7.3.0-src.orig/lib-python/3/ctypes/macholib/dyld.py	2019-12-23 07:46:56.000000000 -0300
 +++ pypy3.6-v7.3.0-src/lib-python/3/ctypes/macholib/dyld.py	2020-03-11 16:04:02.594831897 -0300
-@@ -88,6 +88,10 @@
+@@ -93,6 +93,10 @@
      # If we haven't done any searching and found a library and the
      # dylib_name starts with "@executable_path/" then construct the
      # library name.
@@ -16,7 +16,7 @@ diff -Naur pypy3.6-v7.3.0-src.orig/lib-python/3/ctypes/util.py pypy3.6-v7.3.0-sr
 --- pypy3.6-v7.3.0-src.orig/lib-python/3/ctypes/util.py	2019-12-23 07:46:56.000000000 -0300
 +++ pypy3.6-v7.3.0-src/lib-python/3/ctypes/util.py	2020-03-11 16:06:02.140632815 -0300
 @@ -70,7 +70,8 @@
- if os.name == "posix" and sys.platform == "darwin":
+ elif os.name == "posix" and sys.platform == "darwin":
      from ctypes.macholib.dyld import dyld_find as _dyld_find
      def find_library(name):
 -        possible = ['lib%s.dylib' % name,
@@ -25,7 +25,7 @@ diff -Naur pypy3.6-v7.3.0-src.orig/lib-python/3/ctypes/util.py pypy3.6-v7.3.0-sr
                      '%s.dylib' % name,
                      '%s.framework/%s' % (name, name)]
          for name in possible:
-@@ -297,10 +298,30 @@
+@@ -324,10 +325,30 @@
                  pass  # result will be None
              return result
  
@@ -41,7 +41,7 @@ diff -Naur pypy3.6-v7.3.0-src.orig/lib-python/3/ctypes/util.py pypy3.6-v7.3.0-sr
          def find_library(name):
              # See issue #9998
 -            return _findSoname_ldconfig(name) or \
--                   _get_soname(_findLib_gcc(name) or _findLib_ld(name))
+-                   _get_soname(_findLib_gcc(name)) or _get_soname(_findLib_ld(name))
 +            # Yes calling _findLib_prefix twice is deliberate, because _get_soname ditches
 +            # the full path.
 +            # When objdump is unavailable this returns None
