@@ -2,7 +2,7 @@
 {% set name_suffix = "3.6" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
-{% set version = "7.3.3" %}
+{% set version = "7.3.4" %}
 
 package:
   name: {{ name }}
@@ -11,16 +11,13 @@ package:
 source:
   - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
     sha256: a23d21ca0de0f613732af4b4abb0b0db1cc56134b5bf0e33614eca87ab8805af  # [name_suffix == "3.6"]
-    sha256: f6c96401f76331e474cca2d14437eb3b2f68a0f27220a6dcbc537445fe9d5b78  # [name_suffix == "3.7"]
+    sha256: 74d3c1e79f3fc7d384ffb32d3d2a95c2d5f61b81091eccce12ac76030d96ad08  # [name_suffix == "3.7"]
     folder: pypy3
     patches:
       - patches/fficurses.patch
       - patches/tklib_build.patch
       - patches/clibffi.patch  # [osx]
       - patches/darwin.patch  # [osx]
-      # Patches to be removed in the next version
-      - patches/distutils.patch
-      - patches/0021-add-sysconfig-LDLIBRARY.patch
       # Patches by @mingwandroid from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
@@ -29,8 +26,8 @@ source:
     
 
 build:
-  number: 3
-  skip: True  # [win]
+  number: 4
+  skip: True  # [win or name_suffix=="3.6"]
   skip_compile_pyc:
     - lib*
 
