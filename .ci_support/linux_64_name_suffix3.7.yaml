@@ -13,7 +13,7 @@ channel_targets:
 docker_image:
 - quay.io/condaforge/linux-anvil-comp7
 expat:
-- '2.2'
+- '2'
 libffi:
 - '3.3'
 name_suffix:
@@ -25,8 +25,6 @@ openssl:
 pin_run_as_build:
   bzip2:
     max_pin: x
-  expat:
-    max_pin: x.x
   libffi:
     max_pin: x.x
   ncurses:
@@ -49,5 +47,8 @@ tk:
 - '8.6'
 xz:
 - '5.2'
+zip_keys:
+- - cdt_name
+  - docker_image
 zlib:
 - '1.2'

@@ -11,7 +11,7 @@ channel_sources:
 channel_targets:
 - conda-forge main
 expat:
-- '2.2'
+- '2'
 libffi:
 - '3.3'
 macos_machine:
@@ -25,8 +25,6 @@ openssl:
 pin_run_as_build:
   bzip2:
     max_pin: x
-  expat:
-    max_pin: x.x
   libffi:
     max_pin: x.x
   ncurses:
