@@ -2,7 +2,7 @@
 {% set name_suffix = "3.6" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
-{% set version = "7.3.4" %}
+{% set version = "7.3.5" %}
 
 package:
   name: {{ name }}
@@ -11,7 +11,7 @@ package:
 source:
   - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
     sha256: a23d21ca0de0f613732af4b4abb0b0db1cc56134b5bf0e33614eca87ab8805af  # [name_suffix == "3.6"]
-    sha256: 74d3c1e79f3fc7d384ffb32d3d2a95c2d5f61b81091eccce12ac76030d96ad08  # [name_suffix == "3.7"]
+    sha256: d920fe409a9ecad9d074aa8568ca5f3ed3581be66f66e5d8988b7ec66e6d99a2  # [name_suffix == "3.7"]
     folder: pypy3
     patches:
       - patches/fficurses.patch
@@ -29,7 +29,7 @@ source:
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 4
+  number: 1
   skip: True  # [name_suffix=="3.6"]
   skip_compile_pyc:
     - lib*
