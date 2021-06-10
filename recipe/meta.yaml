@@ -48,8 +48,8 @@ requirements:
     - zlib
     - bzip2
     - expat
-    - ncurses
-    - gdbm
+    - ncurses  # [not win]
+    - gdbm     # [not win]
     - xz
     - tk
     - bzip2
@@ -61,8 +61,8 @@ requirements:
     - tk
     - zlib
     - bzip2
-    - ncurses
-    - gdbm
+    - ncurses  # [not win]
+    - gdbm     # [not win]
     - xz
     - expat
     - bzip2
