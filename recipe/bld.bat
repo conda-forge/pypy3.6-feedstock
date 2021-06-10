@@ -1,3 +1,4 @@
+echo on
 set "PYPY3_SRC_DIR=%SRC_DIR%\pypy3"
 set "PYTHON=%SRC_DIR%\pypy2-binary\pypy.exe"
 
@@ -20,8 +21,10 @@ rem But the machine runs out of memory, so break it into parts
 rem -----------------
 set "PYPY_USESSION_BASENAME=pypy3"
 %PYTHON% ..\..\rpython\bin\rpython --no-compile --shared -Ojit targetpypystandalone.py
-echo cd %TEMP%\usession-pypy3-0\testing_1 
-cd %TEMP%\usession-pypy3-0\testing_1
+dir /b %TEMP%
+dir /b %TEMP%\usession-pypy3-0
+cd %TEMP%\usession-pypy3-0\testing_1 || exit /b 11
+dir /b %TEMP%\usession-pypy3-0\testing_1\Makefile 
 nmake || exit /b 11
 copy *.exe *.lib *.pdb %GOAL_DIR% || exit /b 11
 cd %GOAL_DIR
