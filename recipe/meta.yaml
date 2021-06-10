@@ -54,6 +54,7 @@ requirements:
     - tk
     - bzip2
     - xorg-libx11  # [linux]
+    - jom      # [win]
   run:
     - openssl
     - libffi
