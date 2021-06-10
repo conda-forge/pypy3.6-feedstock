@@ -14,7 +14,17 @@ set "ARCHIVE_NAME=%PYPY_PKG_NAME%-%PKG_VERSION%"
 
 REM Build PyPy.
 cd %GOAL_DIR%
-%PYTHON% ..\..\rpython\bin\rpython --make-jobs %CPU_COUNT% --shared -Ojit targetpypystandalone.py
+REM This is what we would like to do
+rem %PYTHON% ..\..\rpython\bin\rpython --make-jobs %CPU_COUNT% --shared -Ojit targetpypystandalone.py
+rem But the machine runs out of memory, so break it into parts
+rem -----------------
+set "PYPY_USESSION_BASENAME=pypy3"
+%PYTHON% ..\..\rpython\bin\rpython --no-compile --shared -Ojit targetpypystandalone.py
+cd %TEMP%\usession-pypy3-0\testing_1
+nmake
+cp *.exe *.lib *.pdb %GOAL_DIR%
+cd %GOAL_DIR
+rem -----------------
 
 REM Build cffi imports using the generated PyPy.
 set PYTHONPATH=..\..
