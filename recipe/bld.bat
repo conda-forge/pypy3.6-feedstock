@@ -20,9 +20,10 @@ rem But the machine runs out of memory, so break it into parts
 rem -----------------
 set "PYPY_USESSION_BASENAME=pypy3"
 %PYTHON% ..\..\rpython\bin\rpython --no-compile --shared -Ojit targetpypystandalone.py
+echo cd %TEMP%\usession-pypy3-0\testing_1 
 cd %TEMP%\usession-pypy3-0\testing_1
-nmake
-cp *.exe *.lib *.pdb %GOAL_DIR%
+nmake || exit /b 11
+copy *.exe *.lib *.pdb %GOAL_DIR% || exit /b 11
 cd %GOAL_DIR
 rem -----------------
 
@@ -37,22 +38,22 @@ mkdir %TARGET_DIR%
 %PYTHON% package.py --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
 
 cd %TARGET_DIR%
-tar -xvf %ARCHIVE_NAME%.tar.bz2
+unzip -xvf %ARCHIVE_NAME%.zip
 
 REM Move all files from the package to conda's $PREFIX.
-cp -r %TARGET_DIR%/%ARCHIVE_NAME%/* %PREFIX%
+robocopy /S %TARGET_DIR%/%ARCHIVE_NAME%/* %PREFIX%
 
 REM Move the generic file name to somewhere that's specific to pypy
-mv %PREFIX%\README.rst %PREFIX%\lib_pypy\
+move %PREFIX%\README.rst %PREFIX%\lib_pypy\
 REM License is packaged separately
-rm %PREFIX%\LICENSE
+del %PREFIX%\LICENSE
 
 REM Make sure the site-packages dir match with cpython
 PY_VERSION=%name_suffix%
-mkdir -p %PREFIX%\lib\python%PY_VERSION%\site-packages
-mv %PREFIX%\site-packages\README %PREFIX%\lib\python%PY_VERSION%\site-packages\
-rm -rf %PREFIX%\site-packages
-ln -sf %PREFIX%\lib\python%PY_VERSION%\site-packages %PREFIX%\site-packages
+mkdir  %PREFIX%\lib\python%PY_VERSION%\site-packages
+move %PREFIX%\site-packages\README %PREFIX%\lib\python%PY_VERSION%\site-packages\
+rmdir /q /s %PREFIX%\site-packages
+mklink /D %PREFIX%\lib\python%PY_VERSION%\site-packages %PREFIX%\site-packages
 
 REM Build the cache for the standard library
 timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
