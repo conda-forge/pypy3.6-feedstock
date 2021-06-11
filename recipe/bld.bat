@@ -21,13 +21,12 @@ rem But the machine runs out of memory, so break it into parts
 rem -----------------
 set "PYPY_USESSION_BASENAME=pypy3"
 %PYTHON% ..\..\rpython\bin\rpython --no-compile --shared -Ojit targetpypystandalone.py
-dir /b %TEMP%
-dir /b %TEMP%\usession-pypy3-0
 cd %TEMP%\usession-pypy3-0\testing_1 || exit /b 11
-dir /b %TEMP%\usession-pypy3-0\testing_1\Makefile 
-nmake || exit /b 11
-copy *.exe *.lib *.pdb %GOAL_DIR% || exit /b 11
-cd %GOAL_DIR
+nmake /f Makefile || exit /b 11
+copy *.exe *.dll *.pdb %GOAL_DIR% || exit /b 11
+rem TODO: parameterize this
+copy libpypy3-c.lib %PYPY3_SRC_DIR%\libs\python37.lib || exit /b 11
+cd %GOAL_DIR%
 rem -----------------
 
 REM Build cffi imports using the generated PyPy.
@@ -35,10 +34,9 @@ set PYTHONPATH=..\..
 %PYPY_PKG_NAME%-c ..\..\lib_pypy\pypy_tools\build_cffi_imports.py
 
 REM Package PyPy.
-cd %RELEASE_DIR%
 mkdir %TARGET_DIR%
 
-%PYTHON% package.py --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
+%PYTHON% %RELEASE_DIR%\package.py --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
 
 cd %TARGET_DIR%
 unzip -xvf %ARCHIVE_NAME%.zip
