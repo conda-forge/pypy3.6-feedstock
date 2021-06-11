@@ -1,5 +1,5 @@
---- pypy3/lib_pypy/_lzma_build.py   Tue Jun 08 08:41:40 2021 +0300
-+++ pypy3/lib_pypy/_lzma_build.py   Fri Jun 11 12:27:48 2021 +0300
+--- pypy3/lib_pypy/_lzma_build.py
++++ pypy3/lib_pypy/_lzma_build.py
 @@ -249,7 +254,7 @@
      return lzma_block_header_size_decode(b); // macro from lzma.h
  }
