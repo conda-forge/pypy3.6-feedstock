@@ -1,0 +1,13 @@
+diff -r 70112f108b2f lib_pypy/_lzma_build.py
+--- a/lib_pypy/_lzma_build.py   Tue Jun 08 08:41:40 2021 +0300
++++ b/lib_pypy/_lzma_build.py   Fri Jun 11 12:27:48 2021 +0300
+@@ -249,7 +254,7 @@
+     return lzma_block_header_size_decode(b); // macro from lzma.h
+ }
+ """,
+-    libraries=['lzma'])
++    libraries=['liblzma'])
+ 
+ 
+ if __name__ == '__main__':
+

@@ -6,7 +6,7 @@ REM PyPy translation looks for this.
 set "PYPY_LOCALBASE=%PREFIX%"
 
 set "GOAL_DIR=%PYPY3_SRC_DIR%\pypy\goal"
-set "RELEASE_DIR=%PYPY3_SRC_DIR%\pypy\tool\release""
+set "RELEASE_DIR=%PYPY3_SRC_DIR%\pypy\tool\release"
 
 set "PYPY_PKG_NAME=pypy3"
 set "BUILD_DIR=%PREFIX%\..\build"
@@ -22,8 +22,11 @@ rem -----------------
 set "PYPY_USESSION_BASENAME=pypy3"
 %PYTHON% ..\..\rpython\bin\rpython --no-compile --shared -Ojit targetpypystandalone.py
 cd %TEMP%\usession-pypy3-0\testing_1 || exit /b 11
+dir Makefile || exit /b 11
 nmake /f Makefile || exit /b 11
-copy *.exe *.dll *.pdb %GOAL_DIR% || exit /b 11
+copy *.pdb %GOAL_DIR% 
+copy *.dll %GOAL_DIR% 
+copy *.exe %GOAL_DIR% 
 rem TODO: parameterize this
 copy libpypy3-c.lib %PYPY3_SRC_DIR%\libs\python37.lib || exit /b 11
 cd %GOAL_DIR%
@@ -32,14 +35,12 @@ rem -----------------
 REM Build cffi imports using the generated PyPy.
 set PYTHONPATH=..\..
 %PYPY_PKG_NAME%-c ..\..\lib_pypy\pypy_tools\build_cffi_imports.py
+set PYTHONPATH=
 
 REM Package PyPy.
 mkdir %TARGET_DIR%
 
-%PYTHON% %RELEASE_DIR%\package.py --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
-
-cd %TARGET_DIR%
-unzip -xvf %ARCHIVE_NAME%.zip
+%PYTHON% %RELEASE_DIR%\package.py --builddir="%TARGETDIR% --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
 
 REM Move all files from the package to conda's $PREFIX.
 robocopy /S %TARGET_DIR%/%ARCHIVE_NAME%/* %PREFIX%
@@ -54,11 +55,12 @@ PY_VERSION=%name_suffix%
 mkdir  %PREFIX%\lib\python%PY_VERSION%\site-packages
 move %PREFIX%\site-packages\README %PREFIX%\lib\python%PY_VERSION%\site-packages\
 rmdir /q /s %PREFIX%\site-packages
-mklink /D %PREFIX%\lib\python%PY_VERSION%\site-packages %PREFIX%\site-packages
+mklink /D %PREFIX%\site-packages %PREFIX%\lib\python%PY_VERSION%\site-packages
 
 REM Build the cache for the standard library
-timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
+REM timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
+pypy3 -m test --pgo -j%CPU_COUNT%
 cd %PREFIX%\lib-python
-pypy3 -m compileall . || true;
+pypy3 -m compileall .
 cd %PREFIX%\lib_pypy
-pypy3 -m compileall . || true;
+pypy3 -m compileall .

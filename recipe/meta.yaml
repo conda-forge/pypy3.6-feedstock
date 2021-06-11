@@ -16,6 +16,7 @@ source:
     patches:
       - patches/fficurses.patch
       - patches/tklib_build.patch
+      - patches/lzma_build.patch  # [win]
       - patches/clibffi.patch  # [osx]
       - patches/darwin.patch  # [osx]
       # Patches by @mingwandroid from python-feedstock
