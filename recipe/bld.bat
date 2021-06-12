@@ -43,7 +43,7 @@ mkdir %TARGET_DIR%
 %PYTHON% %RELEASE_DIR%\package.py --builddir="%TARGETDIR% --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
 
 REM Move all files from the package to conda's $PREFIX.
-robocopy /S %TARGET_DIR%/%ARCHIVE_NAME%/* %PREFIX%
+robocopy /S %TARGET_DIR%\%ARCHIVE_NAME% %PREFIX%
 
 REM Move the generic file name to somewhere that's specific to pypy
 move %PREFIX%\README.rst %PREFIX%\lib_pypy\
@@ -51,7 +51,7 @@ REM License is packaged separately
 del %PREFIX%\LICENSE
 
 REM Make sure the site-packages dir match with cpython
-PY_VERSION=%name_suffix%
+set PY_VERSION=%name_suffix%
 mkdir  %PREFIX%\lib\python%PY_VERSION%\site-packages
 move %PREFIX%\site-packages\README %PREFIX%\lib\python%PY_VERSION%\site-packages\
 rmdir /q /s %PREFIX%\site-packages
