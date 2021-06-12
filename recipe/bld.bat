@@ -23,7 +23,7 @@ set "PYPY_USESSION_BASENAME=pypy3"
 %PYTHON% ..\..\rpython\bin\rpython --no-compile --shared -Ojit targetpypystandalone.py
 cd /d %TEMP%\usession-pypy3-0\testing_1 || exit /b 11
 dir Makefile || exit /b 11
-nmake /f Makefile || exit /b 11
+jom /f Makefile || exit /b 11
 copy *.pdb %GOAL_DIR% 
 copy *.dll %GOAL_DIR% 
 copy *.exe %GOAL_DIR% 
