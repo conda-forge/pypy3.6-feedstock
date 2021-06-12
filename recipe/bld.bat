@@ -14,14 +14,14 @@ set "TARGET_DIR=%PREFIX%\..\target"
 set "ARCHIVE_NAME=%PYPY_PKG_NAME%-%PKG_VERSION%"
 
 REM Build PyPy.
-cd %GOAL_DIR%
+cd /d %GOAL_DIR%
 REM This is what we would like to do
 rem %PYTHON% ..\..\rpython\bin\rpython --make-jobs %CPU_COUNT% --shared -Ojit targetpypystandalone.py
 rem But the machine runs out of memory, so break it into parts
 rem -----------------
 set "PYPY_USESSION_BASENAME=pypy3"
 %PYTHON% ..\..\rpython\bin\rpython --no-compile --shared -Ojit targetpypystandalone.py
-cd %TEMP%\usession-pypy3-0\testing_1 || exit /b 11
+cd /d %TEMP%\usession-pypy3-0\testing_1 || exit /b 11
 dir Makefile || exit /b 11
 nmake /f Makefile || exit /b 11
 copy *.pdb %GOAL_DIR% 
@@ -29,7 +29,7 @@ copy *.dll %GOAL_DIR%
 copy *.exe %GOAL_DIR% 
 rem TODO: parameterize this
 copy libpypy3-c.lib %PYPY3_SRC_DIR%\libs\python37.lib || exit /b 11
-cd %GOAL_DIR%
+cd /d %GOAL_DIR%
 rem -----------------
 
 REM Build cffi imports using the generated PyPy.
