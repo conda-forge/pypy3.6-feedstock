@@ -43,7 +43,11 @@ mkdir %TARGET_DIR%
 %PYTHON% %RELEASE_DIR%\package.py --builddir="%TARGET_DIR%" --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
 
 REM Move all files from the package to conda's $PREFIX.
-robocopy /S %TARGET_DIR%\%ARCHIVE_NAME% %PREFIX% || exit /b 11
+robocopy /S %TARGET_DIR%\%ARCHIVE_NAME% %PREFIX%
+IF %ERRORLEVEL% LSS 8 goto ROBOCOPYOK
+echo problem with robocopy
+exit /b 11
+:ROBOCOPYOK
 
 REM Move the generic file name to somewhere that's specific to pypy
 move %PREFIX%\README.rst %PREFIX%\lib_pypy\
