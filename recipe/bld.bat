@@ -40,7 +40,7 @@ set PYTHONPATH=
 REM Package PyPy.
 mkdir %TARGET_DIR%
 
-%PYTHON% %RELEASE_DIR%\package.py --builddir="%TARGETDIR%" --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
+%PYTHON% %RELEASE_DIR%\package.py --builddir="%TARGET_DIR%" --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
 
 REM Move all files from the package to conda's $PREFIX.
 robocopy /S %TARGET_DIR%\%ARCHIVE_NAME% %PREFIX% || exit /b 11
