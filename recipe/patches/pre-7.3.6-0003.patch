@@ -1,0 +1,22 @@
+in package.py, only copy if needed (for conda build)
+
+diff -r 11c20b4155c5 -r 8ca25944754f pypy/tool/release/package.py
+--- a/pypy/tool/release/package.py	Sun Jun 13 00:42:40 2021 +0300
++++ b/pypy/tool/release/package.py	Sun Jun 13 08:48:35 2021 +0300
+@@ -328,10 +328,12 @@
+     finally:
+         os.chdir(old_dir)
+     if options.targetdir:
+-        print("Copying %s to %s" % (archive, options.targetdir))
+-        shutil.copy(archive, options.targetdir)
+-    else:
+-        print("Ready in %s" % (builddir,))
++        tdir = os.path.normpath(options.targetdir)
++        adir = os.path.dirname(archive)
++        if tdir != adir:
++            print("Copying %s to %s" % (archive, options.targetdir))
++            shutil.copy(archive, options.targetdir)
++    print("Ready in %s" % (builddir,))
+     return retval, builddir # for tests
+ 
+ def package(*args, **kwds):
