@@ -1,0 +1,71 @@
+conda requires cpython-like directory layout
+
+see get_python_site_packages_short_path in conda.common.path.py which does not
+respect sysconfig schemas (current for v4.10)
+
+diff -r 8ca25944754f -r e9052b361691 lib-python/3/site.py
+--- a/lib-python/3/site.py	Sun Jun 13 08:48:35 2021 +0300
++++ b/lib-python/3/site.py	Sun Jun 13 10:37:17 2021 +0300
+@@ -261,7 +261,7 @@
+ 
+     if os.name == "nt":
+         base = os.environ.get("APPDATA") or "~"
+-        return joinuser(base, _get_implementation())
++        return joinuser(base, "Python")
+ 
+     if sys.platform == "darwin" and sys._framework:
+         return joinuser("~", "Library", sys._framework,
+@@ -274,15 +274,13 @@
+ def _get_path(userbase):
+     version = sys.version_info
+ 
+-    implementation = _get_implementation()
+-    implementation_lower = implementation.lower()
+     if os.name == 'nt':
+-        return f'{userbase}\\{implementation}{version[0]}{version[1]}\\site-packages'
++        return f'{userbase}\\Python{version[0]}{version[1]}\\site-packages'
+ 
+     if sys.platform == 'darwin' and sys._framework:
+-        return f'{userbase}/lib/{implementation_lower}/site-packages'
++        return f'{userbase}/lib/python/site-packages'
+ 
+-    return f'{userbase}/lib/{implementation_lower}{version[0]}.{version[1]}/site-packages'
++    return f'{userbase}/lib/python{version[0]}.{version[1]}/site-packages'
+ 
+ 
+ def getuserbase():
+@@ -344,9 +342,6 @@
+             continue
+         seen.add(prefix)
+ 
+-        if is_pypy:
+-            sitepackages.append(os.path.join(prefix, "site-packages"))
+-            continue
+         if os.sep == '/':
+             sitepackages.append(os.path.join(prefix, "lib",
+                                         "python%d.%d" % sys.version_info[:2],
+diff -r 8ca25944754f -r e9052b361691 lib-python/3/sysconfig.py
+--- a/lib-python/3/sysconfig.py	Sun Jun 13 08:48:35 2021 +0300
++++ b/lib-python/3/sysconfig.py	Sun Jun 13 10:37:17 2021 +0300
+@@ -44,8 +44,8 @@
+     'pypy': {
+         'stdlib': '{installed_base}/lib-{implementation_lower}',
+         'platstdlib': '{base}/lib-{implementation_lower}',
+-        'purelib': '{base}/site-packages',
+-        'platlib': '{base}/site-packages',
++        'purelib': '{base}/lib/python{py_version_short}/site-packages',
++        'platlib': '{platbase}/lib/python{py_version_short}/site-packages',
+         'include': '{installed_base}/include',
+         'platinclude': '{installed_base}/include',
+         'scripts': '{base}/bin',
+@@ -64,8 +64,8 @@
+     'pypy_nt': {
+         'stdlib': '{installed_base}/lib-{implementation_lower}',
+         'platstdlib': '{base}/lib-{implementation_lower}',
+-        'purelib': '{base}/site-packages',
+-        'platlib': '{base}/site-packages',
++        'purelib': '{base}/Lib/site-packages',
++        'platlib': '{base}/Lib/site-packages',
+         'include': '{installed_base}/include',
+         'platinclude': '{installed_base}/include',
+         'scripts': '{base}/Scripts',

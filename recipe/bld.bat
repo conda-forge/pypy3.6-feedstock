@@ -51,19 +51,16 @@ REM License is packaged separately
 del %PREFIX%\LICENSE
 
 REM Make sure the site-packages dir match with cpython
+REM See patch site-and-sysconfig-conda.patch
 set PY_VERSION=%name_suffix%
 mkdir  %PREFIX%\lib\python%PY_VERSION%\site-packages
 move %PREFIX%\site-packages\README %PREFIX%\lib\python%PY_VERSION%\site-packages\
 rmdir /q /s %PREFIX%\site-packages
-mklink /D %PREFIX%\site-packages %PREFIX%\lib\python%PY_VERSION%\site-packages || exit /b 11
 
 REM Build the cache for the standard library
 REM timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
 pypy3 -m test --pgo -j%CPU_COUNT%
 cd %PREFIX%\lib-python
-pypy3 -m compileall .
+..\pypy3 -m compileall .
 cd %PREFIX%\lib_pypy
-pypy3 -m compileall .
-REM TODO: fix the path to the pypy3 exe so the previous steps work.
-REM In the mean time, do not fail
-exit 0
+..\pypy3 -m compileall .

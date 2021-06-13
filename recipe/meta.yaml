@@ -19,6 +19,7 @@ source:
       - patches/lzma_build.patch  # [win]
       - patches/clibffi.patch  # [osx]
       - patches/darwin.patch  # [osx]
+      - patches/site-and-sysconfig-conda.patch  # [win]
       # Patches by @mingwandroid from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
