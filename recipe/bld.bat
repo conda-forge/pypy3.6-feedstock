@@ -62,8 +62,9 @@ move %PREFIX%\site-packages\README %PREFIX%\lib\python%PY_VERSION%\site-packages
 rmdir /q /s %PREFIX%\site-packages
 
 REM Build the cache for the standard library
+REM TODO: figure out a way to run these tests in a reasonable time
+REM On the PyPy buildbot (4 cores) they require ~30 minutes, here they take 4 hours
 REM timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
-pypy3 -m test --pgo -j%CPU_COUNT%
 cd %PREFIX%\lib-python
 ..\pypy3 -m compileall .
 cd %PREFIX%\lib_pypy
