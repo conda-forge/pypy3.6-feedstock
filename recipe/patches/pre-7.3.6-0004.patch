@@ -1,0 +1,20 @@
+create pypy.exe, pypyw.exe, python.exe, pythonw.exe in packaging windows
+
+diff -r 8ca25944754f -r ff407951ae7d pypy/tool/release/package.py
+--- a/pypy/tool/release/package.py	Sun Jun 13 08:48:35 2021 +0300
++++ b/pypy/tool/release/package.py	Mon Jun 14 05:56:24 2021 +0300
+@@ -175,6 +175,14 @@
+             tgt = py.path.local(tgt)
+             binaries.append((pypyw, tgt.new(purebasename=tgt.purebasename + 'w').basename, None))
+             print("Picking %s" % str(pypyw))
++            binaries.append((pypyw, 'pythonw.exe', None))
++            print('Picking {} as pythonw.exe'.format(pypyw))
++            binaries.append((pypyw, 'pypyw.exe', None))
++            print('Picking {} as pypyw.exe'.format(pypyw))
++        binaries.append((src, 'python.exe', None))
++        print('Picking {} as python.exe'.format(src))
++        binaries.append((src, 'pypy.exe', None))
++        print('Picking {} as pypy.exe'.format(src))
+         # Can't rename a DLL
+         win_extras = [('lib' + POSIX_EXE + '-c.dll', None),
+                       ('sqlite3.dll', lib_pypy)]

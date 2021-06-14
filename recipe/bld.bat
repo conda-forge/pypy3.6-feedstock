@@ -57,8 +57,8 @@ del %PREFIX%\LICENSE
 REM Make sure the site-packages dir match with cpython
 REM See patch site-and-sysconfig-conda.patch
 set PY_VERSION=%name_suffix%
-mkdir  %PREFIX%\lib\python%PY_VERSION%\site-packages
-move %PREFIX%\site-packages\README %PREFIX%\lib\python%PY_VERSION%\site-packages\
+mkdir  %PREFIX%\lib\site-packages
+move %PREFIX%\site-packages\README %PREFIX%\lib\site-packages\
 rmdir /q /s %PREFIX%\site-packages
 
 REM Build the cache for the standard library
