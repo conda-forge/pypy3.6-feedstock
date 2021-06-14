@@ -19,9 +19,10 @@ REM This is what we would like to do
 rem %PYTHON% ..\..\rpython\bin\rpython --make-jobs %CPU_COUNT% --shared -Ojit targetpypystandalone.py
 rem But the machine runs out of memory, so break it into parts
 rem -----------------
-set "PYPY_USESSION_BASENAME=pypy3"
+set PYPY_USESSION_BASENAME=pypy3
+set PYPY_USESSION_DIR=%SRC_DIR%
 %PYTHON% ..\..\rpython\bin\rpython --no-compile --shared -Ojit targetpypystandalone.py
-cd /d %TEMP%\usession-pypy3-0\testing_1 || exit /b 11
+cd /d %SRC_DIR%\usession-pypy3-0\testing_1 || exit /b 11
 dir Makefile || exit /b 11
 jom /f Makefile || exit /b 11
 copy *.pdb %GOAL_DIR% 
@@ -43,7 +44,7 @@ mkdir %TARGET_DIR%
 %PYTHON% %RELEASE_DIR%\package.py --builddir="%TARGET_DIR%" --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
 
 REM Move all files from the package to conda's $PREFIX.
-robocopy /S %TARGET_DIR%\%ARCHIVE_NAME% %PREFIX%
+robocopy /S %TARGET_DIR%\%ARCHIVE_NAME% %PREFIX% /njh /njs /np /ndl /nc /ns
 IF %ERRORLEVEL% LSS 8 goto ROBOCOPYOK
 echo problem with robocopy
 exit /b 11
@@ -54,17 +55,25 @@ move %PREFIX%\README.rst %PREFIX%\lib_pypy\
 REM License is packaged separately
 del %PREFIX%\LICENSE
 
-REM Make sure the site-packages dir match with cpython
+REM Make sure the site-packages dir SP_DIR matches with cpython
 REM See patch site-and-sysconfig-conda.patch
 set PY_VERSION=%name_suffix%
-mkdir  %PREFIX%\lib\site-packages
-move %PREFIX%\site-packages\README %PREFIX%\lib\site-packages\
+mkdir  %SP_DIR%
+move %PREFIX%\site-packages\README %SP_DIR%
 rmdir /q /s %PREFIX%\site-packages
 
-REM Build the cache for the standard library
+cd %PREFIX%
+
 REM TODO: figure out a way to run these tests in a reasonable time
-REM On the PyPy buildbot (4 cores) they require ~30 minutes, here they take 4 hours
+REM On the PyPy buildbot (4 cores) they require ~30 minutes, here they
+REM take 4 hours. Using --timeout=100 does not work, the kill makes the
+REM process hang
 REM timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
+
+REM Build the cache for the standard library
+pypy -m lib2to3.pgen2.driver lib-python\3\lib2to3\Grammar.txt
+pypy -m lib2to3.pgen2.driver lib-python\3\lib2to3\PatternGrammar.txt
+
 cd %PREFIX%\lib-python
 ..\pypy3 -m compileall .
 cd %PREFIX%\lib_pypy
