@@ -16,9 +16,10 @@ source:
     patches:
       - patches/fficurses.patch
       - patches/tklib_build.patch
+      - patches/tk_app.patch      # [win]
       - patches/lzma_build.patch  # [win]
-      - patches/clibffi.patch  # [osx]
-      - patches/darwin.patch  # [osx]
+      - patches/clibffi.patch     # [osx]
+      - patches/darwin.patch      # [osx]
       - patches/site-and-sysconfig-conda.patch  # [win]
       # Patches by @mingwandroid from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
