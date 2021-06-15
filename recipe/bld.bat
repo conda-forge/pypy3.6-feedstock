@@ -63,7 +63,7 @@ move %PREFIX%\site-packages\README %SP_DIR%
 rmdir /q /s %PREFIX%\site-packages
 
 REM Use conda tcl/tk installation in Library/lib
-rmdir /q /s %PREFIX\tcl
+rmdir /q /s %PREFIX%\tcl
 
 cd %PREFIX%
 
