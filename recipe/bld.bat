@@ -74,6 +74,9 @@ REM process hang
 REM timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
 
 REM Build the cache for the standard library
+pypy -c "import _testcapi"
+pypy -c "import _ctypes_test"
+pypy -c "import _testmultiphase"
 pypy -m lib2to3.pgen2.driver lib-python\3\lib2to3\Grammar.txt
 pypy -m lib2to3.pgen2.driver lib-python\3\lib2to3\PatternGrammar.txt
 
