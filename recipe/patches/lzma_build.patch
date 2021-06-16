@@ -1,0 +1,12 @@
+--- pypy3/lib_pypy/_lzma_build.py
++++ pypy3/lib_pypy/_lzma_build.py
+@@ -249,7 +254,7 @@
+     return lzma_block_header_size_decode(b); // macro from lzma.h
+ }
+ """,
+-    libraries=['lzma'])
++    libraries=['liblzma'])
+ 
+ 
+ if __name__ == '__main__':
+

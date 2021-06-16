@@ -1,0 +1,24 @@
+# Node ID 9b6ab15e0e61cfa367341620933c5bb261f07f9f
+# Parent  600d9540e7bf642ec3fb77f48cf6a73251bb5c8d
+re-enable --no-compile as a valid build target in spite of cffi hack
+
+diff -r 600d9540e7bf -r 9b6ab15e0e61 pypy/goal/targetpypystandalone.py
+--- a/pypy/goal/targetpypystandalone.py	Thu Jun 10 11:10:29 2021 +0200
++++ b/pypy/goal/targetpypystandalone.py	Thu Jun 10 17:14:01 2021 +0300
+@@ -335,9 +335,13 @@
+         options = make_dict(config)
+         wrapstr = 'space.wrap(%r)' % (options)  # import time
+         SysModule.interpleveldefs['pypy_translation_info'] = wrapstr
+-        if config.objspace.usemodules._cffi_backend:
++        
++        if 'compile' in driver._disabled:
++            driver.default_goal = 'source'
++        elif config.objspace.usemodules._cffi_backend:
+             self.hack_for_cffi_modules(driver)
+-
++        else:
++            driver.default_goal = 'compile' 
+         return self.get_entry_point(config)
+ 
+     def hack_for_cffi_modules(self, driver):
+

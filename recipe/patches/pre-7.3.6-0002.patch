@@ -1,0 +1,28 @@
+# Node ID 11c20b4155c5ce47a65d42a86ca9d9d17474b49d
+# Parent  fe28bc0564838d1702e1aefd1480600d549ad69b
+externals is not required for conda builds
+
+diff -r fe28bc056483 -r 11c20b4155c5 lib_pypy/pypy_tools/build_cffi_imports.py
+--- a/lib_pypy/pypy_tools/build_cffi_imports.py	Sat Jun 12 23:23:21 2021 +0300
++++ b/lib_pypy/pypy_tools/build_cffi_imports.py	Sun Jun 13 00:42:40 2021 +0300
+@@ -187,14 +187,14 @@
+                   ignore_errors=True)
+     env = os.environ
+     if sys.platform == 'win32':
+-        # requires the repo pypy/externals to be located under pypy
+         externals_path = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                         '..', '..', 'externals'))
+-        assert os.path.exists(externals_path), externals_path
+-        env = os.environ.copy()
+-        env['INCLUDE'] = externals_path + r'\include;' + env.get('INCLUDE', '')
+-        env['LIB'] = externals_path + r'\lib;' + env.get('LIB', '')
+-        env['PATH'] = externals_path + r'\bin;' + env.get('PATH', '')
++        # Needed for buildbot builds. On conda this is not needed. 
++        if os.path.exists(externals_path):
++            env = os.environ.copy()
++            env['INCLUDE'] = externals_path + r'\include;' + env.get('INCLUDE', '')
++            env['LIB'] = externals_path + r'\lib;' + env.get('LIB', '')
++            env['PATH'] = externals_path + r'\bin;' + env.get('PATH', '')
+     else:
+         env['CFLAGS'] = '-fPIC ' + env.get('CFLAGS', '')
+     status, stdout, stderr = run_subprocess(str(pypy_c), ['-c', 'import setuptools'])

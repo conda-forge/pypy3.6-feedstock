@@ -1,0 +1,13 @@
+diff -r 607d9a6af030 lib_pypy/_tkinter/app.py
+--- pypy3/lib_pypy/_tkinter/app.py
++++ pypy3/lib_pypy/_tkinter/app.py
+@@ -38,7 +38,7 @@
+     # For portable builds, try to load a local version of the libraries
+     from os.path import join, dirname, exists, sep
+     if sys.platform == 'win32':
+-        lib_path = join(dirname(dirname(dirname(__file__))), 'tcl')
++        lib_path = join(dirname(dirname(dirname(__file__))), 'Library', 'lib')
+         tcl_path = join(lib_path, 'tcl8.6')
+         tk_path = join(lib_path, 'tk8.6')
+         tcl_path = tcl_path.replace(sep, '/')
+
