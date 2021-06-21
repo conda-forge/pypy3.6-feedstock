@@ -30,9 +30,18 @@ BUILD_DIR=${PREFIX}/../build
 TARGET_DIR=${PREFIX}/../target
 ARCHIVE_NAME="${PYPY_PKG_NAME}-${PKG_VERSION}"
 
-# Build PyPy.
+# Build PyPy in stages
+# Force the build to use this directory
+export PYPY_USESSION_BASENAME=pypy3
+export PYPY_USESSION_DIR=${SRC_DIR}
+
 cd $GOAL_DIR
-${PYTHON} ../../rpython/bin/rpython --make-jobs ${CPU_COUNT} --shared -Ojit targetpypystandalone.py
+${PYTHON} ../../rpython/bin/rpython --make-jobs ${CPU_COUNT} --no-compile --shared -Ojit targetpypystandalone.py
+cd  ${SRC_DIR}/usession-pypy3-0/testing_1
+make -j ${CPU_COUNT}
+cp ${PYPY_PKG_NAME}* ${GOAL_DIR}
+cp lib${PYPY_PKG_NAME}* ${GOAL_DIR}
+cd $GOAL_DIR
 
 if [[ "$target_platform" == "osx-64" ]]; then
     # Temporally set the @rpath of the generated PyPy binary to ${PREFIX}.
@@ -89,7 +98,13 @@ mv $PREFIX/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
 rm -rf $PREFIX/site-packages
 ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/site-packages
 
-# Build the cache for the standard library
+echo PWD is ${PWD}
+# Build the c-extension modules for the standard library
+pypy -c "import _testcapi"
+pypy -c "import _ctypes_test"
+pypy -c "import _testmultiphase"
+
+# Run the python stdlib tests
 timeout 60m pypy3 -m test --pgo -j${CPU_COUNT} || true;
 cd $PREFIX
 pypy -m lib2to3.pgen2.driver lib-python/3/lib2to3/Grammar.txt
