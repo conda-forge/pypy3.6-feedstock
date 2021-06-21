@@ -39,8 +39,8 @@ cd $GOAL_DIR
 ${PYTHON} ../../rpython/bin/rpython --make-jobs ${CPU_COUNT} --no-compile --shared -Ojit targetpypystandalone.py
 cd  ${SRC_DIR}/usession-pypy3-0/testing_1
 make -j ${CPU_COUNT}
-cp *.so ${GOAL_DIR}
 cp ${PYPY_PKG_NAME}* ${GOAL_DIR}
+cp lib${PYPY_PKG_NAME}* ${GOAL_DIR}
 cd $GOAL_DIR
 
 if [[ "$target_platform" == "osx-64" ]]; then
@@ -98,6 +98,7 @@ mv $PREFIX/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
 rm -rf $PREFIX/site-packages
 ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/site-packages
 
+echo PWD is ${PWD}
 # Build the c-extension modules for the standard library
 pypy -c "import _testcapi"
 pypy -c "import _ctypes_test"
