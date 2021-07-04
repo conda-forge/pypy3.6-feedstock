@@ -45,13 +45,4 @@ diff -r 85c317f36cd8 -r a62de68281e3 lib-python/3/distutils/sysconfig_pypy.py
  
  
  _config_vars = None
-@@ -191,6 +208,9 @@
-             linker_exe=cc,
-             archiver=archiver)
- 
-+        if 'RANLIB' in os.environ and 'ranlib' in compiler.executables:
-+            compiler.set_executables(ranlib=os.environ['RANLIB'])
-+
-         compiler.shared_lib_extension = shlib_suffix
- 
  
