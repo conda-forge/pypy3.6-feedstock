@@ -58,7 +58,7 @@ diff -r 77787b8f4c49 -r fc8388ffecc6 rpython/rlib/clibffi.py
          includes = ['ffi.h', 'windows.h'],
 -        libraries = ['kernel32'],
 -        include_dirs = [libffidir, cdir],
-+        libraries = ['kernel32', 'libffi-7'],
++        libraries = ['kernel32', 'libffi'],
 +        # include_dirs = [libffidir, cdir],
          separate_module_sources = separate_module_sources,
          post_include_bits = post_include_bits,
