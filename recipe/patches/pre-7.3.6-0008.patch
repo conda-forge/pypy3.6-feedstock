@@ -2,8 +2,8 @@
 # Parent  77787b8f4c49115346d1e9cbaf48734137417738
 
 diff -r 77787b8f4c49 -r fc8388ffecc6 lib-python/3/venv/__init__.py
---- a/lib-python/3/venv/__init__.py	Mon Apr 12 07:11:48 2021 +0200
-+++ b/lib-python/3/venv/__init__.py	Sun Jul 11 12:46:37 2021 +0300
+--- a/lib-python/3/venv/__init__.py	2021-4-12 07:11:48.000 +0200
++++ b/lib-python/3/venv/__init__.py	2021-7-11 12:46:37.000 +0300
 @@ -259,9 +259,9 @@
                      if not os.path.islink(path):
                          os.chmod(path, 0o755)
@@ -17,8 +17,8 @@ diff -r 77787b8f4c49 -r fc8388ffecc6 lib-python/3/venv/__init__.py
                  src_library = os.path.join(os.path.dirname(context.executable),
                                             libname)
 diff -r 77787b8f4c49 -r fc8388ffecc6 pypy/tool/release/package.py
---- a/pypy/tool/release/package.py	Mon Apr 12 07:11:48 2021 +0200
-+++ b/pypy/tool/release/package.py	Sun Jul 11 12:46:37 2021 +0300
+--- a/pypy/tool/release/package.py	2021-4-12 07:11:48.000 +0200
++++ b/pypy/tool/release/package.py	Sun Jul 11 12:46:37.000 2021 +0300
 @@ -156,7 +156,9 @@
              print("Picking %s" % str(pypyw))
          # Can't rename a DLL
@@ -31,8 +31,8 @@ diff -r 77787b8f4c49 -r fc8388ffecc6 pypy/tool/release/package.py
              tkinter_dir = lib_pypy.join('_tkinter')
              win_extras += [('tcl86t.dll', tkinter_dir), ('tk86t.dll', tkinter_dir)]
 diff -r 77787b8f4c49 -r fc8388ffecc6 rpython/rlib/clibffi.py
---- a/rpython/rlib/clibffi.py	Mon Apr 12 07:11:48 2021 +0200
-+++ b/rpython/rlib/clibffi.py	Sun Jul 11 12:46:37 2021 +0300
+--- a/rpython/rlib/clibffi.py	2021-4-12 07:11:48.000 +0200
++++ b/rpython/rlib/clibffi.py	2021-7-11 12:46:37.000 +0300
 @@ -38,10 +38,7 @@
  
  if _WIN32:
@@ -94,8 +94,8 @@ diff -r 77787b8f4c49 -r fc8388ffecc6 rpython/rlib/clibffi.py
  else:
      c_ffi_call_return_type = lltype.Void
 diff -r 77787b8f4c49 -r fc8388ffecc6 rpython/translator/driver.py
---- a/rpython/translator/driver.py	Mon Apr 12 07:11:48 2021 +0200
-+++ b/rpython/translator/driver.py	Sun Jul 11 12:46:37 2021 +0300
+--- a/rpython/translator/driver.py	2021-4-12 07:11:48.000 +0200
++++ b/rpython/translator/driver.py	2021-7-11 12:46:37.000 +0300
 @@ -507,6 +507,11 @@
                          newname = newexename.new(basename=soname.basename)
                          shutil.copyfile(str(name), str(newname.new(ext=ext)))
