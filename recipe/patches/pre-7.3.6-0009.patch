@@ -1,6 +1,6 @@
-diff -r cfc38b565a4e rpython/jit/backend/x86/regalloc.py
---- a/rpython/jit/backend/x86/regalloc.py   Thu Jul 15 16:33:54 2021 +0200
-+++ b/rpython/jit/backend/x86/regalloc.py   Sun Jul 18 00:42:19 2021 +0300
+diff -r cfc38b565a4e -r 451181af7e5b rpython/jit/backend/x86/regalloc.py
+--- rpython/jit/backend/x86/regalloc.py   2021-4-12 16:33:54 2021 +0200
++++ rpython/jit/backend/x86/regalloc.py   2021-7-18 00:42:19 2021 +0300
 @@ -122,7 +122,8 @@
  
  class X86_64_XMMRegisterManager(X86XMMRegisterManager):
@@ -11,9 +11,9 @@ diff -r cfc38b565a4e rpython/jit/backend/x86/regalloc.py
      save_around_call_regs = all_regs
  
  class X86FrameManager(FrameManager):
-diff -r cfc38b565a4e rpython/jit/backend/x86/regloc.py
---- a/rpython/jit/backend/x86/regloc.py Thu Jul 15 16:33:54 2021 +0200
-+++ b/rpython/jit/backend/x86/regloc.py Sun Jul 18 00:42:19 2021 +0300
+diff -r cfc38b565a4e -r 451181af7e5b rpython/jit/backend/x86/regloc.py
+--- rpython/jit/backend/x86/regloc.py 2021-4-12 16:33:54 2021 +0200
++++ rpython/jit/backend/x86/regloc.py 2021-7-18 00:42:19 2021 +0300
 @@ -353,7 +353,7 @@
  
  # XXX: a GPR scratch register is definitely needed, but we could probably do
