@@ -1,0 +1,26 @@
+diff -r cfc38b565a4e -r 451181af7e5b rpython/jit/backend/x86/regalloc.py
+--- rpython/jit/backend/x86/regalloc.py   2021-4-12 16:33:54 2021 +0200
++++ rpython/jit/backend/x86/regalloc.py   2021-7-18 00:42:19 2021 +0300
+@@ -122,7 +122,8 @@
+ 
+ class X86_64_XMMRegisterManager(X86XMMRegisterManager):
+     # xmm15 reserved for scratch use
+-    all_regs = [xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7, xmm8, xmm9, xmm10, xmm11, xmm12, xmm13, xmm14]
++    # all_regs = [xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7, xmm8, xmm9, xmm10, xmm11, xmm12, xmm13, xmm14]
++    all_regs = [xmm0, xmm1, xmm2, xmm3, xmm4]
+     save_around_call_regs = all_regs
+ 
+ class X86FrameManager(FrameManager):
+diff -r cfc38b565a4e -r 451181af7e5b rpython/jit/backend/x86/regloc.py
+--- rpython/jit/backend/x86/regloc.py 2021-4-12 16:33:54 2021 +0200
++++ rpython/jit/backend/x86/regloc.py 2021-7-18 00:42:19 2021 +0300
+@@ -353,7 +353,7 @@
+ 
+ # XXX: a GPR scratch register is definitely needed, but we could probably do
+ # without an xmm scratch reg.
+-X86_64_XMM_SCRATCH_REG = xmm15
++X86_64_XMM_SCRATCH_REG = xmm5
+ 
+ # note: 'r' is after 'i' in this list, for _binaryop()
+ unrolling_location_codes = unrolling_iterable(list("irbsmajx"))
+
