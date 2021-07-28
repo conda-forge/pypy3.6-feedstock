@@ -58,32 +58,29 @@ requirements:
     - pkg-config        # [unix]
     - pycparser
   host:
-    - openssl
-    - libffi
-    - sqlite
-    - tk
-    - zlib
     - bzip2
     - expat
-    - ncurses  # [not win]
     - gdbm     # [not win]
-    - xz
-    - tk
-    - bzip2
-    - xorg-libx11  # [linux]
     - jom ==1.1.2  # [win]
-  run:
-    - openssl
     - libffi
+    - ncurses  # [not win]
+    - openssl
     - sqlite
     - tk
-    - zlib
-    - bzip2
-    - ncurses  # [not win]
-    - gdbm     # [not win]
+    - xorg-libx11  # [linux]
     - xz
-    - expat
+    - zlib
+  run:
     - bzip2
+    - expat
+    - gdbm     # [not win]
+    - libffi
+    - ncurses  # [not win]
+    - openssl
+    - sqlite
+    - tk
+    - xz
+    - zlib
   run_constrained:
     - pypy3.5 ==99999999999
     - pypy3.6 ==99999999999  # [name_suffix=="3.7"]
