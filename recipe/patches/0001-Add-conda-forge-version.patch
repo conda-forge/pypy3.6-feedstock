@@ -1,0 +1,25 @@
+# HG changeset patch
+# Date 1627369254 -10800
+#      Tue Jul 27 10:00:54 2021 +0300
+# Branch conda
+# Node ID 3bd4e146c802b6a2549bedb139881814845cbb23
+# Parent  a62de68281e3bc881cddc1d56646567dc543e3cd
+add 'packaged by conda-forge' like in CPython feedstock
+
+diff -r a62de68281e3 -r 3bd4e146c802 pypy/module/sys/version.py
+--- a/pypy/module/sys/version.py	Fri Jul 02 18:18:41 2021 +0300
++++ b/pypy/module/sys/version.py	Tue Jul 27 10:00:54 2021 +0300
+@@ -55,11 +55,11 @@
+     ver = "%d.%d.%d" % (PYPY_VERSION[0], PYPY_VERSION[1], PYPY_VERSION[2])
+     if PYPY_VERSION[3] != "final":
+         ver = ver + "-%s%d" %(PYPY_VERSION[3], PYPY_VERSION[4])
+-    template = "%d.%d.%d (%s, %s, %s)\n[PyPy %s with %%s]" % (
++    template = "%d.%d.%d | packaged by conda-forge | (%s, %s, %s)\n[PyPy %s with %%s]" % (
+         CPYTHON_VERSION[0],
+         CPYTHON_VERSION[1],
+         CPYTHON_VERSION[2],
+-        get_repo_version_info(root=pypyroot)[1],
++        get_repo_version_info(root=pypyroot)[1][:8],
+         date,
+         time,
+         ver)
