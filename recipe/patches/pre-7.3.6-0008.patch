@@ -16,20 +16,6 @@ diff -r 77787b8f4c49 -r fc8388ffecc6 lib-python/3/venv/__init__.py
                  dest_library = os.path.join(binpath, libname)
                  src_library = os.path.join(os.path.dirname(context.executable),
                                             libname)
-diff -r 77787b8f4c49 -r fc8388ffecc6 pypy/tool/release/package.py
---- a/pypy/tool/release/package.py	2021-4-12 07:11:48.000 +0200
-+++ b/pypy/tool/release/package.py	Sun Jul 11 12:46:37.000 2021 +0300
-@@ -156,7 +156,9 @@
-             print("Picking %s" % str(pypyw))
-         # Can't rename a DLL
-         win_extras = [('lib' + POSIX_EXE + '-c.dll', None),
--                      ('sqlite3.dll', lib_pypy)]
-+                      ('sqlite3.dll', lib_pypy),
-+                      ('libffi-7.dll', None),
-+                     ]
-         if not options.no__tkinter:
-             tkinter_dir = lib_pypy.join('_tkinter')
-             win_extras += [('tcl86t.dll', tkinter_dir), ('tk86t.dll', tkinter_dir)]
 diff -r 77787b8f4c49 -r fc8388ffecc6 rpython/rlib/clibffi.py
 --- a/rpython/rlib/clibffi.py	2021-4-12 07:11:48.000 +0200
 +++ b/rpython/rlib/clibffi.py	2021-7-11 12:46:37.000 +0300
