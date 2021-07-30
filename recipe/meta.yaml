@@ -25,6 +25,7 @@ source:
       - patches/distutils-sysconfig-get_python_lib.patch  # [win]
       - patches/0001-Add-conda-forge-version.patch
       - patches/0018-Disable-copying-dlls.patch
+      - patches/0021-Adapt-platform-to-patch-0001.patch
       # Patches by @mingwandroid from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
@@ -40,13 +41,14 @@ source:
       - patches/pre-7.3.6-0007.patch
       - patches/pre-7.3.6-0008.patch
       - patches/pre-7.3.6-0009.patch  # [win]
+      - patches/pre-7.3.6-0010.patch
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.5-win64.zip           # [win]
     sha256: 0b90eded11ba89a526c4288f17fff7e75000914ac071bd6d67912748ae89d761  # [win]
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 6
+  number: 7
   skip: True  # [name_suffix=="3.6"]
   skip_compile_pyc:
     - lib*
@@ -90,6 +92,7 @@ requirements:
 test:
   commands:
     - pypy3 --help
+    - pypy3 -c "import platform; print(platform._sys_version())"
     - test -f $PREFIX/lib-python/3/lib2to3/Grammar{{ name_suffix }}*.pickle                      # [unix]
     - test -f $PREFIX/lib-python/3/lib2to3/PatternGrammar{{ name_suffix }}*.pickle               # [unix]
     - if not exist %PREFIX%\lib-python\3\lib2to3\Grammar{{ name_suffix }}*.pickle exit 1         # [win]
