@@ -49,7 +49,7 @@ source:
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 8
+  number: 9
   skip: True  # [name_suffix=="3.6"]
   skip_compile_pyc:
     - lib*
