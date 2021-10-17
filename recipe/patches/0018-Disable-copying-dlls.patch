@@ -35,15 +35,16 @@ diff -r 4aca66d6c57d lib_pypy/_ssl_build.py
 diff -r 4aca66d6c57d pypy/tool/release/package.py
 --- a/pypy/tool/release/package.py
 +++ b/pypy/tool/release/package.py
-@@ -177,10 +177,7 @@
-             print("Picking %s" % str(pypyw))
+@@ -199,12 +199,7 @@
+         print('Picking {} as pypy.exe'.format(src))
          # Can't rename a DLL
          win_extras = [('lib' + POSIX_EXE + '-c.dll', None),
--                      ('sqlite3.dll', lib_pypy)]
+-                      ('sqlite3.dll', lib_pypy),
+-                      ('libffi-7.dll', None),
+                      ]
 -        if not options.no__tkinter:
 -            tkinter_dir = lib_pypy.join('_tkinter')
 -            win_extras += [('tcl86t.dll', tkinter_dir), ('tk86t.dll', tkinter_dir)]
-+                     ]
  
          for extra,target_dir in win_extras:
              p = pypy_c.dirpath().join(extra)
