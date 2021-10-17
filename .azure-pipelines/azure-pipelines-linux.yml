@@ -8,11 +8,11 @@ jobs:
     vmImage: ubuntu-latest
   strategy:
     matrix:
-      linux_64_name_suffix3.7:
-        CONFIG: linux_64_name_suffix3.7
+      linux_64_:
+        CONFIG: linux_64_
         UPLOAD_PACKAGES: 'True'
         DOCKER_IMAGE: quay.io/condaforge/linux-anvil-comp7
-        SHORT_CONFIG_NAME: linux_64_name_suffix3.7
+        SHORT_CONFIG_NAME: linux_64_
   timeoutInMinutes: 360
 
   steps:

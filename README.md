@@ -1,4 +1,4 @@
-About pypy3.6
+About pypy3.7
 =============
 
 Home: http://pypy.org/
@@ -28,24 +28,24 @@ Current build status
         <table>
           <thead><tr><th>Variant</th><th>Status</th></tr></thead>
           <tbody><tr>
-              <td>linux_64_name_suffix3.7</td>
+              <td>linux_64</td>
               <td>
                 <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=master">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=linux&configuration=linux_64_name_suffix3.7" alt="variant">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=linux&configuration=linux_64_" alt="variant">
                 </a>
               </td>
             </tr><tr>
-              <td>osx_64_name_suffix3.7</td>
+              <td>osx_64</td>
               <td>
                 <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=master">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=osx&configuration=osx_64_name_suffix3.7" alt="variant">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=osx&configuration=osx_64_" alt="variant">
                 </a>
               </td>
             </tr><tr>
-              <td>win_64_name_suffix3.7</td>
+              <td>win_64</td>
               <td>
                 <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=master">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=win&configuration=win_64_name_suffix3.7" alt="variant">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=win&configuration=win_64_" alt="variant">
                 </a>
               </td>
             </tr>
@@ -61,29 +61,28 @@ Current release info
 
 | Name | Downloads | Version | Platforms |
 | --- | --- | --- | --- |
-| [![Conda Recipe](https://img.shields.io/badge/recipe-pypy3.6-green.svg)](https://anaconda.org/conda-forge/pypy3.6) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/pypy3.6.svg)](https://anaconda.org/conda-forge/pypy3.6) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pypy3.6.svg)](https://anaconda.org/conda-forge/pypy3.6) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/pypy3.6.svg)](https://anaconda.org/conda-forge/pypy3.6) |
 | [![Conda Recipe](https://img.shields.io/badge/recipe-pypy3.7-green.svg)](https://anaconda.org/conda-forge/pypy3.7) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/pypy3.7.svg)](https://anaconda.org/conda-forge/pypy3.7) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pypy3.7.svg)](https://anaconda.org/conda-forge/pypy3.7) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/pypy3.7.svg)](https://anaconda.org/conda-forge/pypy3.7) |
 
-Installing pypy3.6
+Installing pypy3.7
 ==================
 
-Installing `pypy3.6` from the `conda-forge` channel can be achieved by adding `conda-forge` to your channels with:
+Installing `pypy3.7` from the `conda-forge` channel can be achieved by adding `conda-forge` to your channels with:
 
 ```
 conda config --add channels conda-forge
 conda config --set channel_priority strict
 ```
 
-Once the `conda-forge` channel has been enabled, `pypy3.6, pypy3.7` can be installed with:
+Once the `conda-forge` channel has been enabled, `pypy3.7` can be installed with:
 
 ```
-conda install pypy3.6 pypy3.7
+conda install pypy3.7
 ```
 
-It is possible to list all of the versions of `pypy3.6` available on your platform with:
+It is possible to list all of the versions of `pypy3.7` available on your platform with:
 
 ```
-conda search pypy3.6 --channel conda-forge
+conda search pypy3.7 --channel conda-forge
 ```
 
 
@@ -125,17 +124,17 @@ Terminology
                   produce the finished article (built conda distributions)
 
 
-Updating pypy3.6-feedstock
+Updating pypy3.7-feedstock
 ==========================
 
-If you would like to improve the pypy3.6 recipe or build a new
+If you would like to improve the pypy3.7 recipe or build a new
 package version, please fork this repository and submit a PR. Upon submission,
 your changes will be run on the appropriate platforms to give the reviewer an
 opportunity to confirm that the changes result in a successful build. Once
 merged, the recipe will be re-built and uploaded automatically to the
 `conda-forge` channel, whereupon the built conda packages will be available for
 everybody to install and use from the `conda-forge` channel.
-Note that all branches in the conda-forge/pypy3.6-feedstock are
+Note that all branches in the conda-forge/pypy3.7-feedstock are
 immediately built and any created packages are uploaded, so PRs should be based
 on branches in forks and branches in the main repository should only be used to
 build distinct package versions.

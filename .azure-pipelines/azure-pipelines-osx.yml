@@ -8,10 +8,10 @@ jobs:
     vmImage: macOS-10.15
   strategy:
     matrix:
-      osx_64_name_suffix3.7:
-        CONFIG: osx_64_name_suffix3.7
+      osx_64_:
+        CONFIG: osx_64_
         UPLOAD_PACKAGES: 'True'
-        SHORT_CONFIG_NAME: osx_64_name_suffix3.7
+        SHORT_CONFIG_NAME: osx_64_
   timeoutInMinutes: 360
 
   steps:
