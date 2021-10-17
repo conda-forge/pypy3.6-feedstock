@@ -1,8 +1,8 @@
 {% if name_suffix is not defined %}
-{% set name_suffix = "3.6" %}
+{% set name_suffix = "3.7" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
-{% set version = "7.3.5" %}
+{% set version = "7.3.6" %}
 
 package:
   name: {{ name }}
@@ -10,8 +10,7 @@ package:
 
 source:
   - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
-    sha256: a23d21ca0de0f613732af4b4abb0b0db1cc56134b5bf0e33614eca87ab8805af  # [name_suffix == "3.6"]
-    sha256: d920fe409a9ecad9d074aa8568ca5f3ed3581be66f66e5d8988b7ec66e6d99a2  # [name_suffix == "3.7"]
+    sha256: 9252ccaa130094205b3c7f0a2cad5adc0d9dfba31658ff3172f788dec1fdb348  # [name_suffix == "3.7"]
     folder: pypy3
     patches:
       - patches/fficurses.patch
@@ -32,24 +31,13 @@ source:
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
-      # Patches to be removed for pypy v7.3.6
-      - patches/pre-7.3.6-0001.patch
-      - patches/pre-7.3.6-0002.patch
-      - patches/pre-7.3.6-0003.patch
-      - patches/pre-7.3.6-0004.patch
-      - patches/pre-7.3.6-0005.patch
-      - patches/pre-7.3.6-0006.patch
-      - patches/pre-7.3.6-0007.patch
-      - patches/pre-7.3.6-0008.patch
-      - patches/pre-7.3.6-0009.patch  # [win]
-      - patches/pre-7.3.6-0010.patch
 
-  - url: https://downloads.python.org/pypy/pypy2.7-v7.3.5-win64.zip           # [win]
-    sha256: 0b90eded11ba89a526c4288f17fff7e75000914ac071bd6d67912748ae89d761  # [win]
+  - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
+    sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 9
+  number: 0
   skip: True  # [name_suffix=="3.6"]
   skip_compile_pyc:
     - lib*
