@@ -16,6 +16,9 @@ set "ARCHIVE_NAME=%PYPY_PKG_NAME%-%PKG_VERSION%"
 REM Report system info
 systeminfo
 
+REM this will do more frequent collections but may make translation pass?
+set PYPY_GC_MAX_DELTA=400MB
+
 REM Build PyPy.
 cd /d %GOAL_DIR%
 REM This is what we would like to do
