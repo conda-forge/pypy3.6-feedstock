@@ -1,0 +1,19 @@
+# Date 1629814779 -10800
+#      Tue Aug 24 17:19:39 2021 +0300
+# Branch conda
+# Node ID 20b5f5f0f00724967b810e5cb729e8c699bbd920
+# Parent  49ba58431c069c0f944f12f935c564d538feee79
+conda modifies the build to put the dll in base/lib not base/bin
+
+diff -r 49ba58431c06 -r 20b5f5f0f007 lib_pypy/_sysconfigdata.py
+--- a/lib_pypy/_sysconfigdata.py
++++ b/lib_pypy/_sysconfigdata.py
+@@ -40,7 +40,7 @@
+     # "mybase/bin" directory. Only when making a portable build (the default
+     # for the linux buildbots) is there even a "mybase/lib" created, even so
+     # the mybase/bin layout is left untouched.
+-    'LIBDIR': os.path.join(mybase, 'bin'),
++    'LIBDIR': os.path.join(mybase, 'lib'),
+     'LDLIBRARY': 'libpypy3-c.so',
+     'VERSION': pydot,
+     'LDVERSION': pydot,
