@@ -13,6 +13,9 @@ set "BUILD_DIR=%PREFIX%\..\build"
 set "TARGET_DIR=%PREFIX%\..\target"
 set "ARCHIVE_NAME=%PYPY_PKG_NAME%-%PKG_VERSION%"
 
+REM Report system info
+systeminfo
+
 REM Build PyPy.
 cd /d %GOAL_DIR%
 REM This is what we would like to do
