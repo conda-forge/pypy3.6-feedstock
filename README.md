@@ -28,24 +28,45 @@ Current build status
         <table>
           <thead><tr><th>Variant</th><th>Status</th></tr></thead>
           <tbody><tr>
-              <td>linux_64</td>
+              <td>linux_64_name_suffix3.7</td>
               <td>
                 <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=master">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=linux&configuration=linux_64_" alt="variant">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=linux&configuration=linux_64_name_suffix3.7" alt="variant">
                 </a>
               </td>
             </tr><tr>
-              <td>osx_64</td>
+              <td>linux_64_name_suffix3.8</td>
               <td>
                 <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=master">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=osx&configuration=osx_64_" alt="variant">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=linux&configuration=linux_64_name_suffix3.8" alt="variant">
                 </a>
               </td>
             </tr><tr>
-              <td>win_64</td>
+              <td>osx_64_name_suffix3.7</td>
               <td>
                 <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=master">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=win&configuration=win_64_" alt="variant">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=osx&configuration=osx_64_name_suffix3.7" alt="variant">
+                </a>
+              </td>
+            </tr><tr>
+              <td>osx_64_name_suffix3.8</td>
+              <td>
+                <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=master">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=osx&configuration=osx_64_name_suffix3.8" alt="variant">
+                </a>
+              </td>
+            </tr><tr>
+              <td>win_64_name_suffix3.7</td>
+              <td>
+                <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=master">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=win&configuration=win_64_name_suffix3.7" alt="variant">
+                </a>
+              </td>
+            </tr><tr>
+              <td>win_64_name_suffix3.8</td>
+              <td>
+                <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=master">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=master&jobName=win&configuration=win_64_name_suffix3.8" alt="variant">
                 </a>
               </td>
             </tr>
@@ -62,6 +83,7 @@ Current release info
 | Name | Downloads | Version | Platforms |
 | --- | --- | --- | --- |
 | [![Conda Recipe](https://img.shields.io/badge/recipe-pypy3.7-green.svg)](https://anaconda.org/conda-forge/pypy3.7) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/pypy3.7.svg)](https://anaconda.org/conda-forge/pypy3.7) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pypy3.7.svg)](https://anaconda.org/conda-forge/pypy3.7) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/pypy3.7.svg)](https://anaconda.org/conda-forge/pypy3.7) |
+| [![Conda Recipe](https://img.shields.io/badge/recipe-pypy3.8-green.svg)](https://anaconda.org/conda-forge/pypy3.8) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/pypy3.8.svg)](https://anaconda.org/conda-forge/pypy3.8) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pypy3.8.svg)](https://anaconda.org/conda-forge/pypy3.8) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/pypy3.8.svg)](https://anaconda.org/conda-forge/pypy3.8) |
 
 Installing pypy3.7
 ==================
@@ -73,10 +95,10 @@ conda config --add channels conda-forge
 conda config --set channel_priority strict
 ```
 
-Once the `conda-forge` channel has been enabled, `pypy3.7` can be installed with:
+Once the `conda-forge` channel has been enabled, `pypy3.7, pypy3.8` can be installed with:
 
 ```
-conda install pypy3.7
+conda install pypy3.7 pypy3.8
 ```
 
 It is possible to list all of the versions of `pypy3.7` available on your platform with:
