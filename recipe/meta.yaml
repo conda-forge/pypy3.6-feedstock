@@ -20,9 +20,9 @@ source:
       - patches/lzma_build.patch  # [win]
       - patches/clibffi.patch     # [osx]
       - patches/darwin.patch      # [osx]
-      - patches/site-and-sysconfig-conda.patch    # [win]
-      - patches/distutils-install.patch           # [win]
-      - patches/distutils-sysconfig-get_python_lib.patch  # [win]
+      - patches/site-and-sysconfig-conda.patch    # [win and name_suffix == "3.7"]
+      - patches/distutils-install.patch           # [win and name_suffix == "3.7"]
+      - patches/distutils-sysconfig-get_python_lib.patch  # [win and name_suffix == "3.7"]
       - patches/0001-Add-conda-forge-version.patch
       - patches/0018-Disable-copying-dlls.patch  # [name_suffix == "3.7"]
       - patches/0019-Disable-copying-dlls.patch  # [name_suffix == "3.8"]
