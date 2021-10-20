@@ -124,7 +124,7 @@ pypy -c "import _testmultiphase"
 timeout 60m pypy3 -m test --pgo -j${CPU_COUNT} || true;
 
 
-if [[ -d $PREFIX/lib_pypy ]]l then
+if [[ -d $PREFIX/lib_pypy ]]; then
 	cd $PREFIX/lib-python
 	pypy3 -m compileall . || true;
 	cd $PREFIX/lib_pypy
