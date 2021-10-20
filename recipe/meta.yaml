@@ -59,7 +59,7 @@ requirements:
     - jom ==1.1.2  # [win]
     - libffi
     - ncurses  # [not win]
-    - openssl
+    - openssl <3.0.0
     - sqlite
     - tk
     - xorg-libx11  # [linux]
@@ -71,7 +71,7 @@ requirements:
     - gdbm     # [not win]
     - libffi
     - ncurses  # [not win]
-    - openssl
+    - openssl <3.0.0
     - sqlite
     - tk
     - xz
