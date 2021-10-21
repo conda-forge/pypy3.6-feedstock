@@ -89,8 +89,10 @@ test:
   commands:
     - pypy3 --help
     - pypy3 -c "import platform; print(platform._sys_version())"
-    - test -f $PREFIX/lib-python/3/lib2to3/Grammar{{ name_suffix }}*.pickle                      # [unix]
-    - test -f $PREFIX/lib-python/3/lib2to3/PatternGrammar{{ name_suffix }}*.pickle               # [unix]
+    - test -f $PREFIX/lib-python/3/lib2to3/Grammar{{ name_suffix }}*.pickle                      # [unix and name_suffix=="3.7"]
+    - test -f $PREFIX/lib-python/3/lib2to3/PatternGrammar{{ name_suffix }}*.pickle               # [unix and name_suffix=="3.7"]
+    - test -f $PREFIX/lib/pypy3.8/lib2to3/Grammar{{ name_suffix }}*.pickle                       # [unix and name_suffix=="3.8"]
+    - test -f $PREFIX/lib/pypy3.8/lib2to3/PatternGrammar{{ name_suffix }}*.pickle                # [unix and name_suffix=="3.8"]
     - if not exist %PREFIX%\lib-python\3\lib2to3\Grammar{{ name_suffix }}*.pickle exit 1         # [win]
     - if not exist %PREFIX%\lib-python\3\lib2to3\PatternGrammar{{ name_suffix }}*.pickle exit 1  # [win]
 
