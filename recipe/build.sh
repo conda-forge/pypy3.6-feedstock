@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -exo pipefail
+set -eo pipefail
 
 PYPY3_SRC_DIR=$SRC_DIR/pypy3
 
@@ -113,8 +113,10 @@ else
 	popd
 fi
 
-echo pypy -c "from distutils import sysconfig; print(sysconfig.get_python_inc())"
-echo pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'))"
+echo sysconfig $(pypy -c "from distutils import sysconfig; print(sysconfig)")
+echo get_python_inc $(pypy -c "from distutils import sysconfig; print(sysconfig.get_python_inc())")
+echo INCLUDEPY $(pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'))")
+ls $(pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'))")
 # Build the c-extension modules for the standard library
 pypy -c "import _testcapi"
 pypy -c "import _ctypes_test"
