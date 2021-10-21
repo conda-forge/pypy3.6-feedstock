@@ -34,7 +34,7 @@ source:
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
-      - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
+      - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch  # [name_suffix == "3.8"]
       # Patches to be removed for PyPy7.3.7
       - patches/pre-7.3.7-001-Use-libffi-8.patch
       - patches/pre-7.3.7-002-Fix-sysconfigdata.patch  # [name_suffix == "3.8"]
