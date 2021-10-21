@@ -1,5 +1,3 @@
-Author: Isuru Fernando <isuruf@gmail.com>
-
 --- a/lib-python/3/distutils/sysconfig_pypy.py    2021-10-21 09:11:53.792196332 -0700
 +++ b/lib-python/3/distutils/sysconfig_pypy.py    2021-10-21 09:12:17.804443956 -0700
 @@ -190,10 +190,9 @@

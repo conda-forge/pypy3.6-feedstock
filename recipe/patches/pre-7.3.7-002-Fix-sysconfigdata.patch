@@ -1,5 +1,3 @@
-Author: Isuru Fernando <isuruf@gmail.com>
-
 --- a/lib_pypy/_sysconfigdata.py  2021-10-21 09:53:52.246898790 -0700
 +++ b/lib_pypy/_sysconfigdata.py  2021-10-21 09:54:03.499017441 -0700
 @@ -6,7 +6,7 @@
