@@ -33,6 +33,7 @@ source:
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
+      - patches/0014-Add-CondaEcosystemModifyDllSearchPath.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch  # [name_suffix == "3.8"]
       # Patches to be removed for PyPy7.3.8

@@ -1,0 +1,90 @@
+diff -r d6cb7949c25f pypy/interpreter/app_main.py
+--- a/pypy/interpreter/app_main.py	Fri Oct 22 12:05:41 2021 +0300
++++ b/pypy/interpreter/app_main.py	Fri Oct 22 16:47:57 2021 +0300
+@@ -608,6 +608,77 @@
+     return options
+ 
+ @hidden_applevel
++def CondaEcosystemModifyDllSearchPath_Init(argv):
++    """Conda + windows only function
++    There are 2 modes depending on CONDA_DLL_SEARCH_MODIFICATION env variable
++
++    - unset CONDA_DLL_SEARCH_MODIFICATION (Default)
++
++      In this mode, the python interpreter works as if the python interpreter
++      was called with the following conda directories.
++
++        os.add_dll_directory(join(sys.prefix, 'bin'))
++        os.add_dll_directory(join(sys.prefix, 'Scripts'))
++        os.add_dll_directory(join(sys.prefix, 'Library', 'bin'))
++        os.add_dll_directory(join(sys.prefix, 'Library', 'usr', 'bin'))
++        os.add_dll_directory(join(sys.prefix, 'Library', 'mingw-w64', 'bin'))
++
++      Search order
++        - The directory that contains the DLL (if looking for a dependency)
++        - Application (python.exe) directory
++        - Directories added with os.add_dll_directory
++        - The 5 conda directories
++        - C:\Windows\System32
++
++      Note that the default behaviour changed in conda python 3.10 to
++      make os.add_dll_directory work in user code.
++
++    - CONDA_DLL_SEARCH_MODIFICATION=1
++
++      Search order is roughly,
++
++        - The directory that contains the DLL (if looking for a dependency)
++        - Application (python.exe) directory
++        - C:\Windows
++        - Current working directory
++        - The 5 conda directories
++        - PATH
++        - Directories added with os.add_dll_directory
++        - Old PATH entries (Deficiency in current patch)
++        - Old working directories (Deficiency in current patch)
++        - C:\Windows\System32
++
++    This changes the DLL search order so that C:\Windows\System32 does not
++    get searched in before entries in PATH.
++    """
++ 
++    # timing this import, it does not seem to perceptibly slow down startup
++    import os
++
++    getenv = get_getenv()
++    debug_it = bool(getenv("CONDA_DLL_SEARCH_MODIFICATION_DEBUG"))
++    enable = getenv("CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
++    if enable and enable == '0':
++        return
++    sv_executable_dirname = os.path.dirname(sys.executable)
++    condaPaths = [os.path.join(sv_executable_dirname, x) for x in [
++        r'Library\ming-w64\bin',
++        r'Library\usr\bin',
++        r'Library\bin',
++        r'Scripts',
++        r'bin',
++    ]]
++    for p in condaPaths:
++        if debug_it:
++            print("CondaEcosystemModifyDllSearchPath_Init() :: "
++                  "os.add_dll_directory(%s - ExePrefix)" % p, file=sys.stderr)
++            try:
++                os.add_dll_directory(p)
++            except FileNotFoundError:
++                pass
++        
++
++@hidden_applevel
+ def run_command_line(interactive,
+                      inspect,
+                      run_command,
+@@ -741,6 +812,8 @@
+ 
+     try:
+         from os.path import abspath
++        if sys.platform == 'win32':
++            CondaEcosystemModifyDllSearchPath_Init(sys.argv) 
+         if run_command != 0:
+             # handle the "-c" command
+             # Put '' on sys.path
