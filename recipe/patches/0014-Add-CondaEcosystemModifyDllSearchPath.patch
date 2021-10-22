@@ -1,7 +1,7 @@
 diff -r d6cb7949c25f pypy/interpreter/app_main.py
 --- a/pypy/interpreter/app_main.py	Fri Oct 22 12:05:41 2021 +0300
 +++ b/pypy/interpreter/app_main.py	Fri Oct 22 16:47:57 2021 +0300
-@@ -608,6 +608,77 @@
+@@ -608,6 +608,53 @@
      return options
  
  @hidden_applevel
@@ -55,7 +55,7 @@ diff -r d6cb7949c25f pypy/interpreter/app_main.py
  def run_command_line(interactive,
                       inspect,
                       run_command,
-@@ -741,6 +812,8 @@
+@@ -741,6 +788,8 @@
  
      try:
          from os.path import abspath
