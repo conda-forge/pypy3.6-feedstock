@@ -26,27 +26,6 @@ diff -r d6cb7949c25f pypy/interpreter/app_main.py
 +        - Directories added with os.add_dll_directory
 +        - The 5 conda directories
 +        - C:\Windows\System32
-+
-+      Note that the default behaviour changed in conda python 3.10 to
-+      make os.add_dll_directory work in user code.
-+
-+    - CONDA_DLL_SEARCH_MODIFICATION=1
-+
-+      Search order is roughly,
-+
-+        - The directory that contains the DLL (if looking for a dependency)
-+        - Application (python.exe) directory
-+        - C:\Windows
-+        - Current working directory
-+        - The 5 conda directories
-+        - PATH
-+        - Directories added with os.add_dll_directory
-+        - Old PATH entries (Deficiency in current patch)
-+        - Old working directories (Deficiency in current patch)
-+        - C:\Windows\System32
-+
-+    This changes the DLL search order so that C:\Windows\System32 does not
-+    get searched in before entries in PATH.
 +    """
 + 
 +    # timing this import, it does not seem to perceptibly slow down startup
@@ -54,9 +33,6 @@ diff -r d6cb7949c25f pypy/interpreter/app_main.py
 +
 +    getenv = get_getenv()
 +    debug_it = bool(getenv("CONDA_DLL_SEARCH_MODIFICATION_DEBUG"))
-+    enable = getenv("CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
-+    if enable and enable == '0':
-+        return
 +    sv_executable_dirname = os.path.dirname(sys.executable)
 +    condaPaths = [os.path.join(sv_executable_dirname, x) for x in [
 +        r'Library\ming-w64\bin',
@@ -69,10 +45,10 @@ diff -r d6cb7949c25f pypy/interpreter/app_main.py
 +        if debug_it:
 +            print("CondaEcosystemModifyDllSearchPath_Init() :: "
 +                  "os.add_dll_directory(%s - ExePrefix)" % p, file=sys.stderr)
-+            try:
-+                os.add_dll_directory(p)
-+            except FileNotFoundError:
-+                pass
++        try:
++            os.add_dll_directory(p)
++        except FileNotFoundError:
++            pass
 +        
 +
 +@hidden_applevel
