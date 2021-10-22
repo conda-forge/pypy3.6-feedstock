@@ -12,6 +12,10 @@ jobs:
         CONFIG: osx_64_name_suffix3.7
         UPLOAD_PACKAGES: 'True'
         SHORT_CONFIG_NAME: osx_64_name_suffix3.7
+      osx_64_name_suffix3.8:
+        CONFIG: osx_64_name_suffix3.8
+        UPLOAD_PACKAGES: 'True'
+        SHORT_CONFIG_NAME: osx_64_name_suffix3.8
   timeoutInMinutes: 360
 
   steps:

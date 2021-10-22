@@ -13,6 +13,12 @@ set "BUILD_DIR=%PREFIX%\..\build"
 set "TARGET_DIR=%PREFIX%\..\target"
 set "ARCHIVE_NAME=%PYPY_PKG_NAME%-%PKG_VERSION%"
 
+REM Report system info
+systeminfo
+
+REM this will do more frequent collections but may make translation pass?
+set PYPY_GC_MAX_DELTA=400MB
+
 REM Build PyPy.
 cd /d %GOAL_DIR%
 REM This is what we would like to do
@@ -28,8 +34,14 @@ jom /f Makefile || exit /b 11
 copy *.pdb %GOAL_DIR% 
 copy *.dll %GOAL_DIR% 
 copy *.exe %GOAL_DIR% 
-rem TODO: parameterize this
-copy libpypy3-c.lib %PYPY3_SRC_DIR%\libs\python37.lib || exit /b 11
+
+set PY_VERSION=%name_suffix%
+
+for /F "tokens=1,2 delims=." %%i in ("%PY_VERSION%") do (
+  set "PY_VERSION_NODOTS=%%i%%j"
+)
+
+copy libpypy3-c.lib %PYPY3_SRC_DIR%\libs\python%PY_VERSION_NODOTS%.lib || exit /b 11
 cd /d %GOAL_DIR%
 rem -----------------
 
@@ -50,14 +62,14 @@ echo problem with robocopy
 exit /b 11
 :ROBOCOPYOK
 
-REM Move the generic file name to somewhere that's specific to pypy
-move %PREFIX%\README.rst %PREFIX%\lib_pypy\
 REM License is packaged separately
 del %PREFIX%\LICENSE
 
 REM Make sure the site-packages dir SP_DIR matches with cpython
 REM See patch site-and-sysconfig-conda.patch
-set PY_VERSION=%name_suffix%
+
+REM Move the generic file name to somewhere that's specific to pypy
+move %PREFIX%\README.rst %PREFIX%\lib_pypy\
 mkdir  %SP_DIR%
 move %PREFIX%\site-packages\README %SP_DIR%
 rmdir /q /s %PREFIX%\site-packages
