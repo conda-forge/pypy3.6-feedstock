@@ -1,0 +1,17 @@
+--- /mnt/d/miniconda/envs/test/conda-bld/pypy3.8_1634850528461/work/pypy3/rpython/rlib/rfile.py	2021-10-17 08:20:21.000000000 +0300
++++ /mnt/d/pypy_stuff/pypy/rpython/rlib/rfile.py	2021-10-22 11:06:04.742533500 +0300
+@@ -124,11 +124,11 @@
+ c_clearerr = llexternal('clearerr', [FILEP], lltype.Void)
+ 
+ c_stdin = rffi.CExternVariable(FILEP, 'stdin', eci, c_type='FILE*',
+-                               getter_only=True)
++                               getter_only=True, declare_as_extern=False)
+ c_stdout = rffi.CExternVariable(FILEP, 'stdout', eci, c_type='FILE*',
+-                                getter_only=True)
++                                getter_only=True, declare_as_extern=False)
+ c_stderr = rffi.CExternVariable(FILEP, 'stderr', eci, c_type='FILE*',
+-                                getter_only=True)
++                                getter_only=True, declare_as_extern=False)
+ 
+ 
+ def _error(ll_file):
