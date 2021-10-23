@@ -33,8 +33,7 @@ diff -r d6cb7949c25f pypy/interpreter/app_main.py
 +
 +    getenv = get_getenv()
 +    debug_it = bool(getenv("CONDA_DLL_SEARCH_MODIFICATION_DEBUG"))
-+    sv_executable_dirname = os.path.dirname(sys.executable)
-+    condaPaths = [os.path.join(sv_executable_dirname, x) for x in [
++    condaPaths = [os.path.join(sys.prefix, x) for x in [
 +        r'Library\ming-w64\bin',
 +        r'Library\usr\bin',
 +        r'Library\bin',

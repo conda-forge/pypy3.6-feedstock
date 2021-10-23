@@ -67,15 +67,26 @@ del %PREFIX%\LICENSE
 
 REM Make sure the site-packages dir SP_DIR matches with cpython
 REM See patch site-and-sysconfig-conda.patch
-
-REM Move the generic file name to somewhere that's specific to pypy
-move %PREFIX%\README.rst %PREFIX%\lib_pypy\
 mkdir  %SP_DIR%
-move %PREFIX%\site-packages\README %SP_DIR%
-rmdir /q /s %PREFIX%\site-packages
 
-REM Use conda tcl/tk installation in Library/lib
-rmdir /q /s %PREFIX%\tcl
+if exists %PREFIX%\lib_pypy (
+    REM pre-python3.8 layout
+    move %PREFIX%\README.rst %PREFIX%\lib_pypy\
+    move %PREFIX%\site-packages\README %SP_DIR%
+    rmdir /q /s %PREFIX%\site-packages
+
+    REM Use conda tcl/tk installation in Library/lib
+    rmdir /q /s %PREFIX%\tcl
+    cd %PREFIX%\lib_pypy
+    ..\pypy3 -m compileall .
+    cd %PREFIX%\lib-python
+    ..\pypy3 -m compileall .
+    ,,\pypy -m lib2to3.pgen2.driver 3\lib2to3\Grammar.txt
+    ..\pypy -m lib2to3.pgen2.driver 3\lib2to3\PatternGrammar.txt
+) else (
+    cd %PREFIX%\Lib
+    ..\pypy3 -m compileall .
+)
 
 cd %PREFIX%
 
@@ -89,10 +100,3 @@ REM Build the cache for the standard library
 pypy -c "import _testcapi"
 pypy -c "import _ctypes_test"
 pypy -c "import _testmultiphase"
-pypy -m lib2to3.pgen2.driver lib-python\3\lib2to3\Grammar.txt
-pypy -m lib2to3.pgen2.driver lib-python\3\lib2to3\PatternGrammar.txt
-
-cd %PREFIX%\lib-python
-..\pypy3 -m compileall .
-cd %PREFIX%\lib_pypy
-..\pypy3 -m compileall .
