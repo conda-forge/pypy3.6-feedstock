@@ -1,0 +1,113 @@
+# HG changeset patch
+# Branch abi-compat
+# Node ID dc1da562677049b8bb4749c68e3de3e13526c30b
+# Parent  5f53d83c67e8a5c7ad0b20ed85f85ef2bcff8e41
+revert C-API changes that make 7.3.6 incompatible with 7.3.5
+
+diff -r 5f53d83c67e8 -r dc1da5626770 pypy/module/cpyext/cdatetime.py
+--- a/pypy/module/cpyext/cdatetime.py	Sat Oct 23 11:19:27 2021 +0200
++++ b/pypy/module/cpyext/cdatetime.py	Sun Oct 24 08:15:32 2021 +0300
+@@ -55,10 +55,6 @@
+     datetimeAPI.c_TZInfoType = rffi.cast(
+         PyTypeObjectPtr, make_ref(space, w_type))
+ 
+-    w_type = space.getattr(w_datetime, space.newtext("timezone"))
+-    w_utc = space.getattr(w_type, space.newtext("utc"))
+-    datetimeAPI.c_TimeZone_UTC = make_ref(space, w_utc)
+-
+     datetimeAPI.c_Date_FromDate = llhelper(
+         _PyDate_FromDate.api_func.functype,
+         _PyDate_FromDate.api_func.get_wrapper(space))
+diff -r 5f53d83c67e8 -r dc1da5626770 pypy/module/cpyext/frameobject.py
+--- a/pypy/module/cpyext/frameobject.py	Sat Oct 23 11:19:27 2021 +0200
++++ b/pypy/module/cpyext/frameobject.py	Sun Oct 24 08:15:32 2021 +0300
+@@ -19,7 +19,6 @@
+      ("f_globals", PyObject),
+      ("f_locals", PyObject),
+      ("f_lineno", rffi.INT),
+-     ("f_back", PyFrameObject),
+      ))
+ cpython_struct("PyFrameObject", PyFrameObjectFields, PyFrameObjectStruct)
+ 
+@@ -38,12 +37,6 @@
+     py_frame.c_f_code = rffi.cast(PyCodeObject, make_ref(space, frame.pycode))
+     py_frame.c_f_globals = make_ref(space, frame.get_w_globals())
+     py_frame.c_f_locals = make_ref(space, frame.get_w_locals())
+-    f_back = frame.get_f_back()
+-    if f_back:
+-        py_frame.c_f_back = rffi.cast(PyFrameObject, make_ref(space, f_back))
+-    else:
+-        py_frame.c_f_back = rffi.cast(PyFrameObject, 0)
+-    rffi.setintfield(py_frame, 'c_f_lineno', frame.getorcreatedebug().f_lineno)
+ 
+ @slot_function([PyObject], lltype.Void)
+ def frame_dealloc(space, py_obj):
+@@ -52,7 +45,6 @@
+     decref(space, py_code)
+     decref(space, py_frame.c_f_globals)
+     decref(space, py_frame.c_f_locals)
+-    decref(space, py_frame.c_f_back)
+     from pypy.module.cpyext.object import _dealloc
+     _dealloc(space, py_obj)
+ 
+diff -r 5f53d83c67e8 -r dc1da5626770 pypy/module/cpyext/include/datetime.h
+--- a/pypy/module/cpyext/include/datetime.h	Sat Oct 23 11:19:27 2021 +0200
++++ b/pypy/module/cpyext/include/datetime.h	Sun Oct 24 08:15:32 2021 +0300
+@@ -10,9 +10,6 @@
+ 
+ #define PyDateTime_IMPORT (PyDateTimeAPI = _PyDateTime_Import())
+ 
+-/* Macro for access to the UTC singleton */
+-#define PyDateTime_TimeZone_UTC PyDateTimeAPI->TimeZone_UTC
+-
+ /* Macros for accessing constructors in a simplified fashion. */
+ #define PyDate_FromDate(year, month, day) \
+     PyDateTimeAPI->Date_FromDate(year, month, day, PyDateTimeAPI->DateType)
+diff -r 5f53d83c67e8 -r dc1da5626770 pypy/module/cpyext/include/frameobject.h
+--- a/pypy/module/cpyext/include/frameobject.h	Sat Oct 23 11:19:27 2021 +0200
++++ b/pypy/module/cpyext/include/frameobject.h	Sun Oct 24 08:15:32 2021 +0300
+@@ -6,7 +6,6 @@
+ 
+ typedef struct _frame {
+     PyObject_HEAD
+-    struct _frame *f_back;      /* previous frame, or NULL */
+     PyCodeObject *f_code;
+     PyObject *f_globals;
+     PyObject *f_locals;
+diff -r 5f53d83c67e8 -r dc1da5626770 pypy/module/cpyext/parse/cpyext_datetime.h
+--- a/pypy/module/cpyext/parse/cpyext_datetime.h	Sat Oct 23 11:19:27 2021 +0200
++++ b/pypy/module/cpyext/parse/cpyext_datetime.h	Sun Oct 24 08:15:32 2021 +0300
+@@ -7,9 +7,6 @@
+     PyTypeObject *DeltaType;
+     PyTypeObject *TZInfoType;
+ 
+-    /* singletons */
+-    PyObject *TimeZone_UTC;
+-
+     /* constructors */
+     PyObject *(*Date_FromDate)(int, int, int, PyTypeObject*);
+     PyObject *(*DateTime_FromDateAndTime)(int, int, int, int, int, int, int,
+diff -r 5f53d83c67e8 -r dc1da5626770 pypy/module/cpyext/test/test_datetime.py
+--- a/pypy/module/cpyext/test/test_datetime.py	Sat Oct 23 11:19:27 2021 +0200
++++ b/pypy/module/cpyext/test/test_datetime.py	Sun Oct 24 08:15:32 2021 +0300
+@@ -250,11 +250,6 @@
+                  Py_DECREF(name);
+                  return tzinfo;
+              """),
+-            ("utc_singleton_access", "METH_NOARGS",
+-             """ PyDateTime_IMPORT;
+-                 Py_INCREF(PyDateTime_TimeZone_UTC);
+-                 return PyDateTime_TimeZone_UTC;
+-             """),
+         ], prologue='#include "datetime.h"\n')
+         import datetime
+ 
+@@ -265,8 +260,6 @@
+         expected = datetime.timezone(one_hour, "spam")
+         assert module.new_timezone_fromoffset_and_name() == expected
+ 
+-        assert module.utc_singleton_access() == datetime.timezone.utc
+-
+     def test_macros(self):
+         module = self.import_extension('foo', [
+             ("test_date_macros", "METH_NOARGS",
