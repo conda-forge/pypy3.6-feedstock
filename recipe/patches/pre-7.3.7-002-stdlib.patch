@@ -3,25 +3,15 @@ Fix stdlib for pypy
 diff -r 8ca25944754f -r e9052b361691 lib-python/3/sysconfig.py
 --- a/lib-python/3/sysconfig.py	Sun Jun 13 08:48:35 2021 +0300
 +++ b/lib-python/3/sysconfig.py	Sun Jun 13 10:37:17 2021 +0300
-@@ -44,8 +44,8 @@
+@@ -44,3 +44,3 @@
      'pypy': {
 -        'stdlib': '{installed_base}/lib-{implementation_lower}',
 -        'platstdlib': '{base}/lib-{implementation_lower}',
 +        'stdlib': '{installed_base}/lib_{implementation_lower}',
 +        'platstdlib': '{base}/lib_{implementation_lower}',
-         'purelib': '{base}/lib/python{py_version_short}/site-packages',
-         'platlib': '{platbase}/lib/python{py_version_short}/site-packages',
-         'include': '{installed_base}/include',
-         'platinclude': '{installed_base}/include',
-         'scripts': '{base}/bin',
-@@ -64,8 +64,8 @@
+@@ -64,3 +64,3 @@
      'pypy_nt': {
 -        'stdlib': '{installed_base}/lib-{implementation_lower}',
 -        'platstdlib': '{base}/lib-{implementation_lower}',
 +        'stdlib': '{installed_base}/lib_{implementation_lower}',
 +        'platstdlib': '{base}/lib_{implementation_lower}',
-         'purelib': '{base}/Lib/site-packages',
-         'platlib': '{base}/Lib/site-packages',
-         'include': '{installed_base}/include',
-         'platinclude': '{installed_base}/include',
-         'scripts': '{base}/Scripts',
