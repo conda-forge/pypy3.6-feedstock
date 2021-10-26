@@ -2,7 +2,7 @@
 {% set name_suffix = "3.7" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
-{% set version = "7.3.6" %}
+{% set version = "7.3.7" %}
 
 package:
   name: {{ name }}
@@ -10,8 +10,8 @@ package:
 
 source:
   - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
-    sha256: 9252ccaa130094205b3c7f0a2cad5adc0d9dfba31658ff3172f788dec1fdb348  # [name_suffix == "3.7"]
-    sha256: f234c56eb0d4ab0afb196232fb38cd1ca8e19b1c65cf7b65eb691695499be259  # [name_suffix == "3.8"]
+    sha256: 2ed02ac9e710859c41bc82deafb08619792bb9a27eeaa1676c741ededd214dd7  # [name_suffix == "3.7"]
+    sha256: 21ae339f4f5016d6ca7300305f3e3b554373835cb3c39a9041fe30e6811c80c6  # [name_suffix == "3.8"]
     folder: pypy3
     patches:
       - patches/fficurses.patch
@@ -35,9 +35,8 @@ source:
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch  # [name_suffix == "3.8"]
-      # Patches to be removed for PyPy7.3.7
+      # Patches to be removed for PyPy7.3.8
       - patches/pre-7.3.7-001-Use-libffi-8.patch
-      - patches/pre-7.3.7-002-Fix-sysconfigdata.patch  # [name_suffix == "3.8"]
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
