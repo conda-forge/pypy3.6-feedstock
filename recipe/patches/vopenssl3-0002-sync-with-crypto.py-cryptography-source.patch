@@ -1,0 +1,123 @@
+From 0ff9f3adbf8ae92edcc60ca9d2aaf4b09e9cdda0 Mon Sep 17 00:00:00 2001
+From: "H. Vetinari" <h.vetinari@gmx.com>
+Date: Wed, 27 Oct 2021 11:02:54 +1100
+Subject: [PATCH vopenssl3 2/3] sync with crypto.py cryptography source
+
+see https://github.com/pyca/cryptography/blob/35.0.0/src/_cffi_src/openssl/crypto.py
+---
+ .../_cffi_ssl/_cffi_src/openssl/crypto.py     | 33 +------------------
+ 1 file changed, 1 insertion(+), 32 deletions(-)
+
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/crypto.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/crypto.py
+index d883544..eba055f 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/crypto.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/crypto.py
+@@ -2,17 +2,14 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/crypto.h>
+ """
+ 
+ TYPES = """
+-static const long Cryptography_HAS_LOCKING_CALLBACKS;
+ static const long Cryptography_HAS_MEM_FUNCTIONS;
+ static const long Cryptography_HAS_OPENSSL_CLEANUP;
+-
+ static const int SSLEAY_VERSION;
+ static const int SSLEAY_CFLAGS;
+ static const int SSLEAY_PLATFORM;
+@@ -23,39 +20,24 @@ static const int OPENSSL_CFLAGS;
+ static const int OPENSSL_BUILT_ON;
+ static const int OPENSSL_PLATFORM;
+ static const int OPENSSL_DIR;
+-static const int CRYPTO_MEM_CHECK_ON;
+-static const int CRYPTO_MEM_CHECK_OFF;
+-static const int CRYPTO_MEM_CHECK_ENABLE;
+-static const int CRYPTO_MEM_CHECK_DISABLE;
+ """
+ 
+ FUNCTIONS = """
+-int CRYPTO_mem_ctrl(int);
+-
+ void OPENSSL_cleanup(void);
+-
+-/* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. This function
+-   is now a noop macro. We can delete this once we drop 1.0.2 support. */
+-void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
+-
+ /* SSLeay was removed in 1.1.0 */
+ unsigned long SSLeay(void);
+ const char *SSLeay_version(int);
+ /* these functions were added to replace the SSLeay functions in 1.1.0 */
+ unsigned long OpenSSL_version_num(void);
+ const char *OpenSSL_version(int);
+-
+ /* this is a macro in 1.1.0 */
+ void *OPENSSL_malloc(size_t);
+ void OPENSSL_free(void *);
+-
+-
+ /* Signature changed significantly in 1.1.0, only expose there for sanity */
+ int Cryptography_CRYPTO_set_mem_functions(
+     void *(*)(size_t, const char *, int),
+     void *(*)(void *, size_t, const char *, int),
+     void (*)(void *, const char *, int));
+-
+ void *Cryptography_malloc_wrapper(size_t, const char *, int);
+ void *Cryptography_realloc_wrapper(void *, size_t, const char *, int);
+ void Cryptography_free_wrapper(void *, const char *, int);
+@@ -85,17 +67,9 @@ CUSTOMIZATIONS = """
+ # define OPENSSL_PLATFORM        SSLEAY_PLATFORM
+ # define OPENSSL_DIR             SSLEAY_DIR
+ #endif
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+-static const long Cryptography_HAS_LOCKING_CALLBACKS = 1;
+-#else
+-static const long Cryptography_HAS_LOCKING_CALLBACKS = 0;
+-#endif
+-
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
++#if CRYPTOGRAPHY_IS_LIBRESSL
+ static const long Cryptography_HAS_OPENSSL_CLEANUP = 0;
+-
+ void (*OPENSSL_cleanup)(void) = NULL;
+-
+ /* This function has a significantly different signature pre-1.1.0. since it is
+  * for testing only, we don't bother to expose it on older OpenSSLs.
+  */
+@@ -104,11 +78,9 @@ int (*Cryptography_CRYPTO_set_mem_functions)(
+     void *(*)(size_t, const char *, int),
+     void *(*)(void *, size_t, const char *, int),
+     void (*)(void *, const char *, int)) = NULL;
+-
+ #else
+ static const long Cryptography_HAS_OPENSSL_CLEANUP = 1;
+ static const long Cryptography_HAS_MEM_FUNCTIONS = 1;
+-
+ int Cryptography_CRYPTO_set_mem_functions(
+     void *(*m)(size_t, const char *, int),
+     void *(*r)(void *, size_t, const char *, int),
+@@ -117,16 +89,13 @@ int Cryptography_CRYPTO_set_mem_functions(
+     return CRYPTO_set_mem_functions(m, r, f);
+ }
+ #endif
+-
+ void *Cryptography_malloc_wrapper(size_t size, const char *path, int line) {
+     return malloc(size);
+ }
+-
+ void *Cryptography_realloc_wrapper(void *ptr, size_t size, const char *path,
+                                    int line) {
+     return realloc(ptr, size);
+ }
+-
+ void Cryptography_free_wrapper(void *ptr, const char *path, int line) {
+     free(ptr);
+ }
+-- 
+2.32.0.windows.2
+

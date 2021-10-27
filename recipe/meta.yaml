@@ -42,6 +42,10 @@ source:
       - patches/pre-7.3.7-003-sysconfigdata.patch
       - patches/pre-7.3.7-004-sysconfigdata-env.patch  # [name_suffix == "3.8"]
       - patches/pre-7.3.7-005-sysconfigdata-env.patch  # [name_suffix == "3.7"]
+      # WIP Patches for OpenSSL 3.0.0 support
+      - patches/vopenssl3-0001-sync-with-rsa.py-cryptography-source.patch     # [openssl == "3"]
+      - patches/vopenssl3-0002-sync-with-crypto.py-cryptography-source.patch  # [openssl == "3"]
+      - patches/vopenssl3-0003-sync-with-err.py-cryptography-source.patch     # [openssl == "3"]
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
