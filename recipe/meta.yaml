@@ -42,6 +42,10 @@ source:
       - patches/v3.7-openssl3-0001-wholesale-revendor-of-cryptography-src.patch  # [name_suffix == "3.7"]
       - patches/v3.8-openssl3-0001-wholesale-revendor-of-cryptography-src.patch  # [name_suffix == "3.8"]
       - patches/vopenssl3-0002-also-patch-_ssl_build.py.patch
+      - patches/vopenssl3-0003-import-3.8-make_ssl_data.py.patch
+      - patches/vopenssl3-0004-adapt-make_ssl_data-to-generate-errorcodes.patch
+      - patches/vopenssl3-0005-add-some-necessary-openssl-headers-for-gen.patch
+      - patches/vopenssl3-0006-regenerate-errorcodes.py.patch
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]

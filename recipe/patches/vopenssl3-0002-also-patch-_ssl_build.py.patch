@@ -1,7 +1,7 @@
 From b07042c95b76f9c4f67369d4d9ca9cda4546f647 Mon Sep 17 00:00:00 2001
 From: "H. Vetinari" <h.vetinari@gmx.com>
 Date: Wed, 27 Oct 2021 15:22:13 +1100
-Subject: [PATCH vopenssl3] also patch _ssl_build.py
+Subject: [PATCH vopenssl3 2/6] also patch _ssl_build.py
 
 ---
  lib_pypy/_ssl_build.py | 4 ++--
