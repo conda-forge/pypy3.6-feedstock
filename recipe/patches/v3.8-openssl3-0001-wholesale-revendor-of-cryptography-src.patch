@@ -1,0 +1,3623 @@
+From 8b290d3fae0796a6b8c99272696b029dda40a28f Mon Sep 17 00:00:00 2001
+From: "H. Vetinari" <h.vetinari@gmx.com>
+Date: Wed, 27 Oct 2021 14:22:53 +1100
+Subject: [PATCH v3.8-openssl3] wholesale revendor of
+ cryptography/src/_cffi_src@35.0.0
+
+see https://github.com/pyca/cryptography/tree/35.0.0/src/_cffi_src
+---
+ lib_pypy/_cffi_ssl/_cffi_src/build_openssl.py |  68 +--
+ .../_cffi_ssl/_cffi_src/openssl/__init__.py   |   2 -
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/aes.py   |   4 -
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/asn1.py  |  17 +-
+ .../_cffi_ssl/_cffi_src/openssl/bignum.py     |   1 -
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/bio.py   |  23 +-
+ .../_cffi_ssl/_cffi_src/openssl/callbacks.py  | 119 +-----
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/cmac.py  |   1 -
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/conf.py  |   1 -
+ .../_cffi_ssl/_cffi_src/openssl/crypto.py     |  19 +-
+ .../_cffi_src/openssl/cryptography.py         |  50 +--
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/ct.py    | 111 -----
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/dh.py    |  76 +---
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/dsa.py   |  67 ---
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/ec.py    |  27 +-
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/ecdh.py  |  10 -
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/ecdsa.py |  10 -
+ .../_cffi_ssl/_cffi_src/openssl/engine.py     |  16 +-
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/err.py   | 154 +------
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/evp.py   |  48 ++-
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/fips.py  |   3 +-
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/hmac.py  |  27 +-
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/nid.py   |  22 +-
+ .../_cffi_ssl/_cffi_src/openssl/objects.py    |  10 -
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/ocsp.py  | 123 ------
+ .../_cffi_ssl/_cffi_src/openssl/opensslv.py   |   1 -
+ .../_cffi_src/openssl/osrandom_engine.py      |   1 -
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/pem.py   |   5 -
+ .../_cffi_ssl/_cffi_src/openssl/pkcs12.py     |   1 -
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/pkcs7.py |  26 +-
+ .../_cffi_ssl/_cffi_src/openssl/provider.py   |  42 ++
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/rand.py  |  13 +-
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/rsa.py   | 130 +-----
+ .../_cffi_src/openssl/src/osrandom_engine.c   |  15 +-
+ .../_cffi_src/openssl/src/osrandom_engine.h   |   8 +-
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py   | 400 +++++-------------
+ lib_pypy/_cffi_ssl/_cffi_src/openssl/x509.py  | 124 +-----
+ .../_cffi_ssl/_cffi_src/openssl/x509_vfy.py   | 139 ++----
+ .../_cffi_ssl/_cffi_src/openssl/x509name.py   |  22 -
+ .../_cffi_ssl/_cffi_src/openssl/x509v3.py     |   8 -
+ lib_pypy/_cffi_ssl/_cffi_src/utils.py         |  35 +-
+ 41 files changed, 384 insertions(+), 1595 deletions(-)
+ delete mode 100644 lib_pypy/_cffi_ssl/_cffi_src/openssl/ct.py
+ create mode 100644 lib_pypy/_cffi_ssl/_cffi_src/openssl/provider.py
+
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/build_openssl.py b/lib_pypy/_cffi_ssl/_cffi_src/build_openssl.py
+index 456b869..04d6d46 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/build_openssl.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/build_openssl.py
+@@ -2,13 +2,17 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ import os
+ import sys
++from distutils import dist
++from distutils.ccompiler import get_default_compiler
++from distutils.command.config import config
+ 
+ from _cffi_src.utils import (
+-    build_ffi_for_binding, compiler_type, extra_link_args
++    build_ffi_for_binding,
++    compiler_type,
++    extra_link_args,
+ )
+ 
+ 
+@@ -17,23 +21,28 @@ def _get_openssl_libraries(platform):
+         return []
+     # OpenSSL goes by a different library name on different operating systems.
+     if platform == "win32" and compiler_type() == "msvc":
+-        windows_link_legacy_openssl = os.environ.get(
+-            "CRYPTOGRAPHY_WINDOWS_LINK_LEGACY_OPENSSL", None
+-        )
+-        if windows_link_legacy_openssl is None:
+-            # Link against the 1.1.0 names
+-            libs = ["libssl", "libcrypto"]
+-        else:
+-            # Link against the 1.0.2 and lower names
+-            libs = ["libeay32", "ssleay32"]
+-        return libs + ["advapi32", "crypt32", "gdi32", "user32", "ws2_32"]
++        return [
++            "libssl",
++            "libcrypto",
++            "advapi32",
++            "crypt32",
++            "gdi32",
++            "user32",
++            "ws2_32",
++        ]
+     else:
+         # darwin, linux, mingw all use this path
+         # In some circumstances, the order in which these libs are
+         # specified on the linker command-line is significant;
+         # libssl must come before libcrypto
+         # (https://marc.info/?l=openssl-users&m=135361825921871)
+-        return ["ssl", "crypto"]
++        # -lpthread required due to usage of pthread an potential
++        # existance of a static part containing e.g. pthread_atfork
++        # (https://github.com/pyca/cryptography/issues/5084)
++        if sys.platform == "zos":
++            return ["ssl", "crypto"]
++        else:
++            return ["ssl", "crypto", "pthread"]
+ 
+ 
+ def _extra_compile_args(platform):
+@@ -41,12 +50,24 @@ def _extra_compile_args(platform):
+     We set -Wconversion args here so that we only do Wconversion checks on the
+     code we're compiling and not on cffi itself (as passing -Wconversion in
+     CFLAGS would do). We set no error on sign conversion because some
+-    function signatures in OpenSSL have changed from long -> unsigned long
+-    in the past. Since that isn't a precision issue we don't care.
+-    When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 we can
+-    revisit this.
++    function signatures in LibreSSL differ from OpenSSL have changed on long
++    vs. unsigned long in the past. Since that isn't a precision issue we don't
++    care.
+     """
+-    if platform not in ["win32", "hp-ux11", "sunos5"]:
++    # make sure the compiler used supports the flags to be added
++    is_gcc = False
++    if get_default_compiler() == "unix":
++        d = dist.Distribution()
++        cmd = config(d)
++        cmd._check_compiler()
++        is_gcc = (
++            "gcc" in cmd.compiler.compiler[0]
++            or "clang" in cmd.compiler.compiler[0]
++        )
++    if is_gcc or not (
++        platform in ["win32", "hp-ux11", "sunos5"]
++        or platform.startswith("aix")
++    ):
+         return ["-Wconversion", "-Wno-error=sign-conversion"]
+     else:
+         return []
+@@ -58,7 +79,8 @@ ffi = build_ffi_for_binding(
+     modules=[
+         # This goes first so we can define some cryptography-wide symbols.
+         "cryptography",
+-
++        # Provider comes early as well so we define OSSL_LIB_CTX
++        "provider",
+         "aes",
+         "asn1",
+         "bignum",
+@@ -66,7 +88,6 @@ ffi = build_ffi_for_binding(
+         "cmac",
+         "conf",
+         "crypto",
+-        "ct",
+         "dh",
+         "dsa",
+         "ec",
+@@ -95,13 +116,6 @@ ffi = build_ffi_for_binding(
+         "callbacks",
+     ],
+     libraries=_get_openssl_libraries(sys.platform),
+-    # These args are passed here so that we only do Wconversion checks on the
+-    # code we're compiling and not on cffi itself (as passing -Wconversion in
+-    # CFLAGS would do). We set no error on sign convesrion because some
+-    # function signatures in OpenSSL have changed from long -> unsigned long
+-    # in the past. Since that isn't a precision issue we don't care.
+-    # When we drop support for CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 we can
+-    # revisit this.
+     extra_compile_args=_extra_compile_args(sys.platform),
+     extra_link_args=extra_link_args(compiler_type()),
+ )
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/__init__.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/__init__.py
+index 4b54088..b509336 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/__init__.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/__init__.py
+@@ -1,5 +1,3 @@
+ # This file is dual licensed under the terms of the Apache License, Version
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+-
+-from __future__ import absolute_import, division, print_function
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/aes.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/aes.py
+index 5c9dee6..55f19fd 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/aes.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/aes.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/aes.h>
+@@ -13,9 +12,6 @@ typedef ... AES_KEY;
+ """
+ 
+ FUNCTIONS = """
+-int AES_set_encrypt_key(const unsigned char *, const int, AES_KEY *);
+-int AES_set_decrypt_key(const unsigned char *, const int, AES_KEY *);
+-
+ int AES_wrap_key(AES_KEY *, const unsigned char *, unsigned char *,
+                  const unsigned char *, unsigned int);
+ int AES_unwrap_key(AES_KEY *, const unsigned char *, unsigned char *,
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/asn1.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/asn1.py
+index 0f9c292..0841a11 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/asn1.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/asn1.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/asn1.h>
+@@ -27,13 +26,12 @@ typedef struct asn1_string_st ASN1_TIME;
+ typedef ... ASN1_OBJECT;
+ typedef struct asn1_string_st ASN1_STRING;
+ typedef struct asn1_string_st ASN1_UTF8STRING;
+-typedef ... ASN1_TYPE;
++typedef struct {
++    int type;
++    ...;
++} ASN1_TYPE;
+ typedef ... ASN1_GENERALIZEDTIME;
+ typedef ... ASN1_ENUMERATED;
+-typedef ... ASN1_ITEM;
+-typedef ... ASN1_VALUE;
+-
+-typedef ... ASN1_ITEM_EXP;
+ typedef ... ASN1_NULL;
+ 
+ static const int V_ASN1_GENERALIZEDTIME;
+@@ -46,6 +44,7 @@ void ASN1_OBJECT_free(ASN1_OBJECT *);
+ 
+ /*  ASN1 STRING */
+ unsigned char *ASN1_STRING_data(ASN1_STRING *);
++const unsigned char *ASN1_STRING_get0_data(const ASN1_STRING *);
+ int ASN1_STRING_set(ASN1_STRING *, const void *, int);
+ 
+ /*  ASN1 OCTET STRING */
+@@ -63,7 +62,6 @@ int ASN1_INTEGER_set(ASN1_INTEGER *, long);
+ /*  ASN1 TIME */
+ ASN1_TIME *ASN1_TIME_new(void);
+ void ASN1_TIME_free(ASN1_TIME *);
+-ASN1_TIME *ASN1_TIME_set(ASN1_TIME *, time_t);
+ int ASN1_TIME_set_string(ASN1_TIME *, const char *);
+ 
+ /*  ASN1 GENERALIZEDTIME */
+@@ -75,8 +73,6 @@ ASN1_ENUMERATED *ASN1_ENUMERATED_new(void);
+ void ASN1_ENUMERATED_free(ASN1_ENUMERATED *);
+ int ASN1_ENUMERATED_set(ASN1_ENUMERATED *, long);
+ 
+-ASN1_VALUE *ASN1_item_d2i(ASN1_VALUE **, const unsigned char **, long,
+-                          const ASN1_ITEM *);
+ int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *, int, int);
+ /* These became const ASN1_* in 1.1.0 */
+ int ASN1_STRING_type(ASN1_STRING *);
+@@ -93,12 +89,9 @@ void ASN1_UTF8STRING_free(ASN1_UTF8STRING *);
+ 
+ ASN1_BIT_STRING *ASN1_BIT_STRING_new(void);
+ void ASN1_BIT_STRING_free(ASN1_BIT_STRING *);
+-const ASN1_ITEM *ASN1_ITEM_ptr(ASN1_ITEM_EXP *);
+-
+ /* This is not a macro, but is const on some versions of OpenSSL */
+ int ASN1_BIT_STRING_get_bit(ASN1_BIT_STRING *, int);
+ 
+-int ASN1_TIME_print(BIO *, ASN1_TIME *);
+ int ASN1_STRING_length(ASN1_STRING *);
+ int ASN1_STRING_set_default_mask_asc(char *);
+ 
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/bignum.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/bignum.py
+index 7510183..fdfd835 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/bignum.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/bignum.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/bn.h>
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/bio.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/bio.py
+index 94da55d..248a01e 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/bio.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/bio.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/bio.h>
+@@ -11,6 +10,7 @@ INCLUDES = """
+ TYPES = """
+ typedef ... BIO;
+ typedef ... BIO_METHOD;
++typedef ... BIO_ADDR;
+ """
+ 
+ FUNCTIONS = """
+@@ -27,27 +27,34 @@ int BIO_up_ref(BIO *);
+ 
+ BIO *BIO_new(BIO_METHOD *);
+ BIO_METHOD *BIO_s_mem(void);
+-BIO_METHOD *BIO_s_file(void);
+ BIO_METHOD *BIO_s_datagram(void);
+ BIO *BIO_new_mem_buf(const void *, int);
+ long BIO_set_mem_eof_return(BIO *, int);
+ long BIO_get_mem_data(BIO *, char **);
+-long BIO_read_filename(BIO *, char *);
+ int BIO_should_read(BIO *);
+ int BIO_should_write(BIO *);
+ int BIO_should_io_special(BIO *);
+ int BIO_should_retry(BIO *);
+ int BIO_reset(BIO *);
+-long BIO_set_nbio(BIO *, long);
+ void BIO_set_retry_read(BIO *);
+ void BIO_clear_retry_flags(BIO *);
++
++BIO_ADDR *BIO_ADDR_new(void);
++void BIO_ADDR_free(BIO_ADDR *);
+ """
+ 
+ CUSTOMIZATIONS = """
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+-int BIO_up_ref(BIO *b) {
+-    CRYPTO_add(&b->references, 1, CRYPTO_LOCK_BIO);
+-    return 1;
++#if CRYPTOGRAPHY_IS_LIBRESSL
++#include <sys/socket.h>
++#include <stdlib.h>
++typedef struct sockaddr BIO_ADDR;
++
++BIO_ADDR *BIO_ADDR_new(void) {
++    return malloc(sizeof(struct sockaddr_storage));
++}
++
++void BIO_ADDR_free(BIO_ADDR *ptr) {
++    free(ptr);
+ }
+ #endif
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/callbacks.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/callbacks.py
+index 75c6201..79d4f24 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/callbacks.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/callbacks.py
+@@ -2,24 +2,9 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+-#include <openssl/ssl.h>
+-#include <openssl/x509.h>
+-#include <openssl/x509_vfy.h>
+-#include <openssl/crypto.h>
+-
+-#ifdef _WIN32
+-#define WIN32_LEAN_AND_MEAN
+-#include <Windows.h>
+-#include <Wincrypt.h>
+-#include <Winsock2.h>
+-#else
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <pthread.h>
+-#endif
++#include <string.h>
+ """
+ 
+ TYPES = """
+@@ -33,112 +18,10 @@ typedef struct {
+ """
+ 
+ FUNCTIONS = """
+-int Cryptography_setup_ssl_threads(void);
+ int Cryptography_pem_password_cb(char *, int, int, void *);
+ """
+ 
+ CUSTOMIZATIONS = """
+-/* This code is derived from the locking code found in the Python _ssl module's
+-   locking callback for OpenSSL.
+-
+-   Copyright 2001-2016 Python Software Foundation; All Rights Reserved.
+-
+-   It has been subsequently modified to use cross platform locking without
+-   using CPython APIs by Armin Rigo of the PyPy project.
+-*/
+-
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+-#ifdef _WIN32
+-typedef CRITICAL_SECTION Cryptography_mutex;
+-static __inline void cryptography_mutex_init(Cryptography_mutex *mutex) {
+-    InitializeCriticalSection(mutex);
+-}
+-static __inline void cryptography_mutex_lock(Cryptography_mutex *mutex) {
+-    EnterCriticalSection(mutex);
+-}
+-static __inline void cryptography_mutex_unlock(Cryptography_mutex *mutex) {
+-    LeaveCriticalSection(mutex);
+-}
+-#else
+-typedef pthread_mutex_t Cryptography_mutex;
+-#define ASSERT_STATUS(call)                                             \
+-    if ((call) != 0) {                                                  \
+-        perror("Fatal error in callback initialization: " #call);       \
+-        abort();                                                        \
+-    }
+-static inline void cryptography_mutex_init(Cryptography_mutex *mutex) {
+-#if !defined(pthread_mutexattr_default)
+-#  define pthread_mutexattr_default ((pthread_mutexattr_t *)NULL)
+-#endif
+-    ASSERT_STATUS(pthread_mutex_init(mutex, pthread_mutexattr_default));
+-}
+-static inline void cryptography_mutex_lock(Cryptography_mutex *mutex) {
+-    ASSERT_STATUS(pthread_mutex_lock(mutex));
+-}
+-static inline void cryptography_mutex_unlock(Cryptography_mutex *mutex) {
+-    ASSERT_STATUS(pthread_mutex_unlock(mutex));
+-}
+-#endif
+-
+-
+-static unsigned int _ssl_locks_count = 0;
+-static Cryptography_mutex *_ssl_locks = NULL;
+-
+-static void _ssl_thread_locking_function(int mode, int n, const char *file,
+-                                         int line) {
+-    /* this function is needed to perform locking on shared data
+-       structures. (Note that OpenSSL uses a number of global data
+-       structures that will be implicitly shared whenever multiple
+-       threads use OpenSSL.) Multi-threaded applications will
+-       crash at random if it is not set.
+-
+-       locking_function() must be able to handle up to
+-       CRYPTO_num_locks() different mutex locks. It sets the n-th
+-       lock if mode & CRYPTO_LOCK, and releases it otherwise.
+-
+-       file and line are the file number of the function setting the
+-       lock. They can be useful for debugging.
+-    */
+-
+-    if ((_ssl_locks == NULL) ||
+-        (n < 0) || ((unsigned)n >= _ssl_locks_count)) {
+-        return;
+-    }
+-
+-    if (mode & CRYPTO_LOCK) {
+-        cryptography_mutex_lock(_ssl_locks + n);
+-    } else {
+-        cryptography_mutex_unlock(_ssl_locks + n);
+-    }
+-}
+-
+-static void init_mutexes(void) {
+-    int i;
+-    for (i = 0; i < _ssl_locks_count; i++) {
+-        cryptography_mutex_init(_ssl_locks + i);
+-    }
+-}
+-
+-
+-int Cryptography_setup_ssl_threads(void) {
+-    if (_ssl_locks == NULL) {
+-        _ssl_locks_count = CRYPTO_num_locks();
+-        _ssl_locks = calloc(_ssl_locks_count, sizeof(Cryptography_mutex));
+-        if (_ssl_locks == NULL) {
+-            return 0;
+-        }
+-        init_mutexes();
+-        CRYPTO_set_locking_callback(_ssl_thread_locking_function);
+-#ifndef _WIN32
+-        pthread_atfork(NULL, NULL, &init_mutexes);
+-#endif
+-    }
+-    return 1;
+-}
+-#else
+-int (*Cryptography_setup_ssl_threads)(void) = NULL;
+-#endif
+-
+ typedef struct {
+     char *password;
+     int length;
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/cmac.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/cmac.py
+index 557abd1..a254263 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/cmac.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/cmac.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #if !defined(OPENSSL_NO_CMAC)
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/conf.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/conf.py
+index 9db0162..883c474 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/conf.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/conf.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/conf.h>
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/crypto.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/crypto.py
+index d883544..340cc8b 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/crypto.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/crypto.py
+@@ -2,14 +2,12 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/crypto.h>
+ """
+ 
+ TYPES = """
+-static const long Cryptography_HAS_LOCKING_CALLBACKS;
+ static const long Cryptography_HAS_MEM_FUNCTIONS;
+ static const long Cryptography_HAS_OPENSSL_CLEANUP;
+ 
+@@ -23,21 +21,11 @@ static const int OPENSSL_CFLAGS;
+ static const int OPENSSL_BUILT_ON;
+ static const int OPENSSL_PLATFORM;
+ static const int OPENSSL_DIR;
+-static const int CRYPTO_MEM_CHECK_ON;
+-static const int CRYPTO_MEM_CHECK_OFF;
+-static const int CRYPTO_MEM_CHECK_ENABLE;
+-static const int CRYPTO_MEM_CHECK_DISABLE;
+ """
+ 
+ FUNCTIONS = """
+-int CRYPTO_mem_ctrl(int);
+-
+ void OPENSSL_cleanup(void);
+ 
+-/* as of 1.1.0 OpenSSL does its own locking *angelic chorus*. This function
+-   is now a noop macro. We can delete this once we drop 1.0.2 support. */
+-void (*CRYPTO_get_locking_callback(void))(int, int, const char *, int);
+-
+ /* SSLeay was removed in 1.1.0 */
+ unsigned long SSLeay(void);
+ const char *SSLeay_version(int);
+@@ -85,13 +73,8 @@ CUSTOMIZATIONS = """
+ # define OPENSSL_PLATFORM        SSLEAY_PLATFORM
+ # define OPENSSL_DIR             SSLEAY_DIR
+ #endif
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+-static const long Cryptography_HAS_LOCKING_CALLBACKS = 1;
+-#else
+-static const long Cryptography_HAS_LOCKING_CALLBACKS = 0;
+-#endif
+ 
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
++#if CRYPTOGRAPHY_IS_LIBRESSL
+ static const long Cryptography_HAS_OPENSSL_CLEANUP = 0;
+ 
+ void (*OPENSSL_cleanup)(void) = NULL;
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/cryptography.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/cryptography.py
+index ac32fdf..310b78b 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/cryptography.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/cryptography.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ /* define our OpenSSL API compatibility level to 1.0.1. Any symbols older than
+@@ -34,54 +33,49 @@ INCLUDES = """
+ #endif
+ 
+ #if CRYPTOGRAPHY_IS_LIBRESSL
+-#define CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER \
+-    (LIBRESSL_VERSION_NUMBER >= 0x2070000f)
+-#define CRYPTOGRAPHY_LIBRESSL_28_OR_GREATER \
+-    (LIBRESSL_VERSION_NUMBER >= 0x2080000f)
+-#define CRYPTOGRAPHY_LIBRESSL_291_OR_GREATER \
+-    (LIBRESSL_VERSION_NUMBER >= 0x2090100f)
++#define CRYPTOGRAPHY_LIBRESSL_LESS_THAN_332 \
++    (LIBRESSL_VERSION_NUMBER < 0x3030200f)
+ #else
+-#define CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER (0)
+-#define CRYPTOGRAPHY_LIBRESSL_28_OR_GREATER (0)
+-#define CRYPTOGRAPHY_LIBRESSL_291_OR_GREATER (0)
++#define CRYPTOGRAPHY_LIBRESSL_LESS_THAN_332 (0)
++#endif
++
++#if OPENSSL_VERSION_NUMBER < 0x10100000
++    #error "pyca/cryptography MUST be linked with Openssl 1.1.0 or later"
+ #endif
+ 
+-#define CRYPTOGRAPHY_OPENSSL_102_OR_GREATER \
+-    (OPENSSL_VERSION_NUMBER >= 0x10002000 && !CRYPTOGRAPHY_IS_LIBRESSL)
+-#define CRYPTOGRAPHY_OPENSSL_102L_OR_GREATER \
+-    (OPENSSL_VERSION_NUMBER >= 0x100020cf && !CRYPTOGRAPHY_IS_LIBRESSL)
+-#define CRYPTOGRAPHY_OPENSSL_110_OR_GREATER \
+-    (OPENSSL_VERSION_NUMBER >= 0x10100000 && !CRYPTOGRAPHY_IS_LIBRESSL)
+ #define CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER \
+     (OPENSSL_VERSION_NUMBER >= 0x1010006f && !CRYPTOGRAPHY_IS_LIBRESSL)
++#define CRYPTOGRAPHY_OPENSSL_111D_OR_GREATER \
++    (OPENSSL_VERSION_NUMBER >= 0x10101040 && !CRYPTOGRAPHY_IS_LIBRESSL)
++#define CRYPTOGRAPHY_OPENSSL_300_OR_GREATER \
++    (OPENSSL_VERSION_NUMBER >= 0x30000000 && !CRYPTOGRAPHY_IS_LIBRESSL)
+ 
+-#define CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 \
+-    (OPENSSL_VERSION_NUMBER < 0x10002000 || CRYPTOGRAPHY_IS_LIBRESSL)
+-#define CRYPTOGRAPHY_OPENSSL_LESS_THAN_102I \
+-    (OPENSSL_VERSION_NUMBER < 0x1000209f || CRYPTOGRAPHY_IS_LIBRESSL)
+-#define CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 \
+-    (OPENSSL_VERSION_NUMBER < 0x10100000 || CRYPTOGRAPHY_IS_LIBRESSL)
+ #define CRYPTOGRAPHY_OPENSSL_LESS_THAN_110J \
+     (OPENSSL_VERSION_NUMBER < 0x101000af || CRYPTOGRAPHY_IS_LIBRESSL)
+ #define CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 \
+     (OPENSSL_VERSION_NUMBER < 0x10101000 || CRYPTOGRAPHY_IS_LIBRESSL)
+ #define CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B \
+     (OPENSSL_VERSION_NUMBER < 0x10101020 || CRYPTOGRAPHY_IS_LIBRESSL)
++#define CRYPTOGRAPHY_OPENSSL_LESS_THAN_111D \
++    (OPENSSL_VERSION_NUMBER < 0x10101040 || CRYPTOGRAPHY_IS_LIBRESSL)
++#if (CRYPTOGRAPHY_OPENSSL_LESS_THAN_111D && !CRYPTOGRAPHY_IS_LIBRESSL && \
++    !defined(OPENSSL_NO_ENGINE)) || defined(USE_OSRANDOM_RNG_FOR_TESTING)
++#define CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE 1
++#else
++#define CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE 0
++#endif
+ """
+ 
+ TYPES = """
+-static const int CRYPTOGRAPHY_OPENSSL_102L_OR_GREATER;
+-static const int CRYPTOGRAPHY_OPENSSL_110_OR_GREATER;
+ static const int CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER;
++static const int CRYPTOGRAPHY_OPENSSL_111D_OR_GREATER;
++static const int CRYPTOGRAPHY_OPENSSL_300_OR_GREATER;
+ 
+-static const int CRYPTOGRAPHY_OPENSSL_LESS_THAN_102I;
+-static const int CRYPTOGRAPHY_OPENSSL_LESS_THAN_102;
+ static const int CRYPTOGRAPHY_OPENSSL_LESS_THAN_111;
+ static const int CRYPTOGRAPHY_OPENSSL_LESS_THAN_111B;
++static const int CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE;
+ 
+ static const int CRYPTOGRAPHY_IS_LIBRESSL;
+-
+-static const int CRYPTOGRAPHY_LIBRESSL_28_OR_GREATER;
+ """
+ 
+ FUNCTIONS = """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ct.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ct.py
+deleted file mode 100644
+index 71125dd..0000000
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ct.py
++++ /dev/null
+@@ -1,111 +0,0 @@
+-# This file is dual licensed under the terms of the Apache License, Version
+-# 2.0, and the BSD License. See the LICENSE file in the root of this repository
+-# for complete details.
+-
+-from __future__ import absolute_import, division, print_function
+-
+-INCLUDES = """
+-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+-#include <openssl/ct.h>
+-
+-typedef STACK_OF(SCT) Cryptography_STACK_OF_SCT;
+-#endif
+-"""
+-
+-TYPES = """
+-static const long Cryptography_HAS_SCT;
+-
+-typedef enum {
+-    SCT_VERSION_NOT_SET,
+-    SCT_VERSION_V1
+-} sct_version_t;
+-
+-typedef enum {
+-    CT_LOG_ENTRY_TYPE_NOT_SET,
+-    CT_LOG_ENTRY_TYPE_X509,
+-    CT_LOG_ENTRY_TYPE_PRECERT
+-} ct_log_entry_type_t;
+-
+-typedef enum {
+-    SCT_SOURCE_UNKNOWN,
+-    SCT_SOURCE_TLS_EXTENSION,
+-    SCT_SOURCE_X509V3_EXTENSION,
+-    SCT_SOURCE_OCSP_STAPLED_RESPONSE
+-} sct_source_t;
+-
+-typedef ... SCT;
+-typedef ... Cryptography_STACK_OF_SCT;
+-"""
+-
+-FUNCTIONS = """
+-sct_version_t SCT_get_version(const SCT *);
+-
+-ct_log_entry_type_t SCT_get_log_entry_type(const SCT *);
+-
+-size_t SCT_get0_log_id(const SCT *, unsigned char **);
+-
+-size_t SCT_get0_signature(const SCT *, unsigned char **);
+-
+-uint64_t SCT_get_timestamp(const SCT *);
+-
+-int SCT_set_source(SCT *, sct_source_t);
+-
+-int sk_SCT_num(const Cryptography_STACK_OF_SCT *);
+-SCT *sk_SCT_value(const Cryptography_STACK_OF_SCT *, int);
+-
+-void SCT_LIST_free(Cryptography_STACK_OF_SCT *);
+-
+-int sk_SCT_push(Cryptography_STACK_OF_SCT *, SCT *);
+-Cryptography_STACK_OF_SCT *sk_SCT_new_null(void);
+-SCT *SCT_new(void);
+-int SCT_set1_log_id(SCT *, unsigned char *, size_t);
+-void SCT_set_timestamp(SCT *, uint64_t);
+-int SCT_set_version(SCT *, sct_version_t);
+-int SCT_set_log_entry_type(SCT *, ct_log_entry_type_t);
+-"""
+-
+-CUSTOMIZATIONS = """
+-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+-static const long Cryptography_HAS_SCT = 1;
+-#else
+-static const long Cryptography_HAS_SCT = 0;
+-
+-typedef enum {
+-    SCT_VERSION_NOT_SET,
+-    SCT_VERSION_V1
+-} sct_version_t;
+-typedef enum {
+-    CT_LOG_ENTRY_TYPE_NOT_SET,
+-    CT_LOG_ENTRY_TYPE_X509,
+-    CT_LOG_ENTRY_TYPE_PRECERT
+-} ct_log_entry_type_t;
+-typedef enum {
+-    SCT_SOURCE_UNKNOWN,
+-    SCT_SOURCE_TLS_EXTENSION,
+-    SCT_SOURCE_X509V3_EXTENSION,
+-    SCT_SOURCE_OCSP_STAPLED_RESPONSE
+-} sct_source_t;
+-typedef void SCT;
+-typedef void Cryptography_STACK_OF_SCT;
+-
+-sct_version_t (*SCT_get_version)(const SCT *) = NULL;
+-ct_log_entry_type_t (*SCT_get_log_entry_type)(const SCT *) = NULL;
+-size_t (*SCT_get0_log_id)(const SCT *, unsigned char **) = NULL;
+-size_t (*SCT_get0_signature)(const SCT *, unsigned char **) = NULL;
+-uint64_t (*SCT_get_timestamp)(const SCT *) = NULL;
+-
+-int (*SCT_set_source)(SCT *, sct_source_t) = NULL;
+-
+-int (*sk_SCT_num)(const Cryptography_STACK_OF_SCT *) = NULL;
+-SCT *(*sk_SCT_value)(const Cryptography_STACK_OF_SCT *, int) = NULL;
+-
+-void (*SCT_LIST_free)(Cryptography_STACK_OF_SCT *) = NULL;
+-int (*sk_SCT_push)(Cryptography_STACK_OF_SCT *, SCT *) = NULL;
+-Cryptography_STACK_OF_SCT *(*sk_SCT_new_null)(void) = NULL;
+-SCT *(*SCT_new)(void) = NULL;
+-int (*SCT_set1_log_id)(SCT *, unsigned char *, size_t) = NULL;
+-void (*SCT_set_timestamp)(SCT *, uint64_t) = NULL;
+-int (*SCT_set_version)(SCT *, sct_version_t) = NULL;
+-int (*SCT_set_log_entry_type)(SCT *, ct_log_entry_type_t) = NULL;
+-#endif
+-"""
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/dh.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/dh.py
+index 6fdc7dd..50989e4 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/dh.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/dh.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/dh.h>
+@@ -19,7 +18,6 @@ DH *DH_new(void);
+ void DH_free(DH *);
+ int DH_size(const DH *);
+ int DH_generate_key(DH *);
+-int DH_compute_key(unsigned char *, const BIGNUM *, DH *);
+ DH *DHparams_dup(DH *);
+ 
+ /* added in 1.1.0 when the DH struct was opaqued */
+@@ -38,79 +36,7 @@ int Cryptography_i2d_DHxparams_bio(BIO *bp, DH *x);
+ """
+ 
+ CUSTOMIZATIONS = """
+-/* These functions were added in OpenSSL 1.1.0 */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+-void DH_get0_pqg(const DH *dh,
+-                 const BIGNUM **p, const BIGNUM **q, const BIGNUM **g)
+-{
+-    if (p != NULL)
+-        *p = dh->p;
+-    if (q != NULL)
+-        *q = dh->q;
+-    if (g != NULL)
+-        *g = dh->g;
+-}
+-
+-int DH_set0_pqg(DH *dh, BIGNUM *p, BIGNUM *q, BIGNUM *g)
+-{
+-    /* If the fields p and g in d are NULL, the corresponding input
+-     * parameters MUST be non-NULL.  q may remain NULL.
+-     */
+-    if ((dh->p == NULL && p == NULL)
+-        || (dh->g == NULL && g == NULL))
+-        return 0;
+-
+-    if (p != NULL) {
+-        BN_free(dh->p);
+-        dh->p = p;
+-    }
+-    if (q != NULL) {
+-        BN_free(dh->q);
+-        dh->q = q;
+-    }
+-    if (g != NULL) {
+-        BN_free(dh->g);
+-        dh->g = g;
+-    }
+-
+-    if (q != NULL) {
+-        dh->length = BN_num_bits(q);
+-    }
+-
+-    return 1;
+-}
+-
+-void DH_get0_key(const DH *dh, const BIGNUM **pub_key, const BIGNUM **priv_key)
+-{
+-    if (pub_key != NULL)
+-        *pub_key = dh->pub_key;
+-    if (priv_key != NULL)
+-        *priv_key = dh->priv_key;
+-}
+-
+-int DH_set0_key(DH *dh, BIGNUM *pub_key, BIGNUM *priv_key)
+-{
+-    /* If the field pub_key in dh is NULL, the corresponding input
+-     * parameters MUST be non-NULL.  The priv_key field may
+-     * be left NULL.
+-     */
+-    if (dh->pub_key == NULL && pub_key == NULL)
+-        return 0;
+-
+-    if (pub_key != NULL) {
+-        BN_free(dh->pub_key);
+-        dh->pub_key = pub_key;
+-    }
+-    if (priv_key != NULL) {
+-        BN_free(dh->priv_key);
+-        dh->priv_key = priv_key;
+-    }
+-
+-    return 1;
+-}
+-#endif
+-
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
++#if CRYPTOGRAPHY_IS_LIBRESSL
+ #ifndef DH_CHECK_Q_NOT_PRIME
+ #define DH_CHECK_Q_NOT_PRIME            0x10
+ #endif
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/dsa.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/dsa.py
+index a4a87c3..7f3f452 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/dsa.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/dsa.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/dsa.h>
+@@ -34,70 +33,4 @@ int DSA_generate_parameters_ex(DSA *, int, unsigned char *, int,
+ """
+ 
+ CUSTOMIZATIONS = """
+-/* These functions were added in OpenSSL 1.1.0 */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+-void DSA_get0_pqg(const DSA *d,
+-                  const BIGNUM **p, const BIGNUM **q, const BIGNUM **g)
+-{
+-    if (p != NULL)
+-        *p = d->p;
+-    if (q != NULL)
+-        *q = d->q;
+-    if (g != NULL)
+-        *g = d->g;
+-}
+-int DSA_set0_pqg(DSA *d, BIGNUM *p, BIGNUM *q, BIGNUM *g)
+-{
+-    /* If the fields p, q and g in d are NULL, the corresponding input
+-     * parameters MUST be non-NULL.
+-     */
+-    if ((d->p == NULL && p == NULL)
+-        || (d->q == NULL && q == NULL)
+-        || (d->g == NULL && g == NULL))
+-        return 0;
+-
+-    if (p != NULL) {
+-        BN_free(d->p);
+-        d->p = p;
+-    }
+-    if (q != NULL) {
+-        BN_free(d->q);
+-        d->q = q;
+-    }
+-    if (g != NULL) {
+-        BN_free(d->g);
+-        d->g = g;
+-    }
+-
+-    return 1;
+-}
+-void DSA_get0_key(const DSA *d,
+-                  const BIGNUM **pub_key, const BIGNUM **priv_key)
+-{
+-    if (pub_key != NULL)
+-        *pub_key = d->pub_key;
+-    if (priv_key != NULL)
+-        *priv_key = d->priv_key;
+-}
+-int DSA_set0_key(DSA *d, BIGNUM *pub_key, BIGNUM *priv_key)
+-{
+-    /* If the field pub_key in d is NULL, the corresponding input
+-     * parameters MUST be non-NULL.  The priv_key field may
+-     * be left NULL.
+-     */
+-    if (d->pub_key == NULL && pub_key == NULL)
+-        return 0;
+-
+-    if (pub_key != NULL) {
+-        BN_free(d->pub_key);
+-        d->pub_key = pub_key;
+-    }
+-    if (priv_key != NULL) {
+-        BN_free(d->priv_key);
+-        d->priv_key = priv_key;
+-    }
+-
+-    return 1;
+-}
+-#endif
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ec.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ec.py
+index 258afa2..d9c3074 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ec.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ec.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/ec.h>
+@@ -11,7 +10,6 @@ INCLUDES = """
+ 
+ TYPES = """
+ static const int Cryptography_HAS_EC2M;
+-static const int Cryptography_HAS_EC_1_0_2;
+ 
+ static const int OPENSSL_EC_NAMED_CURVE;
+ 
+@@ -35,8 +33,6 @@ void EC_GROUP_free(EC_GROUP *);
+ 
+ EC_GROUP *EC_GROUP_new_by_curve_name(int);
+ 
+-int EC_GROUP_get_degree(const EC_GROUP *);
+-
+ const EC_METHOD *EC_GROUP_method_of(const EC_GROUP *);
+ const EC_POINT *EC_GROUP_get0_generator(const EC_GROUP *);
+ int EC_GROUP_get_curve_name(const EC_GROUP *);
+@@ -69,18 +65,9 @@ int EC_POINT_set_affine_coordinates_GFp(const EC_GROUP *, EC_POINT *,
+ int EC_POINT_get_affine_coordinates_GFp(const EC_GROUP *,
+     const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *);
+ 
+-int EC_POINT_set_compressed_coordinates_GFp(const EC_GROUP *, EC_POINT *,
+-    const BIGNUM *, int, BN_CTX *);
+-
+-int EC_POINT_set_affine_coordinates_GF2m(const EC_GROUP *, EC_POINT *,
+-    const BIGNUM *, const BIGNUM *, BN_CTX *);
+-
+ int EC_POINT_get_affine_coordinates_GF2m(const EC_GROUP *,
+     const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *);
+ 
+-int EC_POINT_set_compressed_coordinates_GF2m(const EC_GROUP *, EC_POINT *,
+-    const BIGNUM *, int, BN_CTX *);
+-
+ size_t EC_POINT_point2oct(const EC_GROUP *, const EC_POINT *,
+     point_conversion_form_t,
+     unsigned char *, size_t, BN_CTX *);
+@@ -105,28 +92,18 @@ int EC_POINT_mul(const EC_GROUP *, EC_POINT *, const BIGNUM *,
+ int EC_METHOD_get_field_type(const EC_METHOD *);
+ 
+ const char *EC_curve_nid2nist(int);
++
++int EC_GROUP_get_asn1_flag(const EC_GROUP *);
+ """
+ 
+ CUSTOMIZATIONS = """
+ #if defined(OPENSSL_NO_EC2M)
+ static const long Cryptography_HAS_EC2M = 0;
+ 
+-int (*EC_POINT_set_affine_coordinates_GF2m)(const EC_GROUP *, EC_POINT *,
+-    const BIGNUM *, const BIGNUM *, BN_CTX *) = NULL;
+-
+ int (*EC_POINT_get_affine_coordinates_GF2m)(const EC_GROUP *,
+     const EC_POINT *, BIGNUM *, BIGNUM *, BN_CTX *) = NULL;
+ 
+-int (*EC_POINT_set_compressed_coordinates_GF2m)(const EC_GROUP *, EC_POINT *,
+-    const BIGNUM *, int, BN_CTX *) = NULL;
+ #else
+ static const long Cryptography_HAS_EC2M = 1;
+ #endif
+-
+-#if (!CRYPTOGRAPHY_IS_LIBRESSL && CRYPTOGRAPHY_OPENSSL_LESS_THAN_102)
+-static const long Cryptography_HAS_EC_1_0_2 = 0;
+-const char *(*EC_curve_nid2nist)(int) = NULL;
+-#else
+-static const long Cryptography_HAS_EC_1_0_2 = 1;
+-#endif
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ecdh.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ecdh.py
+index 5db1257..d42c988 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ecdh.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ecdh.py
+@@ -2,27 +2,17 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/ecdh.h>
+ """
+ 
+ TYPES = """
+-static const int Cryptography_HAS_SET_ECDH_AUTO;
+ """
+ 
+ FUNCTIONS = """
+-int ECDH_compute_key(void *, size_t, const EC_POINT *, EC_KEY *,
+-                     void *(*)(const void *, size_t, void *, size_t *));
+ long SSL_CTX_set_ecdh_auto(SSL_CTX *, int);
+ """
+ 
+ CUSTOMIZATIONS = """
+-#ifndef SSL_CTX_set_ecdh_auto
+-static const long Cryptography_HAS_SET_ECDH_AUTO = 0;
+-long (*SSL_CTX_set_ecdh_auto)(SSL_CTX *, int) = NULL;
+-#else
+-static const long Cryptography_HAS_SET_ECDH_AUTO = 1;
+-#endif
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ecdsa.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ecdsa.py
+index 44a778a..99a9351 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ecdsa.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ecdsa.py
+@@ -2,15 +2,12 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/ecdsa.h>
+ """
+ 
+ TYPES = """
+-static const int Cryptography_HAS_ECDSA;
+-
+ typedef ... ECDSA_SIG;
+ 
+ typedef ... CRYPTO_EX_new;
+@@ -19,12 +16,6 @@ typedef ... CRYPTO_EX_free;
+ """
+ 
+ FUNCTIONS = """
+-ECDSA_SIG *ECDSA_SIG_new();
+-void ECDSA_SIG_free(ECDSA_SIG *);
+-int i2d_ECDSA_SIG(const ECDSA_SIG *, unsigned char **);
+-ECDSA_SIG *d2i_ECDSA_SIG(ECDSA_SIG **s, const unsigned char **, long);
+-ECDSA_SIG *ECDSA_do_sign(const unsigned char *, int, EC_KEY *);
+-int ECDSA_do_verify(const unsigned char *, int, const ECDSA_SIG *, EC_KEY *);
+ int ECDSA_sign(int, const unsigned char *, int, unsigned char *,
+                unsigned int *, EC_KEY *);
+ int ECDSA_verify(int, const unsigned char *, int, const unsigned char *, int,
+@@ -34,5 +25,4 @@ int ECDSA_size(const EC_KEY *);
+ """
+ 
+ CUSTOMIZATIONS = """
+-static const long Cryptography_HAS_ECDSA = 1;
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/engine.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/engine.py
+index fa503a2..9b3ccf1 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/engine.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/engine.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/engine.h>
+@@ -10,6 +9,7 @@ INCLUDES = """
+ 
+ TYPES = """
+ typedef ... ENGINE;
++typedef ... UI_METHOD;
+ 
+ static const long Cryptography_HAS_ENGINE;
+ """
+@@ -25,6 +25,12 @@ int ENGINE_ctrl_cmd(ENGINE *, const char *, long, void *, void (*)(void), int);
+ int ENGINE_free(ENGINE *);
+ const char *ENGINE_get_name(const ENGINE *);
+ 
++// These bindings are unused by cryptography or pyOpenSSL but are present
++// for advanced users who need them.
++int ENGINE_ctrl_cmd_string(ENGINE *, const char *, const char *, int);
++void ENGINE_load_builtin_engines(void);
++EVP_PKEY *ENGINE_load_private_key(ENGINE *, const char *, UI_METHOD *, void *);
++EVP_PKEY *ENGINE_load_public_key(ENGINE *, const char *, UI_METHOD *, void *);
+ """
+ 
+ CUSTOMIZATIONS = """
+@@ -44,6 +50,14 @@ int (*ENGINE_free)(ENGINE *) = NULL;
+ const char *(*ENGINE_get_id)(const ENGINE *) = NULL;
+ const char *(*ENGINE_get_name)(const ENGINE *) = NULL;
+ 
++int (*ENGINE_ctrl_cmd_string)(ENGINE *, const char *, const char *,
++                              int) = NULL;
++void (*ENGINE_load_builtin_engines)(void) = NULL;
++EVP_PKEY *(*ENGINE_load_private_key)(ENGINE *, const char *, UI_METHOD *,
++                                     void *) = NULL;
++EVP_PKEY *(*ENGINE_load_public_key)(ENGINE *, const char *,
++                                    UI_METHOD *, void *) = NULL;
++
+ #else
+ static const long Cryptography_HAS_ENGINE = 1;
+ #endif
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/err.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/err.py
+index d4033f5..b81247a 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/err.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/err.py
+@@ -2,148 +2,32 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/err.h>
+ """
+ 
+ TYPES = """
+-static const int Cryptography_HAS_EC_CODES;
+-static const int Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR;
+-static const int Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED;
+-
+-static const int ERR_LIB_DH;
+-static const int ERR_LIB_EVP;
+-static const int ERR_LIB_EC;
+-static const int ERR_LIB_PEM;
+-static const int ERR_LIB_ASN1;
+-static const int ERR_LIB_RSA;
+-static const int ERR_LIB_PKCS12;
+-static const int ERR_LIB_SSL;
+-static const int ERR_LIB_X509;
+-
+-static const int ERR_R_MALLOC_FAILURE;
+-static const int EVP_R_MEMORY_LIMIT_EXCEEDED;
+-
+-static const int ASN1_R_BOOLEAN_IS_WRONG_LENGTH;
+-static const int ASN1_R_BUFFER_TOO_SMALL;
+-static const int ASN1_R_CIPHER_HAS_NO_OBJECT_IDENTIFIER;
+-static const int ASN1_R_DATA_IS_WRONG;
+-static const int ASN1_R_DECODE_ERROR;
+-static const int ASN1_R_DEPTH_EXCEEDED;
+-static const int ASN1_R_ENCODE_ERROR;
+-static const int ASN1_R_ERROR_GETTING_TIME;
+-static const int ASN1_R_ERROR_LOADING_SECTION;
+-static const int ASN1_R_MSTRING_WRONG_TAG;
+-static const int ASN1_R_NESTED_ASN1_STRING;
+-static const int ASN1_R_NO_MATCHING_CHOICE_TYPE;
+-static const int ASN1_R_UNKNOWN_MESSAGE_DIGEST_ALGORITHM;
+-static const int ASN1_R_UNKNOWN_OBJECT_TYPE;
+-static const int ASN1_R_UNKNOWN_PUBLIC_KEY_TYPE;
+-static const int ASN1_R_UNKNOWN_TAG;
+-static const int ASN1_R_UNSUPPORTED_ANY_DEFINED_BY_TYPE;
+-static const int ASN1_R_UNSUPPORTED_PUBLIC_KEY_TYPE;
+-static const int ASN1_R_UNSUPPORTED_TYPE;
+-static const int ASN1_R_WRONG_TAG;
+-static const int ASN1_R_NO_CONTENT_TYPE;
+-static const int ASN1_R_NO_MULTIPART_BODY_FAILURE;
+-static const int ASN1_R_NO_MULTIPART_BOUNDARY;
+-static const int ASN1_R_HEADER_TOO_LONG;
+-
+-static const int DH_R_INVALID_PUBKEY;
+-
+ static const int EVP_F_EVP_ENCRYPTFINAL_EX;
+-
+-static const int EVP_R_AES_KEY_SETUP_FAILED;
+-static const int EVP_R_BAD_DECRYPT;
+-static const int EVP_R_CIPHER_PARAMETER_ERROR;
+-static const int EVP_R_CTRL_NOT_IMPLEMENTED;
+-static const int EVP_R_CTRL_OPERATION_NOT_IMPLEMENTED;
+ static const int EVP_R_DATA_NOT_MULTIPLE_OF_BLOCK_LENGTH;
+-static const int EVP_R_DECODE_ERROR;
+-static const int EVP_R_DIFFERENT_KEY_TYPES;
+-static const int EVP_R_INITIALIZATION_ERROR;
+-static const int EVP_R_INPUT_NOT_INITIALIZED;
+-static const int EVP_R_INVALID_KEY_LENGTH;
+-static const int EVP_R_KEYGEN_FAILURE;
+-static const int EVP_R_MISSING_PARAMETERS;
+-static const int EVP_R_NO_CIPHER_SET;
+-static const int EVP_R_NO_DIGEST_SET;
+-static const int EVP_R_PUBLIC_KEY_NOT_RSA;
+-static const int EVP_R_UNKNOWN_PBE_ALGORITHM;
+-static const int EVP_R_UNSUPPORTED_CIPHER;
+-static const int EVP_R_UNSUPPORTED_KEY_DERIVATION_FUNCTION;
+-static const int EVP_R_UNSUPPORTED_KEYLENGTH;
+-static const int EVP_R_UNSUPPORTED_SALT_TYPE;
++static const int EVP_R_BAD_DECRYPT;
+ static const int EVP_R_UNSUPPORTED_PRIVATE_KEY_ALGORITHM;
+-static const int EVP_R_WRONG_FINAL_BLOCK_LENGTH;
+-static const int EVP_R_CAMELLIA_KEY_SETUP_FAILED;
+-
+-static const int EC_R_UNKNOWN_GROUP;
+-
+-static const int PEM_R_BAD_BASE64_DECODE;
+-static const int PEM_R_BAD_DECRYPT;
+-static const int PEM_R_BAD_END_LINE;
+-static const int PEM_R_BAD_IV_CHARS;
+-static const int PEM_R_BAD_PASSWORD_READ;
+-static const int PEM_R_ERROR_CONVERTING_PRIVATE_KEY;
+-static const int PEM_R_NO_START_LINE;
+-static const int PEM_R_NOT_DEK_INFO;
+-static const int PEM_R_NOT_ENCRYPTED;
+-static const int PEM_R_NOT_PROC_TYPE;
+-static const int PEM_R_PROBLEMS_GETTING_PASSWORD;
+-static const int PEM_R_READ_KEY;
+-static const int PEM_R_SHORT_HEADER;
+-static const int PEM_R_UNSUPPORTED_CIPHER;
+-static const int PEM_R_UNSUPPORTED_ENCRYPTION;
+-
+ static const int PKCS12_R_PKCS12_CIPHERFINAL_ERROR;
++static const int PEM_R_UNSUPPORTED_ENCRYPTION;
++static const int EVP_R_UNKNOWN_PBE_ALGORITHM;
++static const int EVP_R_XTS_DUPLICATED_KEYS;
+ 
+-static const int RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE;
+-static const int RSA_R_DATA_TOO_LARGE_FOR_MODULUS;
+-static const int RSA_R_DIGEST_TOO_BIG_FOR_RSA_KEY;
+-static const int RSA_R_BLOCK_TYPE_IS_NOT_01;
+-static const int RSA_R_BLOCK_TYPE_IS_NOT_02;
+-static const int RSA_R_PKCS_DECODING_ERROR;
+-static const int RSA_R_OAEP_DECODING_ERROR;
++static const int ERR_LIB_EVP;
++static const int ERR_LIB_PEM;
++static const int ERR_LIB_PROV;
++static const int ERR_LIB_ASN1;
++static const int ERR_LIB_PKCS12;
+ 
+ static const int SSL_TLSEXT_ERR_OK;
+-static const int SSL_TLSEXT_ERR_ALERT_WARNING;
+ static const int SSL_TLSEXT_ERR_ALERT_FATAL;
+ static const int SSL_TLSEXT_ERR_NOACK;
+ 
+-static const int SSL_AD_CLOSE_NOTIFY;
+-static const int SSL_AD_UNEXPECTED_MESSAGE;
+-static const int SSL_AD_BAD_RECORD_MAC;
+-static const int SSL_AD_RECORD_OVERFLOW;
+-static const int SSL_AD_DECOMPRESSION_FAILURE;
+-static const int SSL_AD_HANDSHAKE_FAILURE;
+-static const int SSL_AD_BAD_CERTIFICATE;
+-static const int SSL_AD_UNSUPPORTED_CERTIFICATE;
+-static const int SSL_AD_CERTIFICATE_REVOKED;
+-static const int SSL_AD_CERTIFICATE_EXPIRED;
+-static const int SSL_AD_CERTIFICATE_UNKNOWN;
+-static const int SSL_AD_ILLEGAL_PARAMETER;
+-static const int SSL_AD_UNKNOWN_CA;
+-static const int SSL_AD_ACCESS_DENIED;
+-static const int SSL_AD_DECODE_ERROR;
+-static const int SSL_AD_DECRYPT_ERROR;
+-static const int SSL_AD_PROTOCOL_VERSION;
+-static const int SSL_AD_INSUFFICIENT_SECURITY;
+-static const int SSL_AD_INTERNAL_ERROR;
+-static const int SSL_AD_USER_CANCELLED;
+-static const int SSL_AD_NO_RENEGOTIATION;
+-
+-static const int SSL_AD_UNSUPPORTED_EXTENSION;
+-static const int SSL_AD_CERTIFICATE_UNOBTAINABLE;
+-static const int SSL_AD_UNRECOGNIZED_NAME;
+-static const int SSL_AD_BAD_CERTIFICATE_STATUS_RESPONSE;
+-static const int SSL_AD_BAD_CERTIFICATE_HASH_VALUE;
+-static const int SSL_AD_UNKNOWN_PSK_IDENTITY;
+-
+ static const int X509_R_CERT_ALREADY_IN_HASH_TABLE;
+-static const int X509_R_KEY_VALUES_MISMATCH;
+ """
+ 
+ FUNCTIONS = """
+@@ -153,30 +37,22 @@ const char *ERR_func_error_string(unsigned long);
+ const char *ERR_reason_error_string(unsigned long);
+ unsigned long ERR_get_error(void);
+ unsigned long ERR_peek_error(void);
+-unsigned long ERR_peek_last_error(void);
+ void ERR_clear_error(void);
+ void ERR_put_error(int, int, int, const char *, int);
+ 
+ int ERR_GET_LIB(unsigned long);
+-int ERR_GET_FUNC(unsigned long);
+ int ERR_GET_REASON(unsigned long);
+ 
+ """
+ 
+ CUSTOMIZATIONS = """
+-static const long Cryptography_HAS_EC_CODES = 1;
+-
+-#ifdef RSA_R_PKCS_DECODING_ERROR
+-static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 1;
+-#else
+-static const long Cryptography_HAS_RSA_R_PKCS_DECODING_ERROR = 0;
+-static const long RSA_R_PKCS_DECODING_ERROR = 0;
++/* This define is tied to provider support and is conditionally
++   removed if Cryptography_HAS_PROVIDERS is false */
++#ifndef ERR_LIB_PROV
++#define ERR_LIB_PROV 0
+ #endif
+ 
+-#ifdef EVP_R_MEMORY_LIMIT_EXCEEDED
+-static const long Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED = 1;
+-#else
+-static const long EVP_R_MEMORY_LIMIT_EXCEEDED = 0;
+-static const long Cryptography_HAS_EVP_R_MEMORY_LIMIT_EXCEEDED = 0;
++#if !CRYPTOGRAPHY_OPENSSL_111D_OR_GREATER
++static const int EVP_R_XTS_DUPLICATED_KEYS = 0;
+ #endif
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/evp.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/evp.py
+index a72a6e5..735b8c3 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/evp.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/evp.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/evp.h>
+@@ -37,6 +36,7 @@ static const int Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint;
+ static const int Cryptography_HAS_ONESHOT_EVP_DIGEST_SIGN_VERIFY;
+ static const long Cryptography_HAS_RAW_KEY;
+ static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF;
++static const long Cryptography_HAS_300_FIPS;
+ """
+ 
+ FUNCTIONS = """
+@@ -48,6 +48,7 @@ int EVP_CipherUpdate(EVP_CIPHER_CTX *, unsigned char *, int *,
+                      const unsigned char *, int);
+ int EVP_CipherFinal_ex(EVP_CIPHER_CTX *, unsigned char *, int *);
+ int EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *);
++int EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *);
+ EVP_CIPHER_CTX *EVP_CIPHER_CTX_new(void);
+ void EVP_CIPHER_CTX_free(EVP_CIPHER_CTX *);
+ int EVP_CIPHER_CTX_set_key_length(EVP_CIPHER_CTX *, int);
+@@ -59,7 +60,6 @@ int EVP_DigestUpdate(EVP_MD_CTX *, const void *, size_t);
+ int EVP_DigestFinal_ex(EVP_MD_CTX *, unsigned char *, unsigned int *);
+ int EVP_DigestFinalXOF(EVP_MD_CTX *, unsigned char *, size_t);
+ const EVP_MD *EVP_get_digestbyname(const char *);
+-int EVP_MD_size(const EVP_MD *);
+ 
+ EVP_PKEY *EVP_PKEY_new(void);
+ void EVP_PKEY_free(EVP_PKEY *);
+@@ -90,8 +90,7 @@ int EVP_DigestSignFinal(EVP_MD_CTX *, unsigned char *, size_t *);
+ int EVP_DigestVerifyInit(EVP_MD_CTX *, EVP_PKEY_CTX **, const EVP_MD *,
+                          ENGINE *, EVP_PKEY *);
+ 
+-int PKCS5_PBKDF2_HMAC_SHA1(const char *, int, const unsigned char *, int, int,
+-                           int, unsigned char *);
++
+ 
+ EVP_PKEY_CTX *EVP_PKEY_CTX_new(EVP_PKEY *, ENGINE *);
+ EVP_PKEY_CTX *EVP_PKEY_CTX_new_id(int, ENGINE *);
+@@ -103,6 +102,9 @@ int EVP_PKEY_sign(EVP_PKEY_CTX *, unsigned char *, size_t *,
+ int EVP_PKEY_verify_init(EVP_PKEY_CTX *);
+ int EVP_PKEY_verify(EVP_PKEY_CTX *, const unsigned char *, size_t,
+                     const unsigned char *, size_t);
++int EVP_PKEY_verify_recover_init(EVP_PKEY_CTX *);
++int EVP_PKEY_verify_recover(EVP_PKEY_CTX *, unsigned char *,
++                            size_t *, const unsigned char *, size_t);
+ int EVP_PKEY_encrypt_init(EVP_PKEY_CTX *);
+ int EVP_PKEY_decrypt_init(EVP_PKEY_CTX *);
+ 
+@@ -122,11 +124,12 @@ int EVP_PKEY_set_type(EVP_PKEY *, int);
+ int EVP_PKEY_id(const EVP_PKEY *);
+ int Cryptography_EVP_PKEY_id(const EVP_PKEY *);
+ 
+-/* in 1.1.0 _create and _destroy were renamed to _new and _free. The following
+-   two functions wrap both the old and new functions so we can call them
+-   without worrying about what OpenSSL we're running against. */
++EVP_MD_CTX *EVP_MD_CTX_new(void);
++void EVP_MD_CTX_free(EVP_MD_CTX *);
++/* Backwards compat aliases for pyOpenSSL */
+ EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void);
+ void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *);
++
+ /* Added in 1.1.1 */
+ int EVP_DigestSign(EVP_MD_CTX *, unsigned char *, size_t *,
+                    const unsigned char *, size_t);
+@@ -146,8 +149,6 @@ int EVP_PKEY_assign_RSA(EVP_PKEY *, RSA *);
+ EC_KEY *EVP_PKEY_get1_EC_KEY(EVP_PKEY *);
+ int EVP_PKEY_set1_EC_KEY(EVP_PKEY *, EC_KEY *);
+ 
+-int EVP_MD_CTX_block_size(const EVP_MD_CTX *);
+-int EVP_CIPHER_CTX_block_size(const EVP_CIPHER_CTX *);
+ int EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *, int, int, void *);
+ 
+ int PKCS5_PBKDF2_HMAC(const char *, int, const unsigned char *, int, int,
+@@ -165,6 +166,9 @@ EVP_PKEY *EVP_PKEY_new_raw_public_key(int, ENGINE *, const unsigned char *,
+                                       size_t);
+ int EVP_PKEY_get_raw_private_key(const EVP_PKEY *, unsigned char *, size_t *);
+ int EVP_PKEY_get_raw_public_key(const EVP_PKEY *, unsigned char *, size_t *);
++
++int EVP_default_properties_is_fips_enabled(OSSL_LIB_CTX *);
++int EVP_default_properties_enable_fips(OSSL_LIB_CTX *, int);
+ """
+ 
+ CUSTOMIZATIONS = """
+@@ -178,22 +182,14 @@ const long EVP_PKEY_DHX = -1;
+ int Cryptography_EVP_PKEY_id(const EVP_PKEY *key) {
+     return EVP_PKEY_id(key);
+ }
+-
+ EVP_MD_CTX *Cryptography_EVP_MD_CTX_new(void) {
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+-    return EVP_MD_CTX_create();
+-#else
+     return EVP_MD_CTX_new();
+-#endif
+ }
+-void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *ctx) {
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+-    EVP_MD_CTX_destroy(ctx);
+-#else
+-    EVP_MD_CTX_free(ctx);
+-#endif
++void Cryptography_EVP_MD_CTX_free(EVP_MD_CTX *md) {
++    EVP_MD_CTX_free(md);
+ }
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || defined(OPENSSL_NO_SCRYPT)
++
++#if CRYPTOGRAPHY_IS_LIBRESSL || defined(OPENSSL_NO_SCRYPT)
+ static const long Cryptography_HAS_SCRYPT = 0;
+ int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
+                       uint64_t, uint64_t, uint64_t, uint64_t, unsigned char *,
+@@ -202,7 +198,7 @@ int (*EVP_PBE_scrypt)(const char *, size_t, const unsigned char *, size_t,
+ static const long Cryptography_HAS_SCRYPT = 1;
+ #endif
+ 
+-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
++#if !CRYPTOGRAPHY_IS_LIBRESSL
+ static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 1;
+ #else
+ static const long Cryptography_HAS_EVP_PKEY_get_set_tls_encodedpoint = 0;
+@@ -277,4 +273,12 @@ static const long Cryptography_HAS_EVP_DIGESTFINAL_XOF = 1;
+ #ifndef EVP_PKEY_POLY1305
+ #define EVP_PKEY_POLY1305 NID_poly1305
+ #endif
++
++#if CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
++static const long Cryptography_HAS_300_FIPS = 1;
++#else
++static const long Cryptography_HAS_300_FIPS = 0;
++int (*EVP_default_properties_is_fips_enabled)(OSSL_LIB_CTX *) = NULL;
++int (*EVP_default_properties_enable_fips)(OSSL_LIB_CTX *, int) = NULL;
++#endif
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/fips.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/fips.py
+index c92bca4..23c10af 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/fips.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/fips.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/crypto.h>
+@@ -18,7 +17,7 @@ int FIPS_mode(void);
+ """
+ 
+ CUSTOMIZATIONS = """
+-#if CRYPTOGRAPHY_IS_LIBRESSL
++#if CRYPTOGRAPHY_IS_LIBRESSL || CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
+ static const long Cryptography_HAS_FIPS = 0;
+ int (*FIPS_mode_set)(int) = NULL;
+ int (*FIPS_mode)(void) = NULL;
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/hmac.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/hmac.py
+index b006e64..8b19153 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/hmac.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/hmac.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/hmac.h>
+@@ -18,31 +17,9 @@ int HMAC_Update(HMAC_CTX *, const unsigned char *, size_t);
+ int HMAC_Final(HMAC_CTX *, unsigned char *, unsigned int *);
+ int HMAC_CTX_copy(HMAC_CTX *, HMAC_CTX *);
+ 
+-HMAC_CTX *Cryptography_HMAC_CTX_new(void);
+-void Cryptography_HMAC_CTX_free(HMAC_CTX *ctx);
++HMAC_CTX *HMAC_CTX_new(void);
++void HMAC_CTX_free(HMAC_CTX *ctx);
+ """
+ 
+ CUSTOMIZATIONS = """
+-HMAC_CTX *Cryptography_HMAC_CTX_new(void) {
+-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+-    return HMAC_CTX_new();
+-#else
+-    /* This uses OPENSSL_zalloc in 1.1.0, which is malloc + memset */
+-    HMAC_CTX *ctx = (HMAC_CTX *)OPENSSL_malloc(sizeof(HMAC_CTX));
+-    memset(ctx, 0, sizeof(HMAC_CTX));
+-    return ctx;
+-#endif
+-}
+-
+-
+-void Cryptography_HMAC_CTX_free(HMAC_CTX *ctx) {
+-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+-    return HMAC_CTX_free(ctx);
+-#else
+-    if (ctx != NULL) {
+-        HMAC_CTX_cleanup(ctx);
+-        OPENSSL_free(ctx);
+-    }
+-#endif
+-}
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/nid.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/nid.py
+index 863926b..57a9a8d 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/nid.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/nid.py
+@@ -2,15 +2,12 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/obj_mac.h>
+ """
+ 
+ TYPES = """
+-static const int Cryptography_HAS_X25519;
+-static const int Cryptography_HAS_X448;
+ static const int Cryptography_HAS_ED448;
+ static const int Cryptography_HAS_ED25519;
+ static const int Cryptography_HAS_POLY1305;
+@@ -23,37 +20,22 @@ static const int NID_ED25519;
+ static const int NID_ED448;
+ static const int NID_poly1305;
+ 
+-static const int NID_X9_62_prime256v1;
+-static const int NID_info_access;
+ static const int NID_subject_alt_name;
+-static const int NID_crl_distribution_points;
+ static const int NID_crl_reason;
+-static const int NID_ad_OCSP;
+-static const int NID_ad_ca_issuers;
++
++static const int NID_pkcs7_signed;
+ """
+ 
+ FUNCTIONS = """
+ """
+ 
+ CUSTOMIZATIONS = """
+-#ifndef NID_X25519
+-static const long Cryptography_HAS_X25519 = 0;
+-static const int NID_X25519 = 0;
+-#else
+-static const long Cryptography_HAS_X25519 = 1;
+-#endif
+ #ifndef NID_ED25519
+ static const long Cryptography_HAS_ED25519 = 0;
+ static const int NID_ED25519 = 0;
+ #else
+ static const long Cryptography_HAS_ED25519 = 1;
+ #endif
+-#ifndef NID_X448
+-static const long Cryptography_HAS_X448 = 0;
+-static const int NID_X448 = 0;
+-#else
+-static const long Cryptography_HAS_X448 = 1;
+-#endif
+ #ifndef NID_ED448
+ static const long Cryptography_HAS_ED448 = 0;
+ static const int NID_ED448 = 0;
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/objects.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/objects.py
+index 265ac75..9911599 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/objects.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/objects.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/objects.h>
+@@ -20,21 +19,12 @@ static const long OBJ_NAME_TYPE_MD_METH;
+ """
+ 
+ FUNCTIONS = """
+-ASN1_OBJECT *OBJ_nid2obj(int);
+ const char *OBJ_nid2ln(int);
+ const char *OBJ_nid2sn(int);
+ int OBJ_obj2nid(const ASN1_OBJECT *);
+-int OBJ_ln2nid(const char *);
+ int OBJ_sn2nid(const char *);
+ int OBJ_txt2nid(const char *);
+ ASN1_OBJECT *OBJ_txt2obj(const char *, int);
+-int OBJ_obj2txt(char *, int, const ASN1_OBJECT *, int);
+-int OBJ_cmp(const ASN1_OBJECT *, const ASN1_OBJECT *);
+-ASN1_OBJECT *OBJ_dup(const ASN1_OBJECT *);
+-int OBJ_create(const char *, const char *, const char *);
+-void OBJ_NAME_do_all(int, void (*) (const OBJ_NAME *, void *), void *);
+-/* OBJ_cleanup became a macro in 1.1.0 */
+-void OBJ_cleanup(void);
+ """
+ 
+ CUSTOMIZATIONS = """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ocsp.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ocsp.py
+index 829314a..2e10ad1 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ocsp.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ocsp.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/ocsp.h>
+@@ -15,40 +14,11 @@ typedef ... OCSP_RESPONSE;
+ typedef ... OCSP_BASICRESP;
+ typedef ... OCSP_SINGLERESP;
+ typedef ... OCSP_CERTID;
+-typedef ... OCSP_RESPDATA;
+ static const long OCSP_NOCERTS;
+ static const long OCSP_RESPID_KEY;
+ """
+ 
+ FUNCTIONS = """
+-int OCSP_response_status(OCSP_RESPONSE *);
+-OCSP_BASICRESP *OCSP_response_get1_basic(OCSP_RESPONSE *);
+-int OCSP_BASICRESP_get_ext_count(OCSP_BASICRESP *);
+-const ASN1_OCTET_STRING *OCSP_resp_get0_signature(const OCSP_BASICRESP *);
+-Cryptography_STACK_OF_X509 *OCSP_resp_get0_certs(const OCSP_BASICRESP *);
+-const ASN1_GENERALIZEDTIME *OCSP_resp_get0_produced_at(
+-    const OCSP_BASICRESP *);
+-const OCSP_CERTID *OCSP_SINGLERESP_get0_id(const OCSP_SINGLERESP *);
+-int OCSP_resp_get0_id(const OCSP_BASICRESP *, const ASN1_OCTET_STRING **,
+-                      const X509_NAME **);
+-const X509_ALGOR *OCSP_resp_get0_tbs_sigalg(const OCSP_BASICRESP *);
+-const OCSP_RESPDATA *OCSP_resp_get0_respdata(const OCSP_BASICRESP *);
+-X509_EXTENSION *OCSP_BASICRESP_get_ext(OCSP_BASICRESP *, int);
+-int OCSP_resp_count(OCSP_BASICRESP *);
+-OCSP_SINGLERESP *OCSP_resp_get0(OCSP_BASICRESP *, int);
+-int OCSP_SINGLERESP_get_ext_count(OCSP_SINGLERESP *);
+-X509_EXTENSION *OCSP_SINGLERESP_get_ext(OCSP_SINGLERESP *, int);
+-
+-int OCSP_single_get0_status(OCSP_SINGLERESP *, int *, ASN1_GENERALIZEDTIME **,
+-                            ASN1_GENERALIZEDTIME **, ASN1_GENERALIZEDTIME **);
+-
+-int OCSP_REQUEST_get_ext_count(OCSP_REQUEST *);
+-X509_EXTENSION *OCSP_REQUEST_get_ext(OCSP_REQUEST *, int);
+-int OCSP_request_onereq_count(OCSP_REQUEST *);
+-OCSP_ONEREQ *OCSP_request_onereq_get0(OCSP_REQUEST *, int);
+-int OCSP_ONEREQ_get_ext_count(OCSP_ONEREQ *);
+-X509_EXTENSION *OCSP_ONEREQ_get_ext(OCSP_ONEREQ *, int);
+-OCSP_CERTID *OCSP_onereq_get0_id(OCSP_ONEREQ *);
+ OCSP_ONEREQ *OCSP_request_add0_id(OCSP_REQUEST *, OCSP_CERTID *);
+ OCSP_CERTID *OCSP_cert_to_id(const EVP_MD *, const X509 *, const X509 *);
+ void OCSP_CERTID_free(OCSP_CERTID *);
+@@ -59,7 +29,6 @@ void OCSP_BASICRESP_free(OCSP_BASICRESP *);
+ OCSP_SINGLERESP *OCSP_basic_add1_status(OCSP_BASICRESP *, OCSP_CERTID *, int,
+                                         int, ASN1_TIME *, ASN1_TIME *,
+                                         ASN1_TIME *);
+-int OCSP_basic_add1_nonce(OCSP_BASICRESP *, unsigned char *, int);
+ int OCSP_basic_add1_cert(OCSP_BASICRESP *, X509 *);
+ int OCSP_BASICRESP_add_ext(OCSP_BASICRESP *, X509_EXTENSION *, int);
+ int OCSP_basic_sign(OCSP_BASICRESP *, X509 *, EVP_PKEY *, const EVP_MD *,
+@@ -69,102 +38,10 @@ void OCSP_RESPONSE_free(OCSP_RESPONSE *);
+ 
+ OCSP_REQUEST *OCSP_REQUEST_new(void);
+ void OCSP_REQUEST_free(OCSP_REQUEST *);
+-int OCSP_request_add1_nonce(OCSP_REQUEST *, unsigned char *, int);
+ int OCSP_REQUEST_add_ext(OCSP_REQUEST *, X509_EXTENSION *, int);
+-int OCSP_id_get0_info(ASN1_OCTET_STRING **, ASN1_OBJECT **,
+-                      ASN1_OCTET_STRING **, ASN1_INTEGER **, OCSP_CERTID *);
+-OCSP_REQUEST *d2i_OCSP_REQUEST_bio(BIO *, OCSP_REQUEST **);
+-OCSP_RESPONSE *d2i_OCSP_RESPONSE_bio(BIO *, OCSP_RESPONSE **);
+ int i2d_OCSP_REQUEST_bio(BIO *, OCSP_REQUEST *);
+ int i2d_OCSP_RESPONSE_bio(BIO *, OCSP_RESPONSE *);
+-int i2d_OCSP_RESPDATA(OCSP_RESPDATA *, unsigned char **);
+ """
+ 
+ CUSTOMIZATIONS = """
+-#if ( \
+-    CRYPTOGRAPHY_OPENSSL_110_OR_GREATER && \
+-    CRYPTOGRAPHY_OPENSSL_LESS_THAN_110J \
+-    )
+-/* These structs come from ocsp_lcl.h and are needed to de-opaque the struct
+-   for the getters in OpenSSL 1.1.0 through 1.1.0i */
+-struct ocsp_responder_id_st {
+-    int type;
+-    union {
+-        X509_NAME *byName;
+-        ASN1_OCTET_STRING *byKey;
+-    } value;
+-};
+-struct ocsp_response_data_st {
+-    ASN1_INTEGER *version;
+-    OCSP_RESPID responderId;
+-    ASN1_GENERALIZEDTIME *producedAt;
+-    STACK_OF(OCSP_SINGLERESP) *responses;
+-    STACK_OF(X509_EXTENSION) *responseExtensions;
+-};
+-struct ocsp_basic_response_st {
+-    OCSP_RESPDATA tbsResponseData;
+-    X509_ALGOR signatureAlgorithm;
+-    ASN1_BIT_STRING *signature;
+-    STACK_OF(X509) *certs;
+-};
+-#endif
+-
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+-/* These functions are all taken from ocsp_cl.c in OpenSSL 1.1.0 */
+-const OCSP_CERTID *OCSP_SINGLERESP_get0_id(const OCSP_SINGLERESP *single)
+-{
+-    return single->certId;
+-}
+-const Cryptography_STACK_OF_X509 *OCSP_resp_get0_certs(
+-    const OCSP_BASICRESP *bs)
+-{
+-    return bs->certs;
+-}
+-int OCSP_resp_get0_id(const OCSP_BASICRESP *bs,
+-                      const ASN1_OCTET_STRING **pid,
+-                      const X509_NAME **pname)
+-{
+-    const OCSP_RESPID *rid = bs->tbsResponseData->responderId;
+-
+-    if (rid->type == V_OCSP_RESPID_NAME) {
+-        *pname = rid->value.byName;
+-        *pid = NULL;
+-    } else if (rid->type == V_OCSP_RESPID_KEY) {
+-        *pid = rid->value.byKey;
+-        *pname = NULL;
+-    } else {
+-        return 0;
+-    }
+-    return 1;
+-}
+-const ASN1_GENERALIZEDTIME *OCSP_resp_get0_produced_at(
+-    const OCSP_BASICRESP* bs)
+-{
+-    return bs->tbsResponseData->producedAt;
+-}
+-const ASN1_OCTET_STRING *OCSP_resp_get0_signature(const OCSP_BASICRESP *bs)
+-{
+-    return bs->signature;
+-}
+-#endif
+-
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110J
+-const X509_ALGOR *OCSP_resp_get0_tbs_sigalg(const OCSP_BASICRESP *bs)
+-{
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+-    return bs->signatureAlgorithm;
+-#else
+-    return &bs->signatureAlgorithm;
+-#endif
+-}
+-
+-const OCSP_RESPDATA *OCSP_resp_get0_respdata(const OCSP_BASICRESP *bs)
+-{
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+-    return bs->tbsResponseData;
+-#else
+-    return &bs->tbsResponseData;
+-#endif
+-}
+-#endif
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/opensslv.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/opensslv.py
+index 9b0c689..630ebd7 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/opensslv.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/opensslv.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/opensslv.h>
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/osrandom_engine.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/osrandom_engine.py
+index ed1068e..dbc304b 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/osrandom_engine.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/osrandom_engine.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ import os
+ 
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/pem.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/pem.py
+index 09b523d..2ebcdf6 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/pem.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/pem.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/pem.h>
+@@ -24,13 +23,9 @@ EVP_PKEY *PEM_read_bio_PrivateKey(BIO *, EVP_PKEY **, pem_password_cb *,
+ 
+ int PEM_write_bio_PKCS8PrivateKey(BIO *, EVP_PKEY *, const EVP_CIPHER *,
+                                   char *, int, pem_password_cb *, void *);
+-int PEM_write_bio_PKCS8PrivateKey_nid(BIO *, EVP_PKEY *, int, char *, int,
+-                                      pem_password_cb *, void *);
+ 
+ int i2d_PKCS8PrivateKey_bio(BIO *, EVP_PKEY *, const EVP_CIPHER *,
+                             char *, int, pem_password_cb *, void *);
+-int i2d_PKCS8PrivateKey_nid_bio(BIO *, EVP_PKEY *, int,
+-                                char *, int, pem_password_cb *, void *);
+ 
+ int i2d_PKCS7_bio(BIO *, PKCS7 *);
+ PKCS7 *d2i_PKCS7_bio(BIO *, PKCS7 **);
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/pkcs12.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/pkcs12.py
+index 21a8481..f08139e 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/pkcs12.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/pkcs12.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/pkcs12.h>
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/pkcs7.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/pkcs7.py
+index 1bece5b..b58b293 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/pkcs7.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/pkcs7.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/pkcs7.h>
+@@ -24,6 +23,7 @@ typedef struct {
+ typedef ... PKCS7_DIGEST;
+ typedef ... PKCS7_ENCRYPT;
+ typedef ... PKCS7_ENVELOPE;
++typedef ... PKCS7_SIGNER_INFO;
+ 
+ typedef struct {
+     ASN1_OBJECT *type;
+@@ -51,33 +51,33 @@ static const int PKCS7_NOSMIMECAP;
+ static const int PKCS7_NOVERIFY;
+ static const int PKCS7_STREAM;
+ static const int PKCS7_TEXT;
++static const int PKCS7_PARTIAL;
+ """
+ 
+ FUNCTIONS = """
+-PKCS7 *SMIME_read_PKCS7(BIO *, BIO **);
+-int SMIME_write_PKCS7(BIO *, PKCS7 *, BIO *, int);
+-
+ void PKCS7_free(PKCS7 *);
+-
+ PKCS7 *PKCS7_sign(X509 *, EVP_PKEY *, Cryptography_STACK_OF_X509 *,
+-                  BIO *, int);
++                   BIO *, int);
++int SMIME_write_PKCS7(BIO *, PKCS7 *, BIO *, int);
++int PEM_write_bio_PKCS7_stream(BIO *, PKCS7 *, BIO *, int);
++PKCS7_SIGNER_INFO *PKCS7_sign_add_signer(PKCS7 *, X509 *, EVP_PKEY *,
++                                         const EVP_MD *, int);
++int PKCS7_final(PKCS7 *, BIO *, int);
++/* Included verify due to external consumer, see
++   https://github.com/pyca/cryptography/issues/5433 */
+ int PKCS7_verify(PKCS7 *, Cryptography_STACK_OF_X509 *, X509_STORE *, BIO *,
+                  BIO *, int);
++PKCS7 *SMIME_read_PKCS7(BIO *, BIO **);
++/* Included due to external consumer, see
++   https://github.com/pyca/pyopenssl/issues/1031 */
+ Cryptography_STACK_OF_X509 *PKCS7_get0_signers(PKCS7 *,
+                                                Cryptography_STACK_OF_X509 *,
+                                                int);
+ 
+-PKCS7 *PKCS7_encrypt(Cryptography_STACK_OF_X509 *, BIO *,
+-                     const EVP_CIPHER *, int);
+-int PKCS7_decrypt(PKCS7 *, EVP_PKEY *, X509 *, BIO *, int);
+-
+-BIO *PKCS7_dataInit(PKCS7 *, BIO *);
+-int PKCS7_type_is_encrypted(PKCS7 *);
+ int PKCS7_type_is_signed(PKCS7 *);
+ int PKCS7_type_is_enveloped(PKCS7 *);
+ int PKCS7_type_is_signedAndEnveloped(PKCS7 *);
+ int PKCS7_type_is_data(PKCS7 *);
+-int PKCS7_type_is_digest(PKCS7 *);
+ """
+ 
+ CUSTOMIZATIONS = ""
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/provider.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/provider.py
+new file mode 100644
+index 0000000..d741ad7
+--- /dev/null
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/provider.py
+@@ -0,0 +1,42 @@
++# This file is dual licensed under the terms of the Apache License, Version
++# 2.0, and the BSD License. See the LICENSE file in the root of this repository
++# for complete details.
++
++
++INCLUDES = """
++#if CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
++#include <openssl/provider.h>
++#include <openssl/proverr.h>
++#endif
++"""
++
++TYPES = """
++static const long Cryptography_HAS_PROVIDERS;
++
++typedef ... OSSL_PROVIDER;
++typedef ... OSSL_LIB_CTX;
++
++static const long PROV_R_BAD_DECRYPT;
++static const long PROV_R_XTS_DUPLICATED_KEYS;
++static const long PROV_R_WRONG_FINAL_BLOCK_LENGTH;
++"""
++
++FUNCTIONS = """
++OSSL_PROVIDER *OSSL_PROVIDER_load(OSSL_LIB_CTX *, const char *);
++int OSSL_PROVIDER_unload(OSSL_PROVIDER *prov);
++"""
++
++CUSTOMIZATIONS = """
++#if CRYPTOGRAPHY_OPENSSL_300_OR_GREATER
++static const long Cryptography_HAS_PROVIDERS = 1;
++#else
++static const long Cryptography_HAS_PROVIDERS = 0;
++typedef void OSSL_PROVIDER;
++typedef void OSSL_LIB_CTX;
++static const long PROV_R_BAD_DECRYPT = 0;
++static const long PROV_R_XTS_DUPLICATED_KEYS = 0;
++static const long PROV_R_WRONG_FINAL_BLOCK_LENGTH = 0;
++OSSL_PROVIDER *(*OSSL_PROVIDER_load)(OSSL_LIB_CTX *, const char *) = NULL;
++int (*OSSL_PROVIDER_unload)(OSSL_PROVIDER *) = NULL;
++#endif
++"""
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/rand.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/rand.py
+index 6865392..9e95fe7 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/rand.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/rand.py
+@@ -2,30 +2,21 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/rand.h>
+ """
+ 
+ TYPES = """
+-static const long Cryptography_HAS_EGD;
++typedef ... RAND_METHOD;
+ """
+ 
+ FUNCTIONS = """
++int RAND_set_rand_method(const RAND_METHOD *);
+ void RAND_add(const void *, int, double);
+ int RAND_status(void);
+ int RAND_bytes(unsigned char *, int);
+-/* ERR_load_RAND_strings started returning an int in 1.1.0. Unfortunately we
+-   can't declare a conditional signature like that. Since it always returns
+-   1 we'll just lie about the signature to preserve compatibility for
+-   pyOpenSSL (which calls this in its rand.py as of mid-2016) */
+-void ERR_load_RAND_strings(void);
+-
+-/* RAND_cleanup became a macro in 1.1.0 */
+-void RAND_cleanup(void);
+ """
+ 
+ CUSTOMIZATIONS = """
+-static const long Cryptography_HAS_EGD = 0;
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/rsa.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/rsa.py
+index 216e633..5d1e163 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/rsa.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/rsa.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/rsa.h>
+@@ -17,7 +16,6 @@ static const int RSA_PKCS1_OAEP_PADDING;
+ static const int RSA_PKCS1_PSS_PADDING;
+ static const int RSA_F4;
+ 
+-static const int Cryptography_HAS_PSS_PADDING;
+ static const int Cryptography_HAS_RSA_OAEP_MD;
+ static const int Cryptography_HAS_RSA_OAEP_LABEL;
+ """
+@@ -25,19 +23,10 @@ static const int Cryptography_HAS_RSA_OAEP_LABEL;
+ FUNCTIONS = """
+ RSA *RSA_new(void);
+ void RSA_free(RSA *);
+-int RSA_size(const RSA *);
+ int RSA_generate_key_ex(RSA *, int, BIGNUM *, BN_GENCB *);
+ int RSA_check_key(const RSA *);
+ RSA *RSAPublicKey_dup(RSA *);
+ int RSA_blinding_on(RSA *, BN_CTX *);
+-int RSA_public_encrypt(int, const unsigned char *, unsigned char *,
+-                       RSA *, int);
+-int RSA_private_encrypt(int, const unsigned char *, unsigned char *,
+-                        RSA *, int);
+-int RSA_public_decrypt(int, const unsigned char *, unsigned char *,
+-                       RSA *, int);
+-int RSA_private_decrypt(int, const unsigned char *, unsigned char *,
+-                        RSA *, int);
+ int RSA_print(BIO *, const RSA *, int);
+ 
+ /* added in 1.1.0 when the RSA struct was opaqued */
+@@ -58,127 +47,14 @@ int EVP_PKEY_CTX_set_rsa_oaep_md(EVP_PKEY_CTX *, EVP_MD *);
+ """
+ 
+ CUSTOMIZATIONS = """
+-static const long Cryptography_HAS_PSS_PADDING = 1;
+-
+-#if defined(EVP_PKEY_CTX_set_rsa_oaep_md)
++#if !CRYPTOGRAPHY_IS_LIBRESSL
+ static const long Cryptography_HAS_RSA_OAEP_MD = 1;
+-#else
+-static const long Cryptography_HAS_RSA_OAEP_MD = 0;
+-int (*EVP_PKEY_CTX_set_rsa_oaep_md)(EVP_PKEY_CTX *, EVP_MD *) = NULL;
+-#endif
+-
+-#if defined(EVP_PKEY_CTX_set0_rsa_oaep_label)
+ static const long Cryptography_HAS_RSA_OAEP_LABEL = 1;
+ #else
++static const long Cryptography_HAS_RSA_OAEP_MD = 0;
+ static const long Cryptography_HAS_RSA_OAEP_LABEL = 0;
++int (*EVP_PKEY_CTX_set_rsa_oaep_md)(EVP_PKEY_CTX *, EVP_MD *) = NULL;
+ int (*EVP_PKEY_CTX_set0_rsa_oaep_label)(EVP_PKEY_CTX *, unsigned char *,
+                                         int) = NULL;
+ #endif
+-
+-/* These functions were added in OpenSSL 1.1.0 */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+-int RSA_set0_key(RSA *r, BIGNUM *n, BIGNUM *e, BIGNUM *d)
+-{
+-    /* If the fields n and e in r are NULL, the corresponding input
+-     * parameters MUST be non-NULL for n and e.  d may be
+-     * left NULL (in case only the public key is used).
+-     */
+-    if ((r->n == NULL && n == NULL)
+-        || (r->e == NULL && e == NULL))
+-        return 0;
+-
+-    if (n != NULL) {
+-        BN_free(r->n);
+-        r->n = n;
+-    }
+-    if (e != NULL) {
+-        BN_free(r->e);
+-        r->e = e;
+-    }
+-    if (d != NULL) {
+-        BN_free(r->d);
+-        r->d = d;
+-    }
+-
+-    return 1;
+-}
+-
+-int RSA_set0_factors(RSA *r, BIGNUM *p, BIGNUM *q)
+-{
+-    /* If the fields p and q in r are NULL, the corresponding input
+-     * parameters MUST be non-NULL.
+-     */
+-    if ((r->p == NULL && p == NULL)
+-        || (r->q == NULL && q == NULL))
+-        return 0;
+-
+-    if (p != NULL) {
+-        BN_free(r->p);
+-        r->p = p;
+-    }
+-    if (q != NULL) {
+-        BN_free(r->q);
+-        r->q = q;
+-    }
+-
+-    return 1;
+-}
+-
+-int RSA_set0_crt_params(RSA *r, BIGNUM *dmp1, BIGNUM *dmq1, BIGNUM *iqmp)
+-{
+-    /* If the fields dmp1, dmq1 and iqmp in r are NULL, the corresponding input
+-     * parameters MUST be non-NULL.
+-     */
+-    if ((r->dmp1 == NULL && dmp1 == NULL)
+-        || (r->dmq1 == NULL && dmq1 == NULL)
+-        || (r->iqmp == NULL && iqmp == NULL))
+-        return 0;
+-
+-    if (dmp1 != NULL) {
+-        BN_free(r->dmp1);
+-        r->dmp1 = dmp1;
+-    }
+-    if (dmq1 != NULL) {
+-        BN_free(r->dmq1);
+-        r->dmq1 = dmq1;
+-    }
+-    if (iqmp != NULL) {
+-        BN_free(r->iqmp);
+-        r->iqmp = iqmp;
+-    }
+-
+-    return 1;
+-}
+-
+-void RSA_get0_key(const RSA *r,
+-                  const BIGNUM **n, const BIGNUM **e, const BIGNUM **d)
+-{
+-    if (n != NULL)
+-        *n = r->n;
+-    if (e != NULL)
+-        *e = r->e;
+-    if (d != NULL)
+-        *d = r->d;
+-}
+-
+-void RSA_get0_factors(const RSA *r, const BIGNUM **p, const BIGNUM **q)
+-{
+-    if (p != NULL)
+-        *p = r->p;
+-    if (q != NULL)
+-        *q = r->q;
+-}
+-
+-void RSA_get0_crt_params(const RSA *r,
+-                         const BIGNUM **dmp1, const BIGNUM **dmq1,
+-                         const BIGNUM **iqmp)
+-{
+-    if (dmp1 != NULL)
+-        *dmp1 = r->dmp1;
+-    if (dmq1 != NULL)
+-        *dmq1 = r->dmq1;
+-    if (iqmp != NULL)
+-        *iqmp = r->iqmp;
+-}
+-#endif
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/src/osrandom_engine.c b/lib_pypy/_cffi_ssl/_cffi_src/openssl/src/osrandom_engine.c
+index 1b893ec..a84857b 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/src/osrandom_engine.c
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/src/osrandom_engine.c
+@@ -17,8 +17,9 @@
+ #include <poll.h>
+ #endif
+ 
+-#ifndef OPENSSL_NO_ENGINE
+-/* OpenSSL has ENGINE support so build the engine. */
++#if CRYPTOGRAPHY_NEEDS_OSRANDOM_ENGINE
++/* OpenSSL has ENGINE support and is older than 1.1.1d (the first version that
++ * properly implements fork safety in its RNG) so build the engine. */
+ static const char *Cryptography_osrandom_engine_id = "osrandom";
+ 
+ /****************************************************************************
+@@ -251,7 +252,7 @@ static int osrandom_init(ENGINE *e) {
+ #if !defined(__APPLE__)
+     getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
+ #else
+-    if (&getentropy != NULL) {
++    if (__builtin_available(macOS 10.12, *)) {
+         getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_WORKS;
+     } else {
+         getentropy_works = CRYPTOGRAPHY_OSRANDOM_GETENTROPY_FALLBACK;
+@@ -277,7 +278,11 @@ static int osrandom_rand_bytes(unsigned char *buffer, int size) {
+         while (size > 0) {
+             /* OpenBSD and macOS restrict maximum buffer size to 256. */
+             len = size > 256 ? 256 : size;
++/* on mac, availability is already checked using `__builtin_available` above */
++#pragma clang diagnostic push
++#pragma clang diagnostic ignored "-Wunguarded-availability"
+             res = getentropy(buffer, (size_t)len);
++#pragma clang diagnostic pop
+             if (res < 0) {
+                 ERR_Cryptography_OSRandom_error(
+                     CRYPTOGRAPHY_OSRANDOM_F_RAND_BYTES,
+@@ -524,7 +529,7 @@ static int osrandom_ctrl(ENGINE *e, int cmd, long i, void *p, void (*f) (void))
+             ENGINEerr(ENGINE_F_ENGINE_CTRL, ENGINE_R_INVALID_ARGUMENT);
+             return 0;
+         }
+-        strncpy((char *)p, name, len);
++        strcpy((char *)p, name);
+         return (int)len;
+     default:
+         ENGINEerr(ENGINE_F_ENGINE_CTRL, ENGINE_R_CTRL_COMMAND_NOT_IMPLEMENTED);
+@@ -646,7 +651,7 @@ int Cryptography_add_osrandom_engine(void) {
+  * to compile the osrandom engine, but we do need some
+  * placeholders */
+ static const char *Cryptography_osrandom_engine_id = "no-engine-support";
+-static const char *Cryptography_osrandom_engine_name = "osrandom_engine disabled due to no engine support";
++static const char *Cryptography_osrandom_engine_name = "osrandom_engine disabled";
+ 
+ int Cryptography_add_osrandom_engine(void) {
+     return 0;
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/src/osrandom_engine.h b/lib_pypy/_cffi_ssl/_cffi_src/openssl/src/osrandom_engine.h
+index cf394f2..93d918b 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/src/osrandom_engine.h
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/src/osrandom_engine.h
+@@ -6,7 +6,9 @@
+   #include <fcntl.h>
+   #include <unistd.h>
+    /* for defined(BSD) */
+-  #include <sys/param.h>
++  #ifndef __MVS__
++    #include <sys/param.h>
++  #endif
+ 
+   #ifdef BSD
+     /* for SYS_getentropy */
+@@ -32,10 +34,12 @@
+        * wheels, since that's the predominant way you get a situation where
+        * you don't have SYS_getrandom at compile time but do have the syscall
+        * at runtime */
+-      #if defined __x86_64__
++      #if defined(__x86_64__)
+         #define SYS_getrandom 318
+       #elif defined(__i386__)
+         #define SYS_getrandom 355
++      #elif defined(__aarch64__)
++        #define SYS_getrandom 278
+       #endif
+     #endif
+   #endif /* __linux__ */
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py
+index 3777735..34d0283 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/ssl.h>
+@@ -13,27 +12,18 @@ typedef STACK_OF(SSL_CIPHER) Cryptography_STACK_OF_SSL_CIPHER;
+ TYPES = """
+ static const long Cryptography_HAS_SSL_ST;
+ static const long Cryptography_HAS_TLS_ST;
+-static const long Cryptography_HAS_SSL2;
+ static const long Cryptography_HAS_SSL3_METHOD;
+ static const long Cryptography_HAS_TLSv1_1;
+ static const long Cryptography_HAS_TLSv1_2;
+ static const long Cryptography_HAS_TLSv1_3;
+ static const long Cryptography_HAS_SECURE_RENEGOTIATION;
+-static const long Cryptography_HAS_COMPRESSION;
+-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB;
+-static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP;
+-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE;
+-static const long Cryptography_HAS_GET_SERVER_TMP_KEY;
+-static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE;
+ static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS;
+ static const long Cryptography_HAS_DTLS;
+-static const long Cryptography_HAS_GENERIC_DTLS_METHOD;
+ static const long Cryptography_HAS_SIGALGS;
+ static const long Cryptography_HAS_PSK;
+-static const long Cryptography_HAS_CIPHER_DETAILS;
+-static const long Cryptography_HAS_CTRL_GET_MAX_PROTO_VERSION;
+-
+-/* Internally invented symbol to tell us if SNI is supported */
++static const long Cryptography_HAS_VERIFIED_CHAIN;
++static const long Cryptography_HAS_KEYLOG;
++static const long Cryptography_HAS_GET_PROTO_VERSION;
+ static const long Cryptography_HAS_TLSEXT_HOSTNAME;
+ 
+ /* Internally invented symbol to tell us if SSL_MODE_RELEASE_BUFFERS is
+@@ -45,6 +35,7 @@ static const long Cryptography_HAS_RELEASE_BUFFERS;
+  * supported
+  */
+ static const long Cryptography_HAS_OP_NO_COMPRESSION;
++static const long Cryptography_HAS_OP_NO_RENEGOTIATION;
+ static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING;
+ static const long Cryptography_HAS_SSL_SET_SSL_CTX;
+ static const long Cryptography_HAS_SSL_OP_NO_TICKET;
+@@ -52,6 +43,8 @@ static const long Cryptography_HAS_ALPN;
+ static const long Cryptography_HAS_NEXTPROTONEG;
+ static const long Cryptography_HAS_SET_CERT_CB;
+ static const long Cryptography_HAS_CUSTOM_EXT;
++static const long Cryptography_HAS_SRTP;
++static const long Cryptography_HAS_DTLS_GET_DATA_MTU;
+ 
+ static const long SSL_FILETYPE_PEM;
+ static const long SSL_FILETYPE_ASN1;
+@@ -73,6 +66,7 @@ static const long SSL_OP_NO_TLSv1_2;
+ static const long SSL_OP_NO_TLSv1_3;
+ static const long SSL_OP_NO_DTLSv1;
+ static const long SSL_OP_NO_DTLSv1_2;
++static const long SSL_OP_NO_RENEGOTIATION;
+ static const long SSL_OP_NO_COMPRESSION;
+ static const long SSL_OP_SINGLE_DH_USE;
+ static const long SSL_OP_EPHEMERAL_RSA;
+@@ -140,23 +134,11 @@ static const long SSL3_RANDOM_SIZE;
+ static const long TLS_ST_BEFORE;
+ static const long TLS_ST_OK;
+ 
+-static const long OPENSSL_NPN_NEGOTIATED;
+-
+ static const long SSL3_VERSION;
+ static const long TLS1_VERSION;
+ static const long TLS1_1_VERSION;
+ static const long TLS1_2_VERSION;
+-
+-static const long SSL3_RT_CHANGE_CIPHER_SPEC;
+-static const long SSL3_RT_ALERT;
+-static const long SSL3_RT_HANDSHAKE;
+-static const long SSL3_RT_APPLICATION_DATA;
+-static const long DTLS1_RT_HEARTBEAT;
+-
+-static const long SSL3_RT_HEADER;
+-static const long SSL3_RT_INNER_CONTENT_TYPE;
+-
+-static const long SSL3_MT_CHANGE_CIPHER_SPEC;
++static const long TLS1_3_VERSION;
+ 
+ typedef ... SSL_METHOD;
+ typedef ... SSL_CTX;
+@@ -170,13 +152,11 @@ static const long TLSEXT_STATUSTYPE_ocsp;
+ 
+ typedef ... SSL_CIPHER;
+ typedef ... Cryptography_STACK_OF_SSL_CIPHER;
+-typedef ... COMP_METHOD;
+ 
+ typedef struct {
+     const char *name;
+     unsigned long id;
+ } SRTP_PROTECTION_PROFILE;
+-static const long Cryptography_HAS_X509_CHECK_FLAG_NEVER_CHECK_SUBJECT;
+ """
+ 
+ FUNCTIONS = """
+@@ -184,20 +164,10 @@ FUNCTIONS = """
+ const char *SSL_state_string_long(const SSL *);
+ SSL_SESSION *SSL_get1_session(SSL *);
+ int SSL_set_session(SSL *, SSL_SESSION *);
+-int SSL_get_verify_mode(const SSL *);
+-void SSL_set_verify(SSL *, int, int (*)(int, X509_STORE_CTX *));
+-void SSL_set_verify_depth(SSL *, int);
+-int SSL_get_verify_depth(const SSL *);
+-int (*SSL_get_verify_callback(const SSL *))(int, X509_STORE_CTX *);
+-void SSL_set_info_callback(SSL *ssl, void (*)(const SSL *, int, int));
+-void (*SSL_get_info_callback(const SSL *))(const SSL *, int, int);
+ SSL *SSL_new(SSL_CTX *);
+ void SSL_free(SSL *);
+ int SSL_set_fd(SSL *, int);
+-SSL_CTX *SSL_get_SSL_CTX(const SSL *);
+ SSL_CTX *SSL_set_SSL_CTX(SSL *, SSL_CTX *);
+-BIO *SSL_get_rbio(const SSL *);
+-BIO *SSL_get_wbio(const SSL *);
+ void SSL_set_bio(SSL *, BIO *, BIO *);
+ void SSL_set_connect_state(SSL *);
+ void SSL_set_accept_state(SSL *);
+@@ -210,34 +180,25 @@ int SSL_peek(SSL *, void *, int);
+ X509 *SSL_get_certificate(const SSL *);
+ X509 *SSL_get_peer_certificate(const SSL *);
+ int SSL_get_ex_data_X509_STORE_CTX_idx(void);
+-int SSL_CTX_set1_param(SSL_CTX *ctx, X509_VERIFY_PARAM *vpm);
+-int SSL_set1_param(SSL *ssl, X509_VERIFY_PARAM *vpm);
+ 
+ /* Added in 1.0.2 */
+ X509_VERIFY_PARAM *SSL_get0_param(SSL *);
+-X509_VERIFY_PARAM *SSL_CTX_get0_param(SSL_CTX *ctx);
+-
+-int SSL_use_certificate(SSL *, X509 *);
+-int SSL_use_certificate_ASN1(SSL *, const unsigned char *, int);
+-int SSL_use_certificate_file(SSL *, const char *, int);
+-int SSL_use_PrivateKey(SSL *, EVP_PKEY *);
+-int SSL_use_PrivateKey_ASN1(int, SSL *, const unsigned char *, long);
+-int SSL_use_PrivateKey_file(SSL *, const char *, int);
+-int SSL_check_private_key(const SSL *);
++X509_VERIFY_PARAM *SSL_CTX_get0_param(SSL_CTX *);
+ 
+ int SSL_get_sigalgs(SSL *, int, int *, int *, int *, unsigned char *,
+                     unsigned char *);
+ 
+ Cryptography_STACK_OF_X509 *SSL_get_peer_cert_chain(const SSL *);
++Cryptography_STACK_OF_X509 *SSL_get0_verified_chain(const SSL *);
+ Cryptography_STACK_OF_X509_NAME *SSL_get_client_CA_list(const SSL *);
+ 
+ int SSL_get_error(const SSL *, int);
++long SSL_get_verify_result(const SSL *ssl);
+ int SSL_do_handshake(SSL *);
+ int SSL_shutdown(SSL *);
+ int SSL_renegotiate(SSL *);
+ int SSL_renegotiate_pending(SSL *);
+ const char *SSL_get_cipher_list(const SSL *, int);
+-Cryptography_STACK_OF_SSL_CIPHER *SSL_get_ciphers(const SSL *);
+ 
+ /*  context */
+ void SSL_CTX_free(SSL_CTX *);
+@@ -245,7 +206,6 @@ long SSL_CTX_set_timeout(SSL_CTX *, long);
+ int SSL_CTX_set_default_verify_paths(SSL_CTX *);
+ void SSL_CTX_set_verify(SSL_CTX *, int, int (*)(int, X509_STORE_CTX *));
+ void SSL_CTX_set_verify_depth(SSL_CTX *, int);
+-int (*SSL_CTX_get_verify_callback(const SSL_CTX *))(int, X509_STORE_CTX *);
+ int SSL_CTX_get_verify_mode(const SSL_CTX *);
+ int SSL_CTX_get_verify_depth(const SSL_CTX *);
+ int SSL_CTX_set_cipher_list(SSL_CTX *, const char *);
+@@ -253,11 +213,9 @@ int SSL_CTX_load_verify_locations(SSL_CTX *, const char *, const char *);
+ void SSL_CTX_set_default_passwd_cb(SSL_CTX *, pem_password_cb *);
+ void SSL_CTX_set_default_passwd_cb_userdata(SSL_CTX *, void *);
+ int SSL_CTX_use_certificate(SSL_CTX *, X509 *);
+-int SSL_CTX_use_certificate_ASN1(SSL_CTX *, int, const unsigned char *);
+ int SSL_CTX_use_certificate_file(SSL_CTX *, const char *, int);
+ int SSL_CTX_use_certificate_chain_file(SSL_CTX *, const char *);
+ int SSL_CTX_use_PrivateKey(SSL_CTX *, EVP_PKEY *);
+-int SSL_CTX_use_PrivateKey_ASN1(int, SSL_CTX *, const unsigned char *, long);
+ int SSL_CTX_use_PrivateKey_file(SSL_CTX *, const char *, int);
+ int SSL_CTX_check_private_key(const SSL_CTX *);
+ void SSL_CTX_set_cert_verify_callback(SSL_CTX *,
+@@ -270,6 +228,13 @@ void SSL_CTX_set_cookie_generate_cb(SSL_CTX *,
+                                         unsigned char *,
+                                         unsigned int *
+                                     ));
++void SSL_CTX_set_cookie_verify_cb(SSL_CTX *,
++                                    int (*)(
++                                        SSL *,
++                                        const unsigned char *,
++                                        unsigned int
++                                    ));
++
+ long SSL_CTX_get_read_ahead(SSL_CTX *);
+ long SSL_CTX_set_read_ahead(SSL_CTX *, long);
+ 
+@@ -303,6 +268,10 @@ void SSL_CTX_set_client_CA_list(SSL_CTX *, Cryptography_STACK_OF_X509_NAME *);
+ void SSL_CTX_set_info_callback(SSL_CTX *, void (*)(const SSL *, int, int));
+ void (*SSL_CTX_get_info_callback(SSL_CTX *))(const SSL *, int, int);
+ 
++void SSL_CTX_set_keylog_callback(SSL_CTX *,
++                                 void (*)(const SSL *, const char *));
++void (*SSL_CTX_get_keylog_callback(SSL_CTX *))(const SSL *, const char *);
++
+ long SSL_CTX_set1_sigalgs_list(SSL_CTX *, const char *);
+ 
+ /*  SSL_SESSION */
+@@ -347,37 +316,36 @@ long SSL_SESSION_get_timeout(const SSL_SESSION *);
+ int SSL_SESSION_has_ticket(const SSL_SESSION *);
+ long SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *);
+ 
+-/* not a macro, but older OpenSSLs don't pass the args as const */
+-char *SSL_CIPHER_description(const SSL_CIPHER *, char *, int);
+-int SSL_SESSION_print(BIO *, const SSL_SESSION *);
+-
+-/* not macros, but will be conditionally bound so can't live in functions */
+-const COMP_METHOD *SSL_get_current_compression(SSL *);
+-const COMP_METHOD *SSL_get_current_expansion(SSL *);
+-const char *SSL_COMP_get_name(const COMP_METHOD *);
+-
+ unsigned long SSL_set_mode(SSL *, unsigned long);
++unsigned long SSL_clear_mode(SSL *, unsigned long);
+ unsigned long SSL_get_mode(SSL *);
+ 
+ unsigned long SSL_set_options(SSL *, unsigned long);
+ unsigned long SSL_get_options(SSL *);
+ 
+-void SSL_set_app_data(SSL *, char *);
+-char * SSL_get_app_data(SSL *);
+-void SSL_set_read_ahead(SSL *, int);
+-
+ int SSL_want_read(const SSL *);
+ int SSL_want_write(const SSL *);
+ 
+ long SSL_total_renegotiations(SSL *);
+ long SSL_get_secure_renegotiation_support(SSL *);
+ 
++long SSL_CTX_set_min_proto_version(SSL_CTX *, int);
++long SSL_CTX_set_max_proto_version(SSL_CTX *, int);
++long SSL_set_min_proto_version(SSL *, int);
++long SSL_set_max_proto_version(SSL *, int);
++
++long SSL_CTX_get_min_proto_version(SSL_CTX *);
++long SSL_CTX_get_max_proto_version(SSL_CTX *);
++long SSL_get_min_proto_version(SSL *);
++long SSL_get_max_proto_version(SSL *);
++
+ /* Defined as unsigned long because SSL_OP_ALL is greater than signed 32-bit
+    and Windows defines long as 32-bit. */
+ unsigned long SSL_CTX_set_options(SSL_CTX *, unsigned long);
+ unsigned long SSL_CTX_clear_options(SSL_CTX *, unsigned long);
+ unsigned long SSL_CTX_get_options(SSL_CTX *);
+ unsigned long SSL_CTX_set_mode(SSL_CTX *, unsigned long);
++unsigned long SSL_CTX_clear_mode(SSL_CTX *, unsigned long);
+ unsigned long SSL_CTX_get_mode(SSL_CTX *);
+ unsigned long SSL_CTX_set_session_cache_mode(SSL_CTX *, unsigned long);
+ unsigned long SSL_CTX_get_session_cache_mode(SSL_CTX *);
+@@ -389,10 +357,6 @@ unsigned long SSL_CTX_add_extra_chain_cert(SSL_CTX *, X509 *);
+ 
+ /*  methods */
+ 
+-/*
+- * TLSv1_1 and TLSv1_2 are recent additions.  Only sufficiently new versions of
+- * OpenSSL support them.
+- */
+ const SSL_METHOD *TLSv1_1_method(void);
+ const SSL_METHOD *TLSv1_1_server_method(void);
+ const SSL_METHOD *TLSv1_1_client_method(void);
+@@ -437,7 +401,7 @@ int SSL_version(const SSL *);
+ void *SSL_CTX_get_ex_data(const SSL_CTX *, int);
+ void *SSL_get_ex_data(const SSL *, int);
+ 
+-int SSL_set_tlsext_host_name(SSL *, char *);
++void SSL_set_tlsext_host_name(SSL *, char *);
+ void SSL_CTX_set_tlsext_servername_callback(
+     SSL_CTX *,
+     int (*)(SSL *, int *, void *));
+@@ -456,25 +420,9 @@ SRTP_PROTECTION_PROFILE *SSL_get_selected_srtp_profile(SSL *);
+ 
+ long SSL_session_reused(SSL *);
+ 
+-void SSL_CTX_set_next_protos_advertised_cb(SSL_CTX *,
+-                                           int (*)(SSL *,
+-                                                   const unsigned char **,
+-                                                   unsigned int *,
+-                                                   void *),
+-                                           void *);
+-void SSL_CTX_set_next_proto_select_cb(SSL_CTX *,
+-                                      int (*)(SSL *,
+-                                              unsigned char **,
+-                                              unsigned char *,
+-                                              const unsigned char *,
+-                                              unsigned int,
+-                                              void *),
+-                                      void *);
+ int SSL_select_next_proto(unsigned char **, unsigned char *,
+                           const unsigned char *, unsigned int,
+                           const unsigned char *, unsigned int);
+-void SSL_get0_next_proto_negotiated(const SSL *,
+-                                    const unsigned char **, unsigned *);
+ 
+ int sk_SSL_CIPHER_num(Cryptography_STACK_OF_SSL_CIPHER *);
+ const SSL_CIPHER *sk_SSL_CIPHER_value(Cryptography_STACK_OF_SSL_CIPHER *, int);
+@@ -502,9 +450,6 @@ long SSL_get_server_tmp_key(SSL *, EVP_PKEY **);
+ void SSL_CTX_set_cert_cb(SSL_CTX *, int (*)(SSL *, void *), void *);
+ void SSL_set_cert_cb(SSL *, int (*)(SSL *, void *), void *);
+ 
+-/* Added in 1.0.2 */
+-const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *);
+-
+ int SSL_SESSION_set1_id_context(SSL_SESSION *, const unsigned char *,
+                                 unsigned int);
+ /* Added in 1.1.0 for the great opaquing of structs */
+@@ -533,6 +478,10 @@ long Cryptography_DTLSv1_get_timeout(SSL *, time_t *, long *);
+ long DTLSv1_handle_timeout(SSL *);
+ long DTLS_set_link_mtu(SSL *, long);
+ long DTLS_get_link_min_mtu(SSL *);
++long SSL_set_mtu(SSL *, long);
++int DTLSv1_listen(SSL *, BIO_ADDR *);
++size_t DTLS_get_data_mtu(SSL *);
++
+ 
+ /* Custom extensions. */
+ typedef int (*custom_ext_add_cb)(SSL *, unsigned int,
+@@ -568,127 +517,49 @@ int SSL_verify_client_post_handshake(SSL *);
+ void SSL_CTX_set_post_handshake_auth(SSL_CTX *, int);
+ void SSL_set_post_handshake_auth(SSL *, int);
+ 
+-
+ uint32_t SSL_SESSION_get_max_early_data(const SSL_SESSION *);
+ int SSL_write_early_data(SSL *, const void *, size_t, size_t *);
+ int SSL_read_early_data(SSL *, void *, size_t, size_t *);
+ int SSL_CTX_set_max_early_data(SSL_CTX *, uint32_t);
+-
+-long SSL_get_verify_result(const SSL *ssl);
+-
+-int SSL_CTX_set_min_proto_version(SSL_CTX *ctx, int version);
+-int SSL_CTX_set_max_proto_version(SSL_CTX *ctx, int version);
+-int SSL_CTX_get_min_proto_version(SSL_CTX *ctx);
+-int SSL_CTX_get_max_proto_version(SSL_CTX *ctx);
+-
+-int SSL_set_min_proto_version(SSL *ssl, int version);
+-int SSL_set_max_proto_version(SSL *ssl, int version);
+-int SSL_get_min_proto_version(SSL *ssl);
+-int SSL_get_max_proto_version(SSL *ssl);
+-
+-ASN1_OCTET_STRING *a2i_IPADDRESS(const char *ipasc);
+-
+-int SSL_set_num_tickets(SSL *s, size_t num_tickets);
+-size_t SSL_get_num_tickets(const SSL *s);
+-int SSL_CTX_set_num_tickets(SSL_CTX *ctx, size_t num_tickets);
+-size_t SSL_CTX_get_num_tickets(const SSL_CTX *ctx);
+-void SSL_CTX_set_msg_callback(SSL_CTX *ctx,
+-                              void (*cb) (int write_p, int version,
+-                                          int content_type, const void *buf,
+-                                          size_t len, SSL *ssl, void *arg));
+-void SSL_set_msg_callback(SSL *ssl,
+-                          void (*cb) (int write_p, int version,
+-                                      int content_type, const void *buf,
+-                                      size_t len, SSL *ssl, void *arg));
+ """
+ 
+ CUSTOMIZATIONS = """
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+-#error Python 3.7 requires OpenSSL >= 1.0.2
+-#endif
++// This symbol is being preserved because removing it will break users with
++// pyOpenSSL < 19.1 and pip < 20.x. We need to leave this in place until those
++// users have upgraded. PersistentlyDeprecated2020
++static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
+ 
+-/* Added in 1.0.2 but we need it in all versions now due to the great
+-   opaquing. */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+-/* from ssl/ssl_lib.c */
+-const SSL_METHOD *SSL_CTX_get_ssl_method(SSL_CTX *ctx) {
+-    return ctx->method;
+-}
++#if CRYPTOGRAPHY_IS_LIBRESSL
++static const long Cryptography_HAS_VERIFIED_CHAIN = 0;
++Cryptography_STACK_OF_X509 *(*SSL_get0_verified_chain)(const SSL *) = NULL;
++#else
++static const long Cryptography_HAS_VERIFIED_CHAIN = 1;
+ #endif
+ 
+-/* Added in 1.1.0 in the great opaquing, but we need to define it for older
+-   OpenSSLs. Such is our burden. */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+-/* from ssl/ssl_lib.c */
+-size_t SSL_get_client_random(const SSL *ssl, unsigned char *out, size_t outlen)
+-{
+-    if (outlen == 0)
+-        return sizeof(ssl->s3->client_random);
+-    if (outlen > sizeof(ssl->s3->client_random))
+-        outlen = sizeof(ssl->s3->client_random);
+-    memcpy(out, ssl->s3->client_random, outlen);
+-    return outlen;
+-}
+-/* Added in 1.1.0 as well */
+-/* from ssl/ssl_lib.c */
+-size_t SSL_get_server_random(const SSL *ssl, unsigned char *out, size_t outlen)
+-{
+-    if (outlen == 0)
+-        return sizeof(ssl->s3->server_random);
+-    if (outlen > sizeof(ssl->s3->server_random))
+-        outlen = sizeof(ssl->s3->server_random);
+-    memcpy(out, ssl->s3->server_random, outlen);
+-    return outlen;
+-}
+-/* Added in 1.1.0 as well */
+-/* from ssl/ssl_lib.c */
+-size_t SSL_SESSION_get_master_key(const SSL_SESSION *session,
+-                               unsigned char *out, size_t outlen)
+-{
+-    if (session->master_key_length < 0) {
+-        /* Should never happen */
+-        return 0;
+-    }
+-    if (outlen == 0)
+-        return session->master_key_length;
+-    if (outlen > (size_t)session->master_key_length)
+-        outlen = session->master_key_length;
+-    memcpy(out, session->master_key, outlen);
+-    return outlen;
+-}
+-/* from ssl/ssl_sess.c */
+-int SSL_SESSION_has_ticket(const SSL_SESSION *s)
+-{
+-    return (s->tlsext_ticklen > 0) ? 1 : 0;
+-}
+-/* from ssl/ssl_sess.c */
+-unsigned long SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *s)
+-{
+-    return s->tlsext_tick_lifetime_hint;
+-}
++#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
++static const long Cryptography_HAS_KEYLOG = 0;
++void (*SSL_CTX_set_keylog_callback)(SSL_CTX *,
++                                    void (*) (const SSL *, const char *)
++                                    ) = NULL;
++void (*(*SSL_CTX_get_keylog_callback)(SSL_CTX *))(
++                                                  const SSL *,
++                                                  const char *
++                                                  ) = NULL;
++#else
++static const long Cryptography_HAS_KEYLOG = 1;
+ #endif
+ 
+ static const long Cryptography_HAS_SECURE_RENEGOTIATION = 1;
+ 
+-/* Cryptography now compiles out all SSLv2 bindings. This exists to allow
+- * clients that use it to check for SSLv2 support to keep functioning as
+- * expected.
+- */
+-static const long Cryptography_HAS_SSL2 = 0;
+-
+ #ifdef OPENSSL_NO_SSL3_METHOD
+ static const long Cryptography_HAS_SSL3_METHOD = 0;
+-const SSL_METHOD* (*SSLv3_method)(void) = NULL;
+-const SSL_METHOD* (*SSLv3_client_method)(void) = NULL;
+-const SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
++SSL_METHOD* (*SSLv3_method)(void) = NULL;
++SSL_METHOD* (*SSLv3_client_method)(void) = NULL;
++SSL_METHOD* (*SSLv3_server_method)(void) = NULL;
+ #else
+ static const long Cryptography_HAS_SSL3_METHOD = 1;
+ #endif
+ 
+-static const long Cryptography_HAS_TLSEXT_HOSTNAME = 1;
+-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_CB = 1;
+-static const long Cryptography_HAS_STATUS_REQ_OCSP_RESP = 1;
+-static const long Cryptography_HAS_TLSEXT_STATUS_REQ_TYPE = 1;
+ static const long Cryptography_HAS_RELEASE_BUFFERS = 1;
+ static const long Cryptography_HAS_OP_NO_COMPRESSION = 1;
+ static const long Cryptography_HAS_TLSv1_1 = 1;
+@@ -696,39 +567,17 @@ static const long Cryptography_HAS_TLSv1_2 = 1;
+ static const long Cryptography_HAS_SSL_OP_MSIE_SSLV2_RSA_PADDING = 1;
+ static const long Cryptography_HAS_SSL_OP_NO_TICKET = 1;
+ static const long Cryptography_HAS_SSL_SET_SSL_CTX = 1;
+-static const long Cryptography_HAS_NEXTPROTONEG = 1;
+-
+-/* SSL_get0_param was added in OpenSSL 1.0.2. */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+-X509_VERIFY_PARAM *(*SSL_get0_param)(SSL *) = NULL;
+-X509_VERIFY_PARAM *(*SSL_CTX_get0_param)(SSL_CTX *ctx) = NULL;
+-#else
+-#endif
++static const long Cryptography_HAS_NEXTPROTONEG = 0;
++static const long Cryptography_HAS_ALPN = 1;
+ 
+-/* ALPN was added in OpenSSL 1.0.2. */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_IS_LIBRESSL
+-int (*SSL_CTX_set_alpn_protos)(SSL_CTX *,
+-                               const unsigned char *,
+-                               unsigned) = NULL;
+-int (*SSL_set_alpn_protos)(SSL *, const unsigned char *, unsigned) = NULL;
+-void (*SSL_CTX_set_alpn_select_cb)(SSL_CTX *,
+-                                   int (*) (SSL *,
+-                                            const unsigned char **,
+-                                            unsigned char *,
+-                                            const unsigned char *,
+-                                            unsigned int,
+-                                            void *),
+-                                   void *) = NULL;
+-void (*SSL_get0_alpn_selected)(const SSL *,
+-                               const unsigned char **,
+-                               unsigned *) = NULL;
+-static const long Cryptography_HAS_ALPN = 0;
++#ifdef SSL_OP_NO_RENEGOTIATION
++static const long Cryptography_HAS_OP_NO_RENEGOTIATION = 1;
+ #else
+-static const long Cryptography_HAS_ALPN = 1;
++static const long Cryptography_HAS_OP_NO_RENEGOTIATION = 0;
++static const long SSL_OP_NO_RENEGOTIATION = 0;
+ #endif
+ 
+-/* SSL_CTX_set_cert_cb was added in OpenSSL 1.0.2. */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
++#if CRYPTOGRAPHY_IS_LIBRESSL
+ void (*SSL_CTX_set_cert_cb)(SSL_CTX *, int (*)(SSL *, void *), void *) = NULL;
+ void (*SSL_set_cert_cb)(SSL *, int (*)(SSL *, void *), void *) = NULL;
+ static const long Cryptography_HAS_SET_CERT_CB = 0;
+@@ -736,49 +585,11 @@ static const long Cryptography_HAS_SET_CERT_CB = 0;
+ static const long Cryptography_HAS_SET_CERT_CB = 1;
+ #endif
+ 
+-
+-/* In OpenSSL 1.0.2i+ the handling of COMP_METHOD when OPENSSL_NO_COMP was
+-   changed and we no longer need to typedef void */
+-#if (defined(OPENSSL_NO_COMP) && CRYPTOGRAPHY_OPENSSL_LESS_THAN_102I) || \
+-    CRYPTOGRAPHY_IS_LIBRESSL
+-static const long Cryptography_HAS_COMPRESSION = 0;
+-typedef void COMP_METHOD;
+-#else
+-static const long Cryptography_HAS_COMPRESSION = 1;
+-#endif
+-
+-#if defined(SSL_CTRL_GET_SERVER_TMP_KEY)
+-static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 1;
+-#else
+-static const long Cryptography_HAS_GET_SERVER_TMP_KEY = 0;
+-long (*SSL_get_server_tmp_key)(SSL *, EVP_PKEY **) = NULL;
+-#endif
+-
+-/* The setter functions were added in OpenSSL 1.1.0. The getter functions were
+-   added in OpenSSL 1.1.1. */
+-#if defined(SSL_CTRL_GET_MAX_PROTO_VERSION)
+-static const long Cryptography_HAS_CTRL_GET_MAX_PROTO_VERSION = 1;
+-#else
+-static const long Cryptography_HAS_CTRL_GET_MAX_PROTO_VERSION = 0;
+-int (*SSL_CTX_get_min_proto_version)(SSL_CTX *ctx) = NULL;
+-int (*SSL_CTX_get_max_proto_version)(SSL_CTX *ctx) = NULL;
+-int (*SSL_get_min_proto_version)(SSL *ssl) = NULL;
+-int (*SSL_get_max_proto_version)(SSL *ssl) = NULL;
+-#endif
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+-int (*SSL_CTX_set_min_proto_version)(SSL_CTX *ctx, int version) = NULL;
+-int (*SSL_CTX_set_max_proto_version)(SSL_CTX *ctx, int version) = NULL;
+-int (*SSL_set_min_proto_version)(SSL *ssl, int version) = NULL;
+-int (*SSL_set_max_proto_version)(SSL *ssl, int version) = NULL;
+-#endif
+-
+-static const long Cryptography_HAS_SSL_CTX_SET_CLIENT_CERT_ENGINE = 1;
+-
+ static const long Cryptography_HAS_SSL_CTX_CLEAR_OPTIONS = 1;
+ 
+ /* in OpenSSL 1.1.0 the SSL_ST values were renamed to TLS_ST and several were
+    removed */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
++#if CRYPTOGRAPHY_IS_LIBRESSL
+ static const long Cryptography_HAS_SSL_ST = 1;
+ #else
+ static const long Cryptography_HAS_SSL_ST = 0;
+@@ -787,7 +598,7 @@ static const long SSL_ST_OK = 0;
+ static const long SSL_ST_INIT = 0;
+ static const long SSL_ST_RENEGOTIATE = 0;
+ #endif
+-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
++#if !CRYPTOGRAPHY_IS_LIBRESSL
+ static const long Cryptography_HAS_TLS_ST = 1;
+ #else
+ static const long Cryptography_HAS_TLS_ST = 0;
+@@ -795,31 +606,22 @@ static const long TLS_ST_BEFORE = 0;
+ static const long TLS_ST_OK = 0;
+ #endif
+ 
+-/* SSLv23_method(), SSLv23_server_method() and SSLv23_client_method() were
+-   deprecated and the preferred TLS_method(), TLS_server_method() and
+-   TLS_client_method() functions were introduced in OpenSSL 1.1.0. */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+-#define TLS_method SSLv23_method
+-#define TLS_server_method SSLv23_server_method
+-#define TLS_client_method SSLv23_client_method
+-#endif
+-
+-/* LibreSSL 2.9.1 added only the DTLS_*_method functions */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_LIBRESSL_291_OR_GREATER
+-static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 0;
+-const SSL_METHOD *(*DTLS_method)(void) = NULL;
+-const SSL_METHOD *(*DTLS_server_method)(void) = NULL;
+-const SSL_METHOD *(*DTLS_client_method)(void) = NULL;
+-#else
+-static const long Cryptography_HAS_GENERIC_DTLS_METHOD = 1;
+-#endif
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
++#if CRYPTOGRAPHY_IS_LIBRESSL
++#if CRYPTOGRAPHY_LIBRESSL_LESS_THAN_332
+ static const long SSL_OP_NO_DTLSv1 = 0;
+ static const long SSL_OP_NO_DTLSv1_2 = 0;
++#endif
+ long (*DTLS_set_link_mtu)(SSL *, long) = NULL;
+ long (*DTLS_get_link_min_mtu)(SSL *) = NULL;
+ #endif
+ 
++#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
++static const long Cryptography_HAS_DTLS_GET_DATA_MTU = 0;
++size_t (*DTLS_get_data_mtu)(SSL *) = NULL;
++#else
++static const long Cryptography_HAS_DTLS_GET_DATA_MTU = 1;
++#endif
++
+ static const long Cryptography_HAS_DTLS = 1;
+ /* Wrap DTLSv1_get_timeout to avoid cffi to handle a 'struct timeval'. */
+ long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
+@@ -840,7 +642,7 @@ long Cryptography_DTLSv1_get_timeout(SSL *ssl, time_t *ptv_sec,
+     return r;
+ }
+ 
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
++#if CRYPTOGRAPHY_IS_LIBRESSL
+ static const long Cryptography_HAS_SIGALGS = 0;
+ const int (*SSL_get_sigalgs)(SSL *, int, int *, int *, int *, unsigned char *,
+                              unsigned char *) = NULL;
+@@ -872,57 +674,46 @@ void (*SSL_CTX_set_psk_client_callback)(SSL_CTX *,
+ static const long Cryptography_HAS_PSK = 1;
+ #endif
+ 
+-/*
+- * Custom extensions were added in 1.0.2. 1.1.1 is adding a more general
+- * SSL_CTX_add_custom_ext function, but we're not binding that yet.
+- */
+-#if CRYPTOGRAPHY_OPENSSL_102_OR_GREATER
++#if !CRYPTOGRAPHY_IS_LIBRESSL
+ static const long Cryptography_HAS_CUSTOM_EXT = 1;
+ #else
+ static const long Cryptography_HAS_CUSTOM_EXT = 0;
+-
+ typedef int (*custom_ext_add_cb)(SSL *, unsigned int,
+                                  const unsigned char **,
+                                  size_t *, int *,
+                                  void *);
+-
+ typedef void (*custom_ext_free_cb)(SSL *, unsigned int,
+                                    const unsigned char *,
+                                    void *);
+-
+ typedef int (*custom_ext_parse_cb)(SSL *, unsigned int,
+                                    const unsigned char *,
+                                    size_t, int *,
+                                    void *);
+-
+ int (*SSL_CTX_add_client_custom_ext)(SSL_CTX *, unsigned int,
+                                      custom_ext_add_cb,
+                                      custom_ext_free_cb, void *,
+                                      custom_ext_parse_cb,
+                                      void *) = NULL;
+-
+ int (*SSL_CTX_add_server_custom_ext)(SSL_CTX *, unsigned int,
+                                      custom_ext_add_cb,
+                                      custom_ext_free_cb, void *,
+                                      custom_ext_parse_cb,
+                                      void *) = NULL;
+-
+ int (*SSL_extension_supported)(unsigned int) = NULL;
+ #endif
+ 
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+-int (*SSL_CIPHER_is_aead)(const SSL_CIPHER *) = NULL;
+-int (*SSL_CIPHER_get_cipher_nid)(const SSL_CIPHER *) = NULL;
+-int (*SSL_CIPHER_get_digest_nid)(const SSL_CIPHER *) = NULL;
+-int (*SSL_CIPHER_get_kx_nid)(const SSL_CIPHER *) = NULL;
+-int (*SSL_CIPHER_get_auth_nid)(const SSL_CIPHER *) = NULL;
+-static const long Cryptography_HAS_CIPHER_DETAILS = 0;
++#ifndef OPENSSL_NO_SRTP
++static const long Cryptography_HAS_SRTP = 1;
+ #else
+-static const long Cryptography_HAS_CIPHER_DETAILS = 1;
++static const long Cryptography_HAS_SRTP = 0;
++int (*SSL_CTX_set_tlsext_use_srtp)(SSL_CTX *, const char *) = NULL;
++int (*SSL_set_tlsext_use_srtp)(SSL *, const char *) = NULL;
++SRTP_PROTECTION_PROFILE * (*SSL_get_selected_srtp_profile)(SSL *) = NULL;
+ #endif
+ 
+ #if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111
+ static const long Cryptography_HAS_TLSv1_3 = 0;
++static const long TLS1_3_VERSION = 0;
+ static const long SSL_OP_NO_TLSv1_3 = 0;
+ static const long SSL_VERIFY_POST_HANDSHAKE = 0;
+ int (*SSL_CTX_set_ciphersuites)(SSL_CTX *, const char *) = NULL;
+@@ -937,9 +728,14 @@ int (*SSL_CTX_set_max_early_data)(SSL_CTX *, uint32_t) = NULL;
+ static const long Cryptography_HAS_TLSv1_3 = 1;
+ #endif
+ 
+-#ifdef X509_CHECK_FLAG_NEVER_CHECK_SUBJECT
+-static const long Cryptography_HAS_X509_CHECK_FLAG_NEVER_CHECK_SUBJECT = 1;
++#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_111 && !CRYPTOGRAPHY_IS_LIBRESSL
++static const long Cryptography_HAS_GET_PROTO_VERSION = 0;
++
++long (*SSL_CTX_get_min_proto_version)(SSL_CTX *) = NULL;
++long (*SSL_CTX_get_max_proto_version)(SSL_CTX *) = NULL;
++long (*SSL_get_min_proto_version)(SSL *) = NULL;
++long (*SSL_get_max_proto_version)(SSL *) = NULL;
+ #else
+-static const long Cryptography_HAS_X509_CHECK_FLAG_NEVER_CHECK_SUBJECT = 0;
++static const long Cryptography_HAS_GET_PROTO_VERSION = 1;
+ #endif
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509.py
+index e5e817c..b90bbec 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/ssl.h>
+@@ -29,6 +28,7 @@ typedef struct {
+     ...;
+ } X509_ALGOR;
+ 
++typedef ... X509_ATTRIBUTE;
+ typedef ... X509_EXTENSION;
+ typedef ... X509_EXTENSIONS;
+ typedef ... X509_REQ;
+@@ -76,8 +76,6 @@ X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
+ ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
+ void X509_EXTENSION_free(X509_EXTENSION *);
+ 
+-int i2d_X509(X509 *, unsigned char **);
+-
+ int X509_REQ_set_version(X509_REQ *, long);
+ X509_REQ *X509_REQ_new(void);
+ void X509_REQ_free(X509_REQ *);
+@@ -89,6 +87,8 @@ EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
+ int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
+ int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
+ X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
++int X509_REQ_add1_attr_by_OBJ(X509_REQ *, const ASN1_OBJECT *,
++                              int, const unsigned char *, int);
+ 
+ int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
+ ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);
+@@ -158,7 +158,6 @@ int i2d_DSAPrivateKey_bio(BIO *, DSA *);
+ /* These became const X509 in 1.1.0 */
+ int X509_get_ext_count(X509 *);
+ X509_EXTENSION *X509_get_ext(X509 *, int);
+-int X509_get_ext_by_NID(X509 *, int, int);
+ X509_NAME *X509_get_subject_name(X509 *);
+ X509_NAME *X509_get_issuer_name(X509 *);
+ 
+@@ -181,21 +180,21 @@ int X509_CRL_get_ext_count(X509_CRL *);
+ 
+ int X509_CRL_get0_by_serial(X509_CRL *, X509_REVOKED **, ASN1_INTEGER *);
+ 
++X509_REVOKED *X509_REVOKED_dup(X509_REVOKED *);
+ X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *);
+ 
+-/* new in 1.0.2 */
+-int i2d_re_X509_tbs(X509 *, unsigned char **);
+ int X509_get_signature_nid(const X509 *);
+ 
+ const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *);
+ 
+-void X509_get0_signature(const ASN1_BIT_STRING **,
+-                         const X509_ALGOR **, const X509 *);
+-
+ long X509_get_version(X509 *);
+ 
+ ASN1_TIME *X509_get_notBefore(X509 *);
+ ASN1_TIME *X509_get_notAfter(X509 *);
++ASN1_TIME *X509_getm_notBefore(const X509 *);
++ASN1_TIME *X509_getm_notAfter(const X509 *);
++const ASN1_TIME *X509_get0_notBefore(const X509 *);
++const ASN1_TIME *X509_get0_notAfter(const X509 *);
+ 
+ long X509_REQ_get_version(X509_REQ *);
+ X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
+@@ -227,6 +226,8 @@ X509_CRL *sk_X509_CRL_value(Cryptography_STACK_OF_X509_CRL *, int);
+ long X509_CRL_get_version(X509_CRL *);
+ ASN1_TIME *X509_CRL_get_lastUpdate(X509_CRL *);
+ ASN1_TIME *X509_CRL_get_nextUpdate(X509_CRL *);
++const ASN1_TIME *X509_CRL_get0_lastUpdate(const X509_CRL *);
++const ASN1_TIME *X509_CRL_get0_nextUpdate(const X509_CRL *);
+ X509_NAME *X509_CRL_get_issuer(X509_CRL *);
+ Cryptography_STACK_OF_X509_REVOKED *X509_CRL_get_REVOKED(X509_CRL *);
+ 
+@@ -236,6 +237,11 @@ int X509_CRL_set_nextUpdate(X509_CRL *, ASN1_TIME *);
+ int X509_set_notBefore(X509 *, ASN1_TIME *);
+ int X509_set_notAfter(X509 *, ASN1_TIME *);
+ 
++int X509_CRL_set1_lastUpdate(X509_CRL *, const ASN1_TIME *);
++int X509_CRL_set1_nextUpdate(X509_CRL *, const ASN1_TIME *);
++int X509_set1_notBefore(X509 *, const ASN1_TIME *);
++int X509_set1_notAfter(X509 *, const ASN1_TIME *);
++
+ EC_KEY *d2i_EC_PUBKEY_bio(BIO *, EC_KEY **);
+ int i2d_EC_PUBKEY_bio(BIO *, EC_KEY *);
+ EC_KEY *d2i_ECPrivateKey_bio(BIO *, EC_KEY **);
+@@ -251,109 +257,11 @@ int sk_ASN1_OBJECT_push(Cryptography_STACK_OF_ASN1_OBJECT *, ASN1_OBJECT *);
+ /* these functions were added in 1.1.0 */
+ const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *);
+ const ASN1_TIME *X509_REVOKED_get0_revocationDate(const X509_REVOKED *);
+-void X509_CRL_get0_signature(const X509_CRL *, const ASN1_BIT_STRING **,
+-                             const X509_ALGOR **);
+-int i2d_re_X509_REQ_tbs(X509_REQ *, unsigned char **);
+-int i2d_re_X509_CRL_tbs(X509_CRL *, unsigned char **);
+-void X509_REQ_get0_signature(const X509_REQ *, const ASN1_BIT_STRING **,
+-                             const X509_ALGOR **);
+ """
+ 
+ CUSTOMIZATIONS = """
+-/* Added in 1.0.2 beta but we need it in all versions now due to the great
+-   opaquing. */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+-/* from x509/x_x509.c version 1.0.2 */
+-void X509_get0_signature(const ASN1_BIT_STRING **psig,
+-                         const X509_ALGOR **palg, const X509 *x)
+-{
+-    if (psig)
+-        *psig = x->signature;
+-    if (palg)
+-        *palg = x->sig_alg;
+-}
+-
+-int X509_get_signature_nid(const X509 *x)
+-{
+-    return OBJ_obj2nid(x->sig_alg->algorithm);
+-}
+-
+-#endif
+-
+-/* Added in 1.0.2 but we need it in all versions now due to the great
+-   opaquing. */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+-/* from x509/x_x509.c */
+-int i2d_re_X509_tbs(X509 *x, unsigned char **pp)
+-{
+-    /* in 1.0.2+ this function also sets x->cert_info->enc.modified = 1
+-       but older OpenSSLs don't have the enc ASN1_ENCODING member in the
+-       X509 struct.  Setting modified to 1 marks the encoding
+-       (x->cert_info->enc.enc) as invalid, but since the entire struct isn't
+-       present we don't care. */
+-    return i2d_X509_CINF(x->cert_info, pp);
+-}
+-#endif
+-
+-/* X509_REVOKED_dup only exists on 1.0.2+. It is implemented using
+-   IMPLEMENT_ASN1_DUP_FUNCTION. The below is the equivalent so we have
+-   it available on all OpenSSLs. */
++/* Being kept around for pyOpenSSL */
+ X509_REVOKED *Cryptography_X509_REVOKED_dup(X509_REVOKED *rev) {
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_102
+-    return ASN1_item_dup(ASN1_ITEM_rptr(X509_REVOKED), rev);
+-#else
+     return X509_REVOKED_dup(rev);
+-#endif
+-}
+-
+-/* Added in 1.1.0 but we need it in all versions now due to the great
+-   opaquing. */
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
+-int i2d_re_X509_REQ_tbs(X509_REQ *req, unsigned char **pp)
+-{
+-    req->req_info->enc.modified = 1;
+-    return i2d_X509_REQ_INFO(req->req_info, pp);
+-}
+-int i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp) {
+-    crl->crl->enc.modified = 1;
+-    return i2d_X509_CRL_INFO(crl->crl, pp);
+-}
+-
+-#if !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+-int X509_up_ref(X509 *x) {
+-   return CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
+-}
+-
+-const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x)
+-{
+-    return x->cert_info->signature;
+-}
+-
+-/* from x509/x509_req.c */
+-void X509_REQ_get0_signature(const X509_REQ *req, const ASN1_BIT_STRING **psig,
+-                             const X509_ALGOR **palg)
+-{
+-    if (psig != NULL)
+-        *psig = req->signature;
+-    if (palg != NULL)
+-        *palg = req->sig_alg;
+-}
+-void X509_CRL_get0_signature(const X509_CRL *crl, const ASN1_BIT_STRING **psig,
+-                             const X509_ALGOR **palg)
+-{
+-    if (psig != NULL)
+-        *psig = crl->signature;
+-    if (palg != NULL)
+-        *palg = crl->sig_alg;
+-}
+-const ASN1_TIME *X509_REVOKED_get0_revocationDate(const X509_REVOKED *x)
+-{
+-    return x->revocationDate;
+-}
+-const ASN1_INTEGER *X509_REVOKED_get0_serialNumber(const X509_REVOKED *x)
+-{
+-    return x->serialNumber;
+ }
+-#endif
+-#endif
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509_vfy.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509_vfy.py
+index 42da3b1..16c0ae0 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509_vfy.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509_vfy.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/x509_vfy.h>
+@@ -19,11 +18,7 @@ typedef STACK_OF(X509_OBJECT) Cryptography_STACK_OF_X509_OBJECT;
+ """
+ 
+ TYPES = """
+-static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES;
+-static const long Cryptography_HAS_102_VERIFICATION_PARAMS;
+ static const long Cryptography_HAS_110_VERIFICATION_PARAMS;
+-static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST;
+-static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN;
+ static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER;
+ 
+ typedef ... Cryptography_STACK_OF_ASN1_OBJECT;
+@@ -94,12 +89,6 @@ static const int X509_V_ERR_UNSUPPORTED_CONSTRAINT_TYPE;
+ static const int X509_V_ERR_UNSUPPORTED_CONSTRAINT_SYNTAX;
+ static const int X509_V_ERR_UNSUPPORTED_NAME_SYNTAX;
+ static const int X509_V_ERR_CRL_PATH_VALIDATION_ERROR;
+-static const int X509_V_ERR_SUITE_B_INVALID_VERSION;
+-static const int X509_V_ERR_SUITE_B_INVALID_ALGORITHM;
+-static const int X509_V_ERR_SUITE_B_INVALID_CURVE;
+-static const int X509_V_ERR_SUITE_B_INVALID_SIGNATURE_ALGORITHM;
+-static const int X509_V_ERR_SUITE_B_LOS_NOT_ALLOWED;
+-static const int X509_V_ERR_SUITE_B_CANNOT_SIGN_P_384_WITH_P_256;
+ static const int X509_V_ERR_HOSTNAME_MISMATCH;
+ static const int X509_V_ERR_EMAIL_MISMATCH;
+ static const int X509_V_ERR_IP_ADDRESS_MISMATCH;
+@@ -122,10 +111,9 @@ static const long X509_V_FLAG_EXTENDED_CRL_SUPPORT;
+ static const long X509_V_FLAG_USE_DELTAS;
+ static const long X509_V_FLAG_CHECK_SS_SIGNATURE;
+ static const long X509_V_FLAG_TRUSTED_FIRST;
+-static const long X509_V_FLAG_SUITEB_128_LOS_ONLY;
+-static const long X509_V_FLAG_SUITEB_192_LOS;
+-static const long X509_V_FLAG_SUITEB_128_LOS;
+ static const long X509_V_FLAG_PARTIAL_CHAIN;
++static const long X509_V_FLAG_NO_ALT_CHAINS;
++static const long X509_V_FLAG_NO_CHECK_TIME;
+ 
+ static const long X509_LU_X509;
+ static const long X509_LU_CRL;
+@@ -136,6 +124,20 @@ static const long X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS;
+ static const long X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS;
+ static const long X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS;
+ static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT;
++
++/* Included due to external consumer, see
++   https://github.com/pyca/pyopenssl/issues/1031 */
++static const long X509_PURPOSE_SSL_CLIENT;
++static const long X509_PURPOSE_SSL_SERVER;
++static const long X509_PURPOSE_NS_SSL_SERVER;
++static const long X509_PURPOSE_SMIME_SIGN;
++static const long X509_PURPOSE_SMIME_ENCRYPT;
++static const long X509_PURPOSE_CRL_SIGN;
++static const long X509_PURPOSE_ANY;
++static const long X509_PURPOSE_OCSP_HELPER;
++static const long X509_PURPOSE_TIMESTAMP_SIGN;
++static const long X509_PURPOSE_MIN;
++static const long X509_PURPOSE_MAX;
+ """
+ 
+ FUNCTIONS = """
+@@ -149,6 +151,9 @@ int X509_STORE_load_locations(X509_STORE *, const char *, const char *);
+ int X509_STORE_set1_param(X509_STORE *, X509_VERIFY_PARAM *);
+ int X509_STORE_set_default_paths(X509_STORE *);
+ int X509_STORE_set_flags(X509_STORE *, unsigned long);
++/* Included due to external consumer, see
++   https://github.com/pyca/pyopenssl/issues/1031 */
++int X509_STORE_set_purpose(X509_STORE *, int);
+ void X509_STORE_free(X509_STORE *);
+ 
+ /* X509_STORE_CTX */
+@@ -159,8 +164,12 @@ int X509_STORE_CTX_init(X509_STORE_CTX *, X509_STORE *, X509 *,
+                         Cryptography_STACK_OF_X509 *);
+ void X509_STORE_CTX_trusted_stack(X509_STORE_CTX *,
+                                   Cryptography_STACK_OF_X509 *);
++void X509_STORE_CTX_set0_trusted_stack(X509_STORE_CTX *,
++                                  Cryptography_STACK_OF_X509 *);
+ void X509_STORE_CTX_set_cert(X509_STORE_CTX *, X509 *);
+ void X509_STORE_CTX_set_chain(X509_STORE_CTX *,Cryptography_STACK_OF_X509 *);
++void X509_STORE_CTX_set0_untrusted(X509_STORE_CTX *,
++                                  Cryptography_STACK_OF_X509 *);
+ X509_VERIFY_PARAM *X509_STORE_CTX_get0_param(X509_STORE_CTX *);
+ void X509_STORE_CTX_set0_param(X509_STORE_CTX *, X509_VERIFY_PARAM *);
+ int X509_STORE_CTX_set_default(X509_STORE_CTX *, const char *);
+@@ -222,67 +231,7 @@ void X509_STORE_set_get_issuer(X509_STORE *, X509_STORE_CTX_get_issuer_fn);
+ """
+ 
+ CUSTOMIZATIONS = """
+-/* OpenSSL 1.0.2+ verification parameters and error codes */
+-#if CRYPTOGRAPHY_OPENSSL_102_OR_GREATER
+-static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 1;
+-static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 1;
+-#else
+-static const long Cryptography_HAS_102_VERIFICATION_ERROR_CODES = 0;
+-static const long Cryptography_HAS_102_VERIFICATION_PARAMS = 0;
+-
+-static const long X509_V_ERR_SUITE_B_INVALID_VERSION = 0;
+-static const long X509_V_ERR_SUITE_B_INVALID_ALGORITHM = 0;
+-static const long X509_V_ERR_SUITE_B_INVALID_CURVE = 0;
+-static const long X509_V_ERR_SUITE_B_INVALID_SIGNATURE_ALGORITHM = 0;
+-static const long X509_V_ERR_SUITE_B_LOS_NOT_ALLOWED = 0;
+-static const long X509_V_ERR_SUITE_B_CANNOT_SIGN_P_384_WITH_P_256 = 0;
+-/* These 3 defines are unavailable in LibreSSL 2.5.x, but may be added
+-   in the future... */
+-#ifndef X509_V_ERR_HOSTNAME_MISMATCH
+-static const long X509_V_ERR_HOSTNAME_MISMATCH = 0;
+-#endif
+-#ifndef X509_V_ERR_EMAIL_MISMATCH
+-static const long X509_V_ERR_EMAIL_MISMATCH = 0;
+-#endif
+-#ifndef X509_V_ERR_IP_ADDRESS_MISMATCH
+-static const long X509_V_ERR_IP_ADDRESS_MISMATCH = 0;
+-#endif
+-#ifndef X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT
+-static const long X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT = 0;
+-#endif
+-#ifndef X509_CHECK_FLAG_NO_WILDCARDS
+-static const long X509_CHECK_FLAG_NO_WILDCARDS = 0;
+-#endif
+-#ifndef X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS
+-static const long X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS = 0;
+-#endif
+-#ifndef X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS
+-static const long X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS = 0;
+-#endif
+-#ifndef X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS
+-static const long X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS = 0;
+-#endif
+-
+-/* X509_V_FLAG_TRUSTED_FIRST is also new in 1.0.2+, but it is added separately
+-   below because it shows up in some earlier 3rd party OpenSSL packages. */
+-static const long X509_V_FLAG_SUITEB_128_LOS_ONLY = 0;
+-static const long X509_V_FLAG_SUITEB_192_LOS = 0;
+-static const long X509_V_FLAG_SUITEB_128_LOS = 0;
+-
+-#if !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+-int (*X509_VERIFY_PARAM_set1_host)(X509_VERIFY_PARAM *, const char *,
+-                                   size_t) = NULL;
+-int (*X509_VERIFY_PARAM_set1_email)(X509_VERIFY_PARAM *, const char *,
+-                                    size_t) = NULL;
+-int (*X509_VERIFY_PARAM_set1_ip)(X509_VERIFY_PARAM *, const unsigned char *,
+-                                 size_t) = NULL;
+-int (*X509_VERIFY_PARAM_set1_ip_asc)(X509_VERIFY_PARAM *, const char *) = NULL;
+-void (*X509_VERIFY_PARAM_set_hostflags)(X509_VERIFY_PARAM *,
+-                                        unsigned int) = NULL;
+-#endif
+-#endif
+-
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 || CRYPTOGRAPHY_IS_LIBRESSL
++#if CRYPTOGRAPHY_IS_LIBRESSL
+ static const long Cryptography_HAS_110_VERIFICATION_PARAMS = 0;
+ #ifndef X509_CHECK_FLAG_NEVER_CHECK_SUBJECT
+ static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT = 0;
+@@ -291,45 +240,7 @@ static const long X509_CHECK_FLAG_NEVER_CHECK_SUBJECT = 0;
+ static const long Cryptography_HAS_110_VERIFICATION_PARAMS = 1;
+ #endif
+ 
+-/* OpenSSL 1.0.2+ or Solaris's backport */
+-#ifdef X509_V_FLAG_PARTIAL_CHAIN
+-static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN = 1;
+-#else
+-static const long Cryptography_HAS_X509_V_FLAG_PARTIAL_CHAIN = 0;
+-static const long X509_V_FLAG_PARTIAL_CHAIN = 0;
+-#endif
+-
+-/* OpenSSL 1.0.2+, *or* Fedora 20's flavor of OpenSSL 1.0.1e... */
+-#ifdef X509_V_FLAG_TRUSTED_FIRST
+-static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 1;
+-#else
+-static const long Cryptography_HAS_X509_V_FLAG_TRUSTED_FIRST = 0;
+-static const long X509_V_FLAG_TRUSTED_FIRST = 0;
+-#endif
+-
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110 && !CRYPTOGRAPHY_LIBRESSL_27_OR_GREATER
+-Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *ctx) {
+-    return ctx->objs;
+-}
+-X509_VERIFY_PARAM *X509_STORE_get0_param(X509_STORE *store) {
+-    return store->param;
+-}
+-int X509_OBJECT_get_type(const X509_OBJECT *x) {
+-    return x->type;
+-}
+-
+-/* from x509/x509_vfy.c */
+-X509 *X509_STORE_CTX_get0_cert(X509_STORE_CTX *ctx)
+-{
+-    return ctx->cert;
+-}
+-
+-X509 *X509_OBJECT_get0_X509(X509_OBJECT *x) {
+-    return x->data.x509;
+-}
+-#endif
+-
+-#if CRYPTOGRAPHY_OPENSSL_LESS_THAN_110
++#if CRYPTOGRAPHY_IS_LIBRESSL
+ static const long Cryptography_HAS_X509_STORE_CTX_GET_ISSUER = 0;
+ typedef void *X509_STORE_CTX_get_issuer_fn;
+ X509_STORE_CTX_get_issuer_fn (*X509_STORE_get_get_issuer)(X509_STORE *) = NULL;
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509name.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509name.py
+index f88c8b0..37b0d9e 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509name.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509name.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/x509.h>
+@@ -28,19 +27,15 @@ void X509_NAME_free(X509_NAME *);
+ unsigned long X509_NAME_hash(X509_NAME *);
+ 
+ int i2d_X509_NAME(X509_NAME *, unsigned char **);
+-int X509_NAME_add_entry_by_txt(X509_NAME *, const char *, int,
+-                               const unsigned char *, int, int, int);
+ X509_NAME_ENTRY *X509_NAME_delete_entry(X509_NAME *, int);
+ void X509_NAME_ENTRY_free(X509_NAME_ENTRY *);
+ int X509_NAME_get_index_by_NID(X509_NAME *, int, int);
+ int X509_NAME_cmp(const X509_NAME *, const X509_NAME *);
+ X509_NAME *X509_NAME_dup(X509_NAME *);
+-int Cryptography_X509_NAME_ENTRY_set(X509_NAME_ENTRY *);
+ /* These became const X509_NAME * in 1.1.0 */
+ int X509_NAME_entry_count(X509_NAME *);
+ X509_NAME_ENTRY *X509_NAME_get_entry(X509_NAME *, int);
+ char *X509_NAME_oneline(X509_NAME *, char *, int);
+-int X509_NAME_print_ex(BIO *, X509_NAME *, int, unsigned long);
+ 
+ /* These became const X509_NAME_ENTRY * in 1.1.0 */
+ ASN1_OBJECT *X509_NAME_ENTRY_get_object(X509_NAME_ENTRY *);
+@@ -55,33 +50,16 @@ int X509_NAME_add_entry_by_NID(X509_NAME *, int, int, unsigned char *,
+ X509_NAME_ENTRY *X509_NAME_ENTRY_create_by_OBJ(X509_NAME_ENTRY **,
+                                                ASN1_OBJECT *, int,
+                                                const unsigned char *, int);
+-int X509_NAME_add_entry_by_OBJ(X509_NAME *, ASN1_OBJECT *, int,
+-                               unsigned char *, int, int, int);
+ 
+ Cryptography_STACK_OF_X509_NAME *sk_X509_NAME_new_null(void);
+ int sk_X509_NAME_num(Cryptography_STACK_OF_X509_NAME *);
+ int sk_X509_NAME_push(Cryptography_STACK_OF_X509_NAME *, X509_NAME *);
+ X509_NAME *sk_X509_NAME_value(Cryptography_STACK_OF_X509_NAME *, int);
+ void sk_X509_NAME_free(Cryptography_STACK_OF_X509_NAME *);
+-int sk_X509_NAME_ENTRY_num(Cryptography_STACK_OF_X509_NAME_ENTRY *);
+ Cryptography_STACK_OF_X509_NAME_ENTRY *sk_X509_NAME_ENTRY_new_null(void);
+ int sk_X509_NAME_ENTRY_push(Cryptography_STACK_OF_X509_NAME_ENTRY *,
+                             X509_NAME_ENTRY *);
+-X509_NAME_ENTRY *sk_X509_NAME_ENTRY_value(
+-    Cryptography_STACK_OF_X509_NAME_ENTRY *, int);
+-Cryptography_STACK_OF_X509_NAME_ENTRY *sk_X509_NAME_ENTRY_dup(
+-    Cryptography_STACK_OF_X509_NAME_ENTRY *
+-);
+ """
+ 
+ CUSTOMIZATIONS = """
+-#if CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+-int Cryptography_X509_NAME_ENTRY_set(X509_NAME_ENTRY *ne) {
+-    return X509_NAME_ENTRY_set(ne);
+-}
+-#else
+-int Cryptography_X509_NAME_ENTRY_set(X509_NAME_ENTRY *ne) {
+-    return ne->set;
+-}
+-#endif
+ """
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509v3.py b/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509v3.py
+index 6cae4f1..2cfb830 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509v3.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/x509v3.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ INCLUDES = """
+ #include <openssl/x509v3.h>
+@@ -41,12 +40,6 @@ typedef struct {
+ 
+ typedef void * (*X509V3_EXT_D2I)(void *, const unsigned char **, long);
+ 
+-typedef struct {
+-    ASN1_ITEM_EXP *it;
+-    X509V3_EXT_D2I d2i;
+-    ...;
+-} X509V3_EXT_METHOD;
+-
+ static const int GEN_OTHERNAME;
+ static const int GEN_EMAIL;
+ static const int GEN_X400;
+@@ -246,7 +239,6 @@ void ACCESS_DESCRIPTION_free(ACCESS_DESCRIPTION *);
+ X509_EXTENSION *X509V3_EXT_conf_nid(Cryptography_LHASH_OF_CONF_VALUE *,
+                                     X509V3_CTX *, int, char *);
+ 
+-const X509V3_EXT_METHOD *X509V3_EXT_get(X509_EXTENSION *);
+ Cryptography_STACK_OF_DIST_POINT *sk_DIST_POINT_new_null(void);
+ void sk_DIST_POINT_free(Cryptography_STACK_OF_DIST_POINT *);
+ int sk_DIST_POINT_num(Cryptography_STACK_OF_DIST_POINT *);
+diff --git a/lib_pypy/_cffi_ssl/_cffi_src/utils.py b/lib_pypy/_cffi_ssl/_cffi_src/utils.py
+index 0393131..1754e04 100644
+--- a/lib_pypy/_cffi_ssl/_cffi_src/utils.py
++++ b/lib_pypy/_cffi_ssl/_cffi_src/utils.py
+@@ -2,7 +2,6 @@
+ # 2.0, and the BSD License. See the LICENSE file in the root of this repository
+ # for complete details.
+ 
+-from __future__ import absolute_import, division, print_function
+ 
+ import os
+ import sys
+@@ -19,8 +18,14 @@ with open(os.path.join(base_src, "cryptography", "__about__.py")) as f:
+     exec(f.read(), about)
+ 
+ 
+-def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
+-                          extra_compile_args=[], extra_link_args=[]):
++def build_ffi_for_binding(
++    module_name,
++    module_prefix,
++    modules,
++    libraries=[],
++    extra_compile_args=[],
++    extra_link_args=[],
++):
+     """
+     Modules listed in ``modules`` should have the following attributes:
+ 
+@@ -44,10 +49,7 @@ def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
+         includes.append(module.INCLUDES)
+         customizations.append(module.CUSTOMIZATIONS)
+ 
+-    verify_source = "\n".join(
+-        includes +
+-        customizations
+-    )
++    verify_source = "\n".join(includes + customizations)
+     ffi = build_ffi(
+         module_name,
+         cdef_source="\n".join(types + functions),
+@@ -60,17 +62,20 @@ def build_ffi_for_binding(module_name, module_prefix, modules, libraries=[],
+     return ffi
+ 
+ 
+-def build_ffi(module_name, cdef_source, verify_source, libraries=[],
+-              extra_compile_args=[], extra_link_args=[]):
++def build_ffi(
++    module_name,
++    cdef_source,
++    verify_source,
++    libraries=[],
++    extra_compile_args=[],
++    extra_link_args=[],
++):
+     ffi = FFI()
+     # Always add the CRYPTOGRAPHY_PACKAGE_VERSION to the shared object
+     cdef_source += "\nstatic const char *const CRYPTOGRAPHY_PACKAGE_VERSION;"
+     verify_source += '\n#define CRYPTOGRAPHY_PACKAGE_VERSION "{}"'.format(
+         about["__version__"]
+     )
+-    # Add WSAGetLastError
+-    if sys.platform == 'win32':
+-        cdef_source += "\nint WSAGetLastError();"
+     ffi.cdef(cdef_source)
+     ffi.set_source(
+         module_name,
+@@ -83,10 +88,10 @@ def build_ffi(module_name, cdef_source, verify_source, libraries=[],
+ 
+ 
+ def extra_link_args(compiler_type):
+-    if compiler_type == 'msvc':
++    if compiler_type == "msvc":
+         # Enable NX and ASLR for Windows builds on MSVC. These are enabled by
+         # default on Python 3.3+ but not on 2.x.
+-        return ['/NXCOMPAT', '/DYNAMICBASE']
++        return ["/NXCOMPAT", "/DYNAMICBASE"]
+     else:
+         return []
+ 
+@@ -98,7 +103,7 @@ def compiler_type():
+     """
+     dist = Distribution()
+     dist.parse_config_files()
+-    cmd = dist.get_command_obj('build')
++    cmd = dist.get_command_obj("build")
+     cmd.ensure_finalized()
+     compiler = new_compiler(compiler=cmd.compiler)
+     return compiler.compiler_type
+-- 
+2.32.0.windows.2
+
