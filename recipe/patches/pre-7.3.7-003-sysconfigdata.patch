@@ -9,3 +9,21 @@
      _temp = __import__(name, globals(), locals(), ['build_time_vars'], 0)
      build_time_vars = _temp.build_time_vars
      vars.update(build_time_vars)
+--- lib-python/3/distutils/sysconfig_pypy.py    2021-10-29 07:18:27.499931154 -0700
++++ lib-python/3/distutils/sysconfig_pypy.py    2021-10-29 07:18:46.012118836 -0700
+@@ -61,9 +61,13 @@
+ 
+ def _init_posix():
+     """Initialize the module as appropriate for POSIX systems."""
+-    from _sysconfigdata import build_time_vars
++    # _sysconfigdata is generated at build time, see the sysconfig module
++    name = os.environ.get('_PYTHON_SYSCONFIGDATA_NAME', '_sysconfigdata')
++    _temp = __import__(name, globals(), locals(), ['build_time_vars'], 0)
++    build_time_vars = _temp.build_time_vars
+     global _config_vars
+-    _config_vars = build_time_vars
++    _config_vars = {}
++    _config_vars.update(build_time_vars)
+ 
+ 
+ def _init_nt():

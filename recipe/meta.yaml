@@ -45,7 +45,7 @@ source:
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 2
+  number: 3
   skip_compile_pyc:
     - lib*
 
