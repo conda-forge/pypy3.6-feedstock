@@ -42,6 +42,7 @@ source:
       - patches/pre-7.3.7-003-sysconfigdata.patch
       - patches/pre-7.3.7-004-sysconfigdata-env.patch  # [name_suffix == "3.8"]
       - patches/pre-7.3.7-005-sysconfigdata-env.patch  # [name_suffix == "3.7"]
+      - patches/pre-7.3.7-006-_ssl.patch
       # WIP Patches for OpenSSL 3.0.0 support
       - patches/vopenssl3-from-pypy3.7-openssl3.0.0.patch
 
