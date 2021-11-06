@@ -1,0 +1,11 @@
+diff -r 3ef31dbec938 -r 6bc5108b0207 lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py	Sun Oct 24 14:19:38 2021 +0300
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py	Sat Nov 06 14:23:48 2021 +0200
+@@ -151,7 +151,6 @@
+ static const long SSL3_RT_ALERT;
+ static const long SSL3_RT_HANDSHAKE;
+ static const long SSL3_RT_APPLICATION_DATA;
+-static const long DTLS1_RT_HEARTBEAT;
+ 
+ static const long SSL3_RT_HEADER;
+ static const long SSL3_RT_INNER_CONTENT_TYPE;

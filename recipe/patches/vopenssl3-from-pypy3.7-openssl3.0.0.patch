@@ -17841,7 +17841,7 @@ diff -r 77b5e9b14bf9 -r 59f35f3623b1 lib_pypy/_cffi_ssl/_stdssl/__init__.py
                      break
  
 -            if count <= 0 and not shutdown:
-+            if count <= 0:
++            if count <= 0 and (lib.CRYPTOGRAPHY_OPENSSL_300_OR_GREATER or not shutdown):
                  raise pyssl_error(self, count)
  
              return _bytes_with_len(dest, count)
@@ -17865,3 +17865,4 @@ diff -r 77b5e9b14bf9 -r 59f35f3623b1 lib_pypy/_cffi_ssl/_stdssl/__init__.py
  
  
      def _wrap_socket(self, sock, server_side, server_hostname=None, *,
+
