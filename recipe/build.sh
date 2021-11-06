@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -exo pipefail
 
 PYPY3_SRC_DIR=$SRC_DIR/pypy3
 
@@ -123,7 +123,8 @@ pypy -c "import _ctypes_test"
 pypy -c "import _testmultiphase"
 
 # Run the python stdlib tests
-timeout 60m pypy3 -m test --pgo -j${CPU_COUNT} || true;
+# timeout 60m pypy3 -m test --pgo -j${CPU_COUNT} || true;
+pypy3 -m test.test_ssl
 
 
 if [[ -d $PREFIX/lib_pypy ]]; then
