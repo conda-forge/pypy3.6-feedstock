@@ -124,7 +124,7 @@ pypy -c "import _testmultiphase"
 
 # Run the python stdlib tests
 # timeout 60m pypy3 -m test --pgo -j${CPU_COUNT} || true;
-timeout 5m pypy3 -m test.test_ssl
+pypy3 -m test.test_ssl
 
 
 if [[ -d $PREFIX/lib_pypy ]]; then
