@@ -1,6 +1,6 @@
 diff -r 44fdb5adcd26 lib-python/3/test/test_ssl.py
---- a/lib-python/3/test/test_ssl.py Wed Oct 27 07:48:08 2021 +0300
-+++ b/lib-python/3/test/test_ssl.py Sun Nov 07 12:14:19 2021 +0200
+--- a/lib-python/3/test/test_ssl.py	Wed Oct 27 07:48:08 2021 +0300
++++ b/lib-python/3/test/test_ssl.py	Sun Nov 07 12:14:19 2021 +0200
 @@ -33,6 +33,7 @@
  IS_LIBRESSL = ssl.OPENSSL_VERSION.startswith('LibreSSL')
  IS_OPENSSL_1_1_0 = not IS_LIBRESSL and ssl.OPENSSL_VERSION_INFO >= (1, 1, 0)

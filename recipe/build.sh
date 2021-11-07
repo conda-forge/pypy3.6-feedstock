@@ -123,6 +123,7 @@ pypy -c "import _ctypes_test"
 pypy -c "import _testmultiphase"
 
 # Run the python stdlib tests
+# no timeout on darwin
 # timeout 60m pypy3 -m test --pgo -j${CPU_COUNT} || true;
 pypy3 -m test.test_ssl
 
