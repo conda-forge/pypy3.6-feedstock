@@ -54,6 +54,7 @@ REM Package PyPy.
 mkdir %TARGET_DIR%
 
 %PYTHON% %RELEASE_DIR%\package.py --builddir="%TARGET_DIR%" --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while packaging &exit /b 11)
 
 REM Move all files from the package to conda's $PREFIX.
 robocopy /S %TARGET_DIR%\%ARCHIVE_NAME% %PREFIX% /njh /njs /np /ndl /nc /ns
@@ -69,8 +70,8 @@ REM Make sure the site-packages dir SP_DIR matches with cpython
 REM See patch site-and-sysconfig-conda.patch
 mkdir  %SP_DIR%
 
-if exists %PREFIX%\lib_pypy (
-    REM pre-python3.8 layout
+if exist %PREFIX%\lib_pypy (
+    echo Adjusting layout for pre-python3.8
     move %PREFIX%\README.rst %PREFIX%\lib_pypy\
     move %PREFIX%\site-packages\README %SP_DIR%
     rmdir /q /s %PREFIX%\site-packages
@@ -79,13 +80,18 @@ if exists %PREFIX%\lib_pypy (
     rmdir /q /s %PREFIX%\tcl
     cd %PREFIX%\lib_pypy
     ..\pypy3 -m compileall .
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
     cd %PREFIX%\lib-python
     ..\pypy3 -m compileall .
-    ,,\pypy -m lib2to3.pgen2.driver 3\lib2to3\Grammar.txt
-    ..\pypy -m lib2to3.pgen2.driver 3\lib2to3\PatternGrammar.txt
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
+    ..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\Grammar.txt
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
+    ..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\PatternGrammar.txt
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
 ) else (
     cd %PREFIX%\Lib
     ..\pypy3 -m compileall .
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
 )
 
 cd %PREFIX%
@@ -98,5 +104,8 @@ REM timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
 
 REM Build the cache for the standard library
 pypy -c "import _testcapi"
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
 pypy -c "import _ctypes_test"
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
 pypy -c "import _testmultiphase"
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
