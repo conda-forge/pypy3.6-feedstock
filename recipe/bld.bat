@@ -48,6 +48,7 @@ rem -----------------
 REM Build cffi imports using the generated PyPy.
 set PYTHONPATH=..\..
 %PYPY_PKG_NAME%-c ..\..\lib_pypy\pypy_tools\build_cffi_imports.py
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building cffi imports &exit /b 11)
 set PYTHONPATH=
 
 REM Package PyPy.
@@ -66,11 +67,11 @@ exit /b 11
 REM License is packaged separately
 del %PREFIX%\LICENSE
 
-REM Make sure the site-packages dir SP_DIR matches with cpython
-REM See patch site-and-sysconfig-conda.patch
-mkdir  %SP_DIR%
 
 if exist %PREFIX%\lib_pypy (
+    REM Make sure the site-packages dir SP_DIR matches with cpython
+    REM See patch site-and-sysconfig-conda.patch
+    mkdir  %SP_DIR%
     echo Adjusting layout for pre-python3.8
     move %PREFIX%\README.rst %PREFIX%\lib_pypy\
     move %PREFIX%\site-packages\README %SP_DIR%
@@ -82,17 +83,17 @@ if exist %PREFIX%\lib_pypy (
     ..\pypy3 -m compileall .
     IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
     cd %PREFIX%\lib-python
-    ..\pypy3 -m compileall .
-    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
-    ..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\Grammar.txt
-    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
-    ..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\PatternGrammar.txt
-    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
 ) else (
     cd %PREFIX%\Lib
-    ..\pypy3 -m compileall .
-    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
 )
+rem still in lib-python or Lib
+
+..\pypy3 -m compileall .
+rem do not check error, some of the files have syntax errors on purpose
+..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\Grammar.txt
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
+..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\PatternGrammar.txt
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
 
 cd %PREFIX%
 
