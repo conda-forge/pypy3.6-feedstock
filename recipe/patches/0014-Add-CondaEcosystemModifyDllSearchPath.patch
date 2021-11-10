@@ -38,7 +38,7 @@ diff -r 9ef55f6fc369 -r 6bc5108b0207 pypy/interpreter/app_main.py
 +        return
 +    sv_executable_dirname = os.path.dirname(sys.executable)
 +    condaPaths = [os.path.join(sv_executable_dirname, x) for x in [
-+        r'Library\ming-w64\bin',
++        r'Library\mingw-w64\bin',
 +        r'Library\usr\bin',
 +        r'Library\bin',
 +        r'Scripts',
