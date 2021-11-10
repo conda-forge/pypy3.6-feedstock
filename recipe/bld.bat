@@ -83,17 +83,21 @@ if exist %PREFIX%\lib_pypy (
     ..\pypy3 -m compileall .
     IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
     cd %PREFIX%\lib-python
+    ..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\Grammar.txt
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
+    ..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\PatternGrammar.txt
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
 ) else (
     cd %PREFIX%\Lib
+    ..\pypy3 -m lib2to3.pgen2.driver lib2to3\Grammar.txt
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
+    ..\pypy3 -m lib2to3.pgen2.driver lib2to3\PatternGrammar.txt
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
 )
 rem still in lib-python or Lib
 
 ..\pypy3 -m compileall .
 rem do not check error, some of the files have syntax errors on purpose
-..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\Grammar.txt
-IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
-..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\PatternGrammar.txt
-IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
 
 cd %PREFIX%
 
