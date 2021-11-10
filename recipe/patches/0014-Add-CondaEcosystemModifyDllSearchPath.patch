@@ -44,7 +44,7 @@ diff -r 9ef55f6fc369 -r 6bc5108b0207 pypy/interpreter/app_main.py
 +        r'Scripts',
 +        r'bin',
 +    ]]
-+    for p in condaPaths:
++    for p in reversed(condaPaths):
 +        if debug_it:
 +            print("CondaEcosystemModifyDllSearchPath_Init() :: "
 +                  "os.add_dll_directory(%s - ExePrefix)" % p, file=sys.stderr)
