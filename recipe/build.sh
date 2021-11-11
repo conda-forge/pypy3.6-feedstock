@@ -125,7 +125,6 @@ pypy -c "import _testmultiphase"
 # Run the python stdlib tests
 # no timeout on darwin
 # timeout 60m pypy3 -m test --pgo -j${CPU_COUNT} || true;
-pypy3 -m test.test_ssl
 
 
 if [[ -d $PREFIX/lib_pypy ]]; then

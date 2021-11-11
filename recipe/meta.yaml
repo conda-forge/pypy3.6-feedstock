@@ -106,6 +106,7 @@ test:
     - if not exist %PREFIX%\lib-python\3\lib2to3\PatternGrammar{{ name_suffix }}*.pickle exit 1  # [win and name_suffix == "3.7"]
     - if not exist %PREFIX%\lib\lib2to3\Grammar{{ name_suffix }}*.pickle exit 1         # [win and name_suffix == "3.8"]
     - if not exist %PREFIX%\lib\lib2to3\PatternGrammar{{ name_suffix }}*.pickle exit 1  # [win and name_suffix == "3.8"]
+    - pypy3 -m test.test_ssl
 
 about:
     home: http://pypy.org/
