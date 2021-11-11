@@ -134,3 +134,7 @@ if [[ -d $PREFIX/lib_pypy ]]; then
 else
 	pypy3 -m compileall $PREFIX/lib/pypy${PY_VERSION} || true;
 fi
+# make sure all pypy3 processes are dead,
+# somehow zombie processes cause problems later
+pkill -9 pypy3 || true;
+pkill -9 pypy || true;

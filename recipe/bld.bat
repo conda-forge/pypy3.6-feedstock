@@ -48,12 +48,14 @@ rem -----------------
 REM Build cffi imports using the generated PyPy.
 set PYTHONPATH=..\..
 %PYPY_PKG_NAME%-c ..\..\lib_pypy\pypy_tools\build_cffi_imports.py
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building cffi imports &exit /b 11)
 set PYTHONPATH=
 
 REM Package PyPy.
 mkdir %TARGET_DIR%
 
 %PYTHON% %RELEASE_DIR%\package.py --builddir="%TARGET_DIR%" --targetdir="%TARGET_DIR%" --archive-name="%ARCHIVE_NAME%"
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while packaging &exit /b 11)
 
 REM Move all files from the package to conda's $PREFIX.
 robocopy /S %TARGET_DIR%\%ARCHIVE_NAME% %PREFIX% /njh /njs /np /ndl /nc /ns
@@ -65,17 +67,37 @@ exit /b 11
 REM License is packaged separately
 del %PREFIX%\LICENSE
 
-REM Make sure the site-packages dir SP_DIR matches with cpython
-REM See patch site-and-sysconfig-conda.patch
 
-REM Move the generic file name to somewhere that's specific to pypy
-move %PREFIX%\README.rst %PREFIX%\lib_pypy\
-mkdir  %SP_DIR%
-move %PREFIX%\site-packages\README %SP_DIR%
-rmdir /q /s %PREFIX%\site-packages
+if exist %PREFIX%\lib_pypy (
+    REM Make sure the site-packages dir SP_DIR matches with cpython
+    REM See patch site-and-sysconfig-conda.patch
+    mkdir  %SP_DIR%
+    echo Adjusting layout for pre-python3.8
+    move %PREFIX%\README.rst %PREFIX%\lib_pypy\
+    move %PREFIX%\site-packages\README %SP_DIR%
+    rmdir /q /s %PREFIX%\site-packages
 
-REM Use conda tcl/tk installation in Library/lib
-rmdir /q /s %PREFIX%\tcl
+    REM Use conda tcl/tk installation in Library/lib
+    rmdir /q /s %PREFIX%\tcl
+    cd %PREFIX%\lib_pypy
+    ..\pypy3 -m compileall .
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
+    cd %PREFIX%\lib-python
+    ..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\Grammar.txt
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
+    ..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\PatternGrammar.txt
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
+) else (
+    cd %PREFIX%\Lib
+    ..\pypy3 -m lib2to3.pgen2.driver lib2to3\Grammar.txt
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
+    ..\pypy3 -m lib2to3.pgen2.driver lib2to3\PatternGrammar.txt
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
+)
+rem still in lib-python or Lib
+
+..\pypy3 -m compileall .
+rem do not check error, some of the files have syntax errors on purpose
 
 cd %PREFIX%
 
@@ -87,12 +109,8 @@ REM timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
 
 REM Build the cache for the standard library
 pypy -c "import _testcapi"
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
 pypy -c "import _ctypes_test"
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
 pypy -c "import _testmultiphase"
-pypy -m lib2to3.pgen2.driver lib-python\3\lib2to3\Grammar.txt
-pypy -m lib2to3.pgen2.driver lib-python\3\lib2to3\PatternGrammar.txt
-
-cd %PREFIX%\lib-python
-..\pypy3 -m compileall .
-cd %PREFIX%\lib_pypy
-..\pypy3 -m compileall .
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)

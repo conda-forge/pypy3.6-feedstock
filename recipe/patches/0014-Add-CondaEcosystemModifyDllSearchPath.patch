@@ -1,0 +1,108 @@
+diff -r 9ef55f6fc369 -r 6bc5108b0207 pypy/interpreter/app_main.py
+--- a/pypy/interpreter/app_main.py	Sun Oct 24 23:08:46 2021 +0300
++++ b/pypy/interpreter/app_main.py	Sat Nov 06 14:23:48 2021 +0200
+@@ -608,6 +608,56 @@
+     return options
+ 
+ @hidden_applevel
++def CondaEcosystemModifyDllSearchPath_Init(argv):
++    """Conda + windows only function
++    There are 2 modes depending on CONDA_DLL_SEARCH_MODIFICATION env variable
++
++    - unset CONDA_DLL_SEARCH_MODIFICATION (Default)
++
++      In this mode, the python interpreter works as if the python interpreter
++      was called with the following conda directories.
++
++        os.add_dll_directory(join(sys.prefix, 'bin'))
++        os.add_dll_directory(join(sys.prefix, 'Scripts'))
++        os.add_dll_directory(join(sys.prefix, 'Library', 'bin'))
++        os.add_dll_directory(join(sys.prefix, 'Library', 'usr', 'bin'))
++        os.add_dll_directory(join(sys.prefix, 'Library', 'mingw-w64', 'bin'))
++
++      Search order
++        - The directory that contains the DLL (if looking for a dependency)
++        - Application (python.exe) directory
++        - Directories added with os.add_dll_directory
++        - The 5 conda directories
++        - C:\Windows\System32
++    """
++ 
++    # timing this import, it does not seem to perceptibly slow down startup
++    import os
++
++    getenv = get_getenv()
++    debug_it = bool(getenv("CONDA_DLL_SEARCH_MODIFICATION_DEBUG"))
++    enable = getenv("CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
++    if enable and enable == '0':
++        return
++    sv_executable_dirname = os.path.dirname(sys.executable)
++    condaPaths = [os.path.join(sv_executable_dirname, x) for x in [
++        r'Library\mingw-w64\bin',
++        r'Library\usr\bin',
++        r'Library\bin',
++        r'Scripts',
++        r'bin',
++    ]]
++    for p in reversed(condaPaths):
++        if debug_it:
++            print("CondaEcosystemModifyDllSearchPath_Init() :: "
++                  "os.add_dll_directory(%s - ExePrefix)" % p, file=sys.stderr)
++        try:
++            os.add_dll_directory(p)
++        except FileNotFoundError:
++            pass
++        
++
++@hidden_applevel
+ def run_command_line(interactive,
+                      inspect,
+                      run_command,
+@@ -741,6 +791,8 @@
+ 
+     try:
+         from os.path import abspath
++        if sys.platform == 'win32' and not getenv("SKIP_MODIFY_DLL_SEARCH_PATH"):
++            CondaEcosystemModifyDllSearchPath_Init(sys.argv) 
+         if run_command != 0:
+             # handle the "-c" command
+             # Put '' on sys.path
+# HG changeset patch
+# User Matti Picus <matti.picus@gmail.com>
+# Date 1636483110 -7200
+#      Tue Nov 09 20:38:30 2021 +0200
+# Branch conda
+# Node ID a533fa9e643caaf16003e5e8ff316a1feeb3fce0
+# Parent  6bc5108b020704b1ff6f7418a0e653cd1b57fee0
+add bin dir when building cffi imports  since the layout is non-standard
+
+diff -r 6bc5108b0207 -r a533fa9e643c lib_pypy/pypy_tools/build_cffi_imports.py
+--- a/lib_pypy/pypy_tools/build_cffi_imports.py	Sat Nov 06 14:23:48 2021 +0200
++++ b/lib_pypy/pypy_tools/build_cffi_imports.py	Tue Nov 09 20:38:30 2021 +0200
+@@ -278,9 +278,10 @@
+             # Make sure it worked
+             test_script = "print('testing {0}'); import {0}".format(key)
+             if sys.platform == 'win32': 
+-                externals_path = os.path.abspath(os.path.join(basedir, 'externals'))
+-                test_script = ("import os; os.add_dll_directory(r'" +
+-                               externals_path + r'\bin'  + "');" + test_script)
++                library_bin = os.environ.get('LIBRARY_BIN', None)
++                if library_bin and os.path.exists(library_bin):
++                    test_script = ("import os; print(os.add_dll_directory(r'" +
++                                   library_bin  + "'));" + test_script)
+             status, stdout, stderr = run_subprocess(pypy3, ['-c', test_script],
+                                                     env=env)
+             if status != 0:
+@@ -299,6 +300,11 @@
+         print('Call with a pypy interpreter', file=sys.stderr)
+         sys.exit(1)
+ 
++    if 'add_dll_directory' in dir(os):
++        library_bin = os.environ.get('LIBRARY_BIN', None)
++        if library_bin and os.path.exists(library_bin):
++            print(os.add_dll_directory(library_bin))
++
+     tool_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+     base_dir = os.path.dirname(os.path.dirname(tool_dir))
+     sys.path.insert(0, base_dir)
+
