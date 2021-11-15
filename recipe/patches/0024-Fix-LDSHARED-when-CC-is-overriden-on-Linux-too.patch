@@ -1,5 +1,5 @@
---- lib-python/3/distutils/sysconfig_pypy.py    2021-10-21 09:11:53.792196332 -0700
-+++ lib-python/3/distutils/sysconfig_pypy.py    2021-10-21 09:12:17.804443956 -0700
+--- lib-python/3/distutils/sysconfig_pypy.py	2021-10-21 09:11:53.792196332 -0700
++++ lib-python/3/distutils/sysconfig_pypy.py	2021-10-21 09:12:17.804443956 -0700
 @@ -190,10 +190,9 @@
  
          if 'CC' in os.environ:

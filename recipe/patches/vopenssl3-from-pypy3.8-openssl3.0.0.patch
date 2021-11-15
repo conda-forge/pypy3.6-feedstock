@@ -1,0 +1,30 @@
+diff -r 3ef31dbec938 -r 6bc5108b0207 lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py
+--- a/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py	Sun Oct 24 14:19:38 2021 +0300
++++ b/lib_pypy/_cffi_ssl/_cffi_src/openssl/ssl.py	Sat Nov 06 14:23:48 2021 +0200
+@@ -151,7 +151,6 @@
+ static const long SSL3_RT_ALERT;
+ static const long SSL3_RT_HANDSHAKE;
+ static const long SSL3_RT_APPLICATION_DATA;
+-static const long DTLS1_RT_HEARTBEAT;
+ 
+ static const long SSL3_RT_HEADER;
+ static const long SSL3_RT_INNER_CONTENT_TYPE;
+diff -r 009e0c7456d2 lib-python/3/test/test_ssl.py
+--- a/lib-python/3/test/test_ssl.py	Sat Nov 06 14:58:03 2021 +0200
++++ b/lib-python/3/test/test_ssl.py	Sun Nov 07 19:33:38 2021 +0200
+@@ -2518,6 +2518,14 @@
+                             sys.stdout.write(err.args[1])
+                         # test_pha_required_nocert is expecting this exception
+                         raise ssl.SSLError('tlsv13 alert certificate required')
++                    if 'UNEXPECTED_EOF_WHILE_READING' == err.reason:
++                        # PyPy OpenSSL3 needs this, on CPython a
++                        # BrokenPipeError is raised which is caught as an
++                        # OSError. In this case do not stop the server.
++                        if self.server.chatty:
++                            handle_error("Test server failure:\n")
++                        self.close()
++                        self.running = False
+                 except OSError:
+                     if self.server.chatty:
+                         handle_error("Test server failure:\n")
+

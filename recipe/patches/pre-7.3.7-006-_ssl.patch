@@ -1,0 +1,16 @@
+# Node ID 8e89921ae57f13d1385f7f2a16a6b8c7e39c3f62
+# Parent  c95ab8cad252440b7b8eafa40f5444847c1e8bc0
+fix _ssl errors on windows - OSError(int, str=None) only creates subclasses if str is a string
+
+diff -r c95ab8cad252 -r 8e89921ae57f lib_pypy/_cffi_ssl/_stdssl/error.py
+--- a/lib_pypy/_cffi_ssl/_stdssl/error.py	Tue Nov 02 10:00:45 2021 +0200
++++ b/lib_pypy/_cffi_ssl/_stdssl/error.py	Tue Nov 02 16:25:30 2021 +0200
+@@ -122,7 +122,7 @@
+                     # s = obj.get_socket_or_None()
+                     if sys.platform == 'win32':
+                         if err.ws:
+-                            return OSError(err.ws)
++                            return OSError(err.ws, os.strerror(err.ws))
+                     if err.c:
+                         ffi.errno = err.c 
+                     errno = ffi.errno
