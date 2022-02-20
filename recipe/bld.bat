@@ -41,15 +41,8 @@ for /F "tokens=1,2 delims=." %%i in ("%PY_VERSION%") do (
   set "PY_VERSION_NODOTS=%%i%%j"
 )
 
-copy libpypy3-c.lib %PYPY3_SRC_DIR%\libs\python%PY_VERSION_NODOTS%.lib || exit /b 11
+copy libpypy3*-c.lib %PYPY3_SRC_DIR%\libs\python%PY_VERSION_NODOTS%.lib || exit /b 11
 cd /d %GOAL_DIR%
-rem -----------------
-
-REM Build cffi imports using the generated PyPy.
-set PYTHONPATH=..\..
-%PYPY_PKG_NAME%-c ..\..\lib_pypy\pypy_tools\build_cffi_imports.py
-IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building cffi imports &exit /b 11)
-set PYTHONPATH=
 
 REM Package PyPy.
 mkdir %TARGET_DIR%
