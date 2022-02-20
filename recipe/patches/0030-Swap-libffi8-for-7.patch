@@ -6,7 +6,7 @@ iff -r ab92c5997c51 rpython/rlib/clibffi.py
      eci = ExternalCompilationInfo(
          includes = ['ffi.h', 'windows.h'],
 -        libraries = ['kernel32', 'libffi-8'],
-+        libraries = ['kernel32', 'libffi-7'],
++        libraries = ['kernel32', 'libffi'],
          separate_module_sources = separate_module_sources,
          post_include_bits = post_include_bits,
          )
