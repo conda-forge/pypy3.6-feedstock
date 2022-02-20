@@ -5,17 +5,9 @@
 jobs:
 - job: win
   pool:
-    vmImage: vs2017-win2016
+    vmImage: windows-2019
   strategy:
     matrix:
-      win_64_name_suffix3.7openssl1.1.1:
-        CONFIG: win_64_name_suffix3.7openssl1.1.1
-        UPLOAD_PACKAGES: 'True'
-        SHORT_CONFIG: win_64_name_suffix3.7openssl1.1.1
-      win_64_name_suffix3.7openssl3:
-        CONFIG: win_64_name_suffix3.7openssl3
-        UPLOAD_PACKAGES: 'True'
-        SHORT_CONFIG: win_64_name_suffix3.7openssl3
       win_64_name_suffix3.8openssl1.1.1:
         CONFIG: win_64_name_suffix3.8openssl1.1.1
         UPLOAD_PACKAGES: 'True'
@@ -24,6 +16,14 @@ jobs:
         CONFIG: win_64_name_suffix3.8openssl3
         UPLOAD_PACKAGES: 'True'
         SHORT_CONFIG: win_64_name_suffix3.8openssl3
+      win_64_name_suffix3.9openssl1.1.1:
+        CONFIG: win_64_name_suffix3.9openssl1.1.1
+        UPLOAD_PACKAGES: 'True'
+        SHORT_CONFIG: win_64_name_suffix3.9openssl1.1.1
+      win_64_name_suffix3.9openssl3:
+        CONFIG: win_64_name_suffix3.9openssl3
+        UPLOAD_PACKAGES: 'True'
+        SHORT_CONFIG: win_64_name_suffix3.9openssl3
   timeoutInMinutes: 360
   variables:
     CONDA_BLD_PATH: D:\\bld\\
@@ -62,10 +62,9 @@ jobs:
 
       condition: contains(variables['CONFIG'], 'vs2008')
       displayName: Patch vs2008 (if needed)
-
     - task: CondaEnvironment@1
       inputs:
-        packageSpecs: 'python=3.9 conda-build conda "conda-forge-ci-setup=3" pip boa' # Optional
+        packageSpecs: 'python=3.9 conda-build conda pip boa conda-forge-ci-setup=3' # Optional
         installOptions: "-c conda-forge"
         updateConda: true
       displayName: Install conda-build and activate environment
