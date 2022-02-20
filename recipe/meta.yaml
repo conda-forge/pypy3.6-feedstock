@@ -23,7 +23,8 @@ source:
       - patches/0001-Add-conda-forge-version.patch
       - patches/0019-Disable-copying-dlls.patch
       - patches/0021-Adapt-platform-to-patch-0001.patch
-      - patches/0023-Fix-LIBDIR.patch
+      - patches/0023a-Fix-LIBDIR.patch  # [name_suffix=="3.8"]
+      - patches/0023b-Fix-LIBDIR.patch  # [name_suffix=="3.9"]
       # Patches by @mingwandroid from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch

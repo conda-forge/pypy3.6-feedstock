@@ -36,12 +36,12 @@ diff -r 4aca66d6c57d lib_pypy/_ssl_build.py
 diff -r e707f2e3bb96 pypy/tool/release/package.py
 --- a/pypy/tool/release/package.py      Sun Oct 17 08:20:21 2021 +0300
 +++ b/pypy/tool/release/package.py      Mon Oct 18 20:37:26 2021 +0300
-@@ -263,12 +263,7 @@
+@@ -274,12 +274,7 @@
          print('Picking {} as pypy.exe'.format(src))
          # Can't rename a DLL
          win_extras = [('lib' + POSIX_EXE + '-c.dll', None),
 -                      ('sqlite3.dll', target),
--                      ('libffi-7.dll', None),
+-                      ('libffi-8.dll', None),
                       ]
 -        if not options.no__tkinter:
 -            tkinter_dir = target.join('_tkinter')
