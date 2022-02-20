@@ -1,0 +1,13 @@
+diff -r 5396fd2fa41f lib_pypy/_testmultiphase.c
+--- a/lib_pypy/_testmultiphase.c
++++ b/lib_pypy/_testmultiphase.c
+@@ -59,7 +59,7 @@
+     Py_RETURN_NONE;
+ }
+ 
+-#include "clinic/_testmultiphase.c.h"
++#include "_testmultiphase.c.h"
+ 
+ static PyMethodDef Example_methods[] = {
+     {"demo",            (PyCFunction)Example_demo,  METH_VARARGS,
+
