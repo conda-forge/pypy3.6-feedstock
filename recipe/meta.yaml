@@ -11,7 +11,7 @@ package:
 source:
   - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
     sha256: f1a378b264cdbfb0e03d77dfc4d105d02f91d542bd7c9c957d1f8083a9808f1f  # [name_suffix == "3.8"]
-    sha256: 546b7fc3789728869d5ada7b6a95ce9d03047e8489b92ada84613c900e431ee9  # [name_suffix == "3.8"]
+    sha256: 546b7fc3789728869d5ada7b6a95ce9d03047e8489b92ada84613c900e431ee9  # [name_suffix == "3.9"]
     folder: pypy3
     patches:
       - patches/fficurses.patch
