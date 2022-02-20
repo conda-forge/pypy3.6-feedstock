@@ -25,6 +25,7 @@ source:
       - patches/0021-Adapt-platform-to-patch-0001.patch
       - patches/0023a-Fix-LIBDIR.patch  # [name_suffix=="3.8"]
       - patches/0023b-Fix-LIBDIR.patch  # [name_suffix=="3.9"]
+      - patches/0030-Swap-libffi8-for-7.patch
       # Patches by @mingwandroid from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
@@ -54,6 +55,7 @@ requirements:
     - gdbm     # [not win]
     - jom ==1.1.2  # [win]
     - libffi
+    - make     # [linux]
     - ncurses  # [not win]
     - openssl
     - sqlite

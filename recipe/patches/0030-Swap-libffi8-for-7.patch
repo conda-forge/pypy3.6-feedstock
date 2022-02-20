@@ -1,0 +1,31 @@
+iff -r ab92c5997c51 rpython/rlib/clibffi.py
+--- a/rpython/rlib/clibffi.py	Sun Feb 20 17:00:07 2022 +0200
++++ b/rpython/rlib/clibffi.py	Sun Feb 20 19:41:27 2022 +0200
+@@ -105,7 +105,7 @@
+ else:
+     eci = ExternalCompilationInfo(
+         includes = ['ffi.h', 'windows.h'],
+-        libraries = ['kernel32', 'libffi-8'],
++        libraries = ['kernel32', 'libffi-7'],
+         separate_module_sources = separate_module_sources,
+         post_include_bits = post_include_bits,
+         )
+diff -r ab92c5997c51 rpython/translator/driver.py
+--- a/rpython/translator/driver.py	Sun Feb 20 17:00:07 2022 +0200
++++ b/rpython/translator/driver.py	Sun Feb 20 19:41:27 2022 +0200
+@@ -512,12 +512,12 @@
+                     # HACK: copy libcffi-*.dll which is required for venvs
+                     # At some point, we should stop doing this, and instead
+                     # use the artifact from packaging the build instead
+-                    libffi = py.path.local.sysfind('libffi-8.dll')
++                    libffi = py.path.local.sysfind('libffi-7.dll')
+                     if sys.platform == 'win32' and not libffi:
+                         raise RuntimeError('could not find libffi')
+                     elif libffi:
+                         # in tests, we can mock using windows without libffi
+-                        shutil.copyfile(str(libffi), os.getcwd() + r'\libffi-8.dll')
++                        shutil.copyfile(str(libffi), os.getcwd() + r'\libffi-7.dll')
+             self.c_entryp = newexename
+         self.log.info("created: %s" % (self.c_entryp,))
+ 
+
