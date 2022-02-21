@@ -34,7 +34,7 @@ source:
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
       # Patches to be removed for the next version
-      - patches/0031-pre-v7.3.9-fix-includes.patch
+      - patches/0031-pre-v7.3.9-fix-includes.patch  # [name_suffix=="3.9"]
       
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
