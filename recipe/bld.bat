@@ -38,14 +38,14 @@ for /F "tokens=1,2 delims=." %%i in ("%PY_VERSION%") do (
   set "PY_VERSION_NODOTS=%%i%%j"
 )
 
-copy *.pdb %GOAL_DIR% 
-copy *.dll %GOAL_DIR% 
-copy *.exe %GOAL_DIR%
+copy /b *.pdb %GOAL_DIR%
+copy /b *.dll %GOAL_DIR%
+copy /b *.exe %GOAL_DIR%
 REM lib goes elsewhere
-copy *.lib %PYPY3_SRC_DIR%\libs\python%PY_VERSION_NODOTS%.lib || exit /b 11
+copy /b *.lib %PYPY3_SRC_DIR%\libs\python%PY_VERSION_NODOTS%.lib || exit /b 11
 REM how big is the lib? It should be about 200k
 dir *.lib
-dir %PYPY3_SRC_DIR%\libs\python%PY_VERSION_NODOTS%.lib
+
 cd /d %GOAL_DIR%
 
 REM Package PyPy.
