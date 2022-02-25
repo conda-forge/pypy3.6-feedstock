@@ -38,6 +38,8 @@ source:
       - patches/0032-pre-v7.3.9-add-pypy3.exe.patch  # [name_suffix=="3.9"]
       - patches/0033-pre-v7.3.9-skip-ssl-test.patch  # [name_suffix=="3.9"]
       - patches/0034-pre-v7.3.9-LDLIBRARY.patch      # [name_suffix=="3.9"]
+      - patches/0035-pre-v7.3.9-sys_base_executable.patch
+
       
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
