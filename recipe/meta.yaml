@@ -36,6 +36,8 @@ source:
       # Patches to be removed for the next version
       - patches/0031-pre-v7.3.9-fix-includes.patch   # [name_suffix=="3.9"]
       - patches/0032-pre-v7.3.9-add-pypy3.exe.patch  # [name_suffix=="3.9"]
+      - patches/0033-pre-v7.3.9-skip-ssl-test.patch  # [name_suffix=="3.9"]
+      - patches/0034-pre-v7.3.9-LDLIBRARY.patch      # [name_suffix=="3.9"]
       
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]

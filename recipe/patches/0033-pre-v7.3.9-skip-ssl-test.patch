@@ -1,0 +1,20 @@
+# HG changeset patch
+# Date 1645750461 18000
+#      Thu Feb 24 19:54:21 2022 -0500
+# Branch py3.9
+# Node ID e3f6d4a583e01d51f7cdcd22045ea7c59571a3fb
+# Parent  cc4af835949c89232e380a11234a71fdac9dfe8c
+skip test that passes when run alone but seems to cache cert stats when run as part of tests
+
+diff -r cc4af835949c -r e3f6d4a583e0 lib-python/3/test/test_ssl.py
+--- a/lib-python/3/test/test_ssl.py
++++ b/lib-python/3/test/test_ssl.py
+@@ -1636,6 +1636,7 @@
+ 
+     @unittest.skipUnless(sys.platform == "win32", "Windows specific")
+     @unittest.skipIf(hasattr(sys, "gettotalrefcount"), "Debug build does not share environment between CRTs")
++    @support.cpython_only
+     def test_load_default_certs_env_windows(self):
+         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+         ctx.load_default_certs()
+
