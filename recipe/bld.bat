@@ -31,9 +31,6 @@ set PYPY_USESSION_DIR=%SRC_DIR%
 cd /d %SRC_DIR%\usession-pypy3-0\testing_1 || exit /b 11
 dir Makefile || exit /b 11
 jom /f Makefile || exit /b 11
-copy *.pdb %GOAL_DIR% 
-copy *.dll %GOAL_DIR% 
-copy *.exe %GOAL_DIR% 
 
 set PY_VERSION=%name_suffix%
 
@@ -41,15 +38,15 @@ for /F "tokens=1,2 delims=." %%i in ("%PY_VERSION%") do (
   set "PY_VERSION_NODOTS=%%i%%j"
 )
 
-copy libpypy3-c.lib %PYPY3_SRC_DIR%\libs\python%PY_VERSION_NODOTS%.lib || exit /b 11
-cd /d %GOAL_DIR%
-rem -----------------
+copy /b *.pdb %GOAL_DIR%
+copy /b *.dll %GOAL_DIR%
+copy /b *.exe %GOAL_DIR%
+REM lib goes elsewhere
+copy /b *.lib %PYPY3_SRC_DIR%\libs\python%PY_VERSION_NODOTS%.lib || exit /b 11
+REM how big is the lib? It should be about 200k
+dir *.lib
 
-REM Build cffi imports using the generated PyPy.
-set PYTHONPATH=..\..
-%PYPY_PKG_NAME%-c ..\..\lib_pypy\pypy_tools\build_cffi_imports.py
-IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building cffi imports &exit /b 11)
-set PYTHONPATH=
+cd /d %GOAL_DIR%
 
 REM Package PyPy.
 mkdir %TARGET_DIR%

@@ -47,12 +47,12 @@ cd $GOAL_DIR
 
 if [[ "$target_platform" == "osx-64" ]]; then
     # Temporally set the @rpath of the generated PyPy binary to ${PREFIX}.
-    cp ./${PYPY_PKG_NAME}-c ./${PYPY_PKG_NAME}-c.bak
-    ${INSTALL_NAME_TOOL} -add_rpath "${PREFIX}/lib" ./${PYPY_PKG_NAME}-c
+    cp ./${PYPY_PKG_NAME}*-c ./${PYPY_PKG_NAME}-c.bak
+    ${INSTALL_NAME_TOOL} -add_rpath "${PREFIX}/lib" ./${PYPY_PKG_NAME}*-c
 fi
 
 # Build cffi imports using the generated PyPy.
-PYTHONPATH=../.. ./${PYPY_PKG_NAME}-c ../../lib_pypy/pypy_tools/build_cffi_imports.py
+PYTHONPATH=../.. ./${PYPY_PKG_NAME}*-c ../../lib_pypy/pypy_tools/build_cffi_imports.py
 
 # Package PyPy.
 cd $RELEASE_DIR
@@ -68,7 +68,7 @@ cp -r $TARGET_DIR/$ARCHIVE_NAME/* $PREFIX
 
 if [[ "$target_platform" == "osx-64" ]]; then
     # Move the dylib to lib folder.
-    mv $PREFIX/bin/libpypy3-c.dylib $PREFIX/lib/libpypy3-c.dylib
+    mv $PREFIX/bin/libpypy3*-c.dylib $PREFIX/lib/
 
     # Change @rpath to be relative to match conda's structure.
     ${INSTALL_NAME_TOOL} -rpath "${PREFIX}/lib" "@loader_path/../lib" $PREFIX/bin/pypy3
@@ -79,10 +79,10 @@ fi
 if [[ "$target_platform" == "linux"* ]]; then
     # Show links.
     ldd $PREFIX/bin/pypy3
-    ldd $PREFIX/bin/libpypy3-c.so
+    ldd $PREFIX/bin/libpypy3*-c.so
 
     # Move the so to lib folder.
-    mv $PREFIX/bin/libpypy3-c.so $PREFIX/lib/libpypy3-c.so
+    mv $PREFIX/bin/libpypy3*-c.so $PREFIX/lib/
 
     # Conda tries to `patchelf` this file, which fails.
     rm -f $PREFIX/bin/pypy3.debug

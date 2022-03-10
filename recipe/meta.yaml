@@ -1,8 +1,8 @@
 {% if name_suffix is not defined %}
-{% set name_suffix = "3.7" %}
+{% set name_suffix = "3.8" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
-{% set version = "7.3.7" %}
+{% set version = "7.3.8" %}
 
 package:
   name: {{ name }}
@@ -10,8 +10,8 @@ package:
 
 source:
   - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
-    sha256: 2ed02ac9e710859c41bc82deafb08619792bb9a27eeaa1676c741ededd214dd7  # [name_suffix == "3.7"]
-    sha256: 21ae339f4f5016d6ca7300305f3e3b554373835cb3c39a9041fe30e6811c80c6  # [name_suffix == "3.8"]
+    sha256: f1a378b264cdbfb0e03d77dfc4d105d02f91d542bd7c9c957d1f8083a9808f1f  # [name_suffix == "3.8"]
+    sha256: 546b7fc3789728869d5ada7b6a95ce9d03047e8489b92ada84613c900e431ee9  # [name_suffix == "3.9"]
     folder: pypy3
     patches:
       - patches/fficurses.patch
@@ -20,40 +20,34 @@ source:
       - patches/lzma_build.patch  # [win]
       - patches/clibffi.patch     # [osx]
       - patches/darwin.patch      # [osx]
-      - patches/site-and-sysconfig-conda.patch    # [win and name_suffix == "3.7"]
-      - patches/distutils-install.patch           # [win and name_suffix == "3.7"]
-      - patches/distutils-sysconfig-get_python_lib.patch  # [win and name_suffix == "3.7"]
       - patches/0001-Add-conda-forge-version.patch
-      - patches/0018-Disable-copying-dlls.patch  # [name_suffix == "3.7"]
-      - patches/0019-Disable-copying-dlls.patch  # [name_suffix == "3.8"]
+      - patches/0019-Disable-copying-dlls.patch
       - patches/0021-Adapt-platform-to-patch-0001.patch
-      - patches/0022-Fix-LIBDIR.patch  # [name_suffix == "3.7"]
-      - patches/0023-Fix-LIBDIR.patch  # [name_suffix == "3.8"]
+      - patches/0023a-Fix-LIBDIR.patch  # [name_suffix=="3.8"]
+      - patches/0023b-Fix-LIBDIR.patch  # [name_suffix=="3.9"]
+      - patches/0030-Swap-libffi8-for-7.patch
       # Patches by @mingwandroid from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
-      - patches/0014-Add-CondaEcosystemModifyDllSearchPath.patch  # [name_suffix == "3.8"]
+      - patches/0014-Add-CondaEcosystemModifyDllSearchPath.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
-      - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch  # [name_suffix == "3.8"]
-      # Patches to be removed for PyPy7.3.8
-      - patches/pre-7.3.7-001-Use-libffi-8.patch
-      - patches/pre-7.3.7-002-stdlib.patch           # [name_suffix == "3.7"]
-      - patches/pre-7.3.7-003-sysconfigdata.patch
-      - patches/pre-7.3.7-004-sysconfigdata-env.patch  # [name_suffix == "3.8"]
-      - patches/pre-7.3.7-005-sysconfigdata-env.patch  # [name_suffix == "3.7"]
-      - patches/pre-7.3.7-006-_ssl.patch
-      # Patches for OpenSSL 3.0.0 support
-      - patches/vopenssl3-from-pypy3.7-openssl3.0.0.patch
-      - patches/vopenssl3-from-pypy3.8-openssl3.0.0.patch  # [name_suffix == "3.8"]
-      - patches/vopenssl3-pypy3.7.patch  # [name_suffix == "3.7"]
+      - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
+      # Patches to be removed for the next version
+      - patches/0031-pre-v7.3.9-fix-includes.patch   # [name_suffix=="3.9"]
+      - patches/0032-pre-v7.3.9-add-pypy3.exe.patch  # [name_suffix=="3.9"]
+      - patches/0033-pre-v7.3.9-skip-ssl-test.patch  # [name_suffix=="3.9"]
+      - patches/0034-pre-v7.3.9-LDLIBRARY.patch      # [name_suffix=="3.9"]
+      - patches/0035-pre-v7.3.9-sys_base_executable.patch
+
+      
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 3
+  number: 0
   skip_compile_pyc:
     - lib*
 
@@ -69,6 +63,7 @@ requirements:
     - gdbm     # [not win]
     - jom ==1.1.2  # [win]
     - libffi
+    - make     # [linux]
     - ncurses  # [not win]
     - openssl
     - sqlite
@@ -90,22 +85,19 @@ requirements:
   run_constrained:
     - pypy3.5 ==99999999999
     - pypy3.6 ==99999999999
-    - pypy3.7 ==99999999999  # [name_suffix=="3.8"]
-    - pypy3.8 ==99999999999  # [name_suffix=="3.7"]
+    - pypy3.7 ==99999999999
+    - pypy3.8 ==99999999999  # [name_suffix=="3.9"]
+    - pypy3.9 ==99999999999  # [name_suffix=="3.8"]
     - python {{ name_suffix }}.* *_{{ "".join(version.split(".")[:2]) }}_pypy
 
 test:
   commands:
     - pypy3 --help
     - pypy3 -c "import platform; print(platform._sys_version())"
-    - test -f $PREFIX/lib-python/3/lib2to3/Grammar{{ name_suffix }}*.pickle                      # [unix and name_suffix=="3.7"]
-    - test -f $PREFIX/lib-python/3/lib2to3/PatternGrammar{{ name_suffix }}*.pickle               # [unix and name_suffix=="3.7"]
-    - test -f $PREFIX/lib/pypy3.8/lib2to3/Grammar{{ name_suffix }}*.pickle                       # [unix and name_suffix=="3.8"]
-    - test -f $PREFIX/lib/pypy3.8/lib2to3/PatternGrammar{{ name_suffix }}*.pickle                # [unix and name_suffix=="3.8"]
-    - if not exist %PREFIX%\lib-python\3\lib2to3\Grammar{{ name_suffix }}*.pickle exit 1         # [win and name_suffix == "3.7"]
-    - if not exist %PREFIX%\lib-python\3\lib2to3\PatternGrammar{{ name_suffix }}*.pickle exit 1  # [win and name_suffix == "3.7"]
-    - if not exist %PREFIX%\lib\lib2to3\Grammar{{ name_suffix }}*.pickle exit 1         # [win and name_suffix == "3.8"]
-    - if not exist %PREFIX%\lib\lib2to3\PatternGrammar{{ name_suffix }}*.pickle exit 1  # [win and name_suffix == "3.8"]
+    - test -f $PREFIX/lib/pypy{{ name_suffix }}/lib2to3/Grammar{{ name_suffix }}*.pickle         # [unix]
+    - test -f $PREFIX/lib/pypy{{ name_suffix }}/lib2to3/PatternGrammar{{ name_suffix }}*.pickle  # [unix]
+    - if not exist %PREFIX%\lib\lib2to3\Grammar{{ name_suffix }}*.pickle exit 1                  # [win]
+    - if not exist %PREFIX%\lib\lib2to3\PatternGrammar{{ name_suffix }}*.pickle exit 1           # [win]
     - pypy3 -m test.test_ssl
 
 about:
