@@ -107,6 +107,11 @@ if [[ -d $PREFIX/lib_pypy ]]; then
 	pypy -m lib2to3.pgen2.driver lib-python/3/lib2to3/PatternGrammar.txt
 	popd
 else
+	# Make sure the site-packages dir match with cpython
+	mkdir -p $PREFIX/lib/python${PY_VERSION}/site-packages
+	mv $PREFIX/lib/pypy${PY_VERSION}/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
+	rm -rf $PREFIX/lib/pypy${PY_VERSION}/site-packages
+	ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/lib/pypy${PY_VERSION}/site-packages
 	pushd $PREFIX
 	pypy -m lib2to3.pgen2.driver lib/pypy${PY_VERSION}/lib2to3/Grammar.txt
 	pypy -m lib2to3.pgen2.driver lib/pypy${PY_VERSION}/lib2to3/PatternGrammar.txt
