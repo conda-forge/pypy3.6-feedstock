@@ -111,3 +111,9 @@ pypy -c "import _ctypes_test"
 IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
 pypy -c "import _testmultiphase"
 IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
+
+REM Include a %PREFIX%\Scripts directory in the package. This ensures
+REM that entry_points are able to be created by downstream packages.
+if not exist "%PREFIX%\Scripts" mkdir "%PREFIX%\Scripts"
+copy /y NUL "%PREFIX%\Scripts\.keep"
+if errorlevel 1 exit 1
