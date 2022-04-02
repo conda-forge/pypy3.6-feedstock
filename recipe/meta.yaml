@@ -47,7 +47,7 @@ source:
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 1
+  number: 2
   skip_compile_pyc:
     - lib*
 
@@ -99,6 +99,8 @@ test:
     - if not exist %PREFIX%\lib\lib2to3\Grammar{{ name_suffix }}*.pickle exit 1                  # [win]
     - if not exist %PREFIX%\lib\lib2to3\PatternGrammar{{ name_suffix }}*.pickle exit 1           # [win]
     - pypy3 -m test.test_ssl
+    # make sure Scripts dir exists so downstream entry_points are created successfully
+    - if not exist %PREFIX%\Scripts\ exit 1  # [win]
 
 about:
     home: http://pypy.org/
