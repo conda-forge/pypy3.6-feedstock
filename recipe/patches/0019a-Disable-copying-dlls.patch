@@ -1,0 +1,77 @@
+# HG changeset patch
+# Date 1627474848 -10800
+#      Wed Jul 28 15:20:48 2021 +0300
+# Branch conda
+# Node ID ffffffffffffffffffffffffffffffffffffffff
+# Parent  4aca66d6c57dd79083a1b75ea6a5b76df98eebcb
+
+
+diff -r 4aca66d6c57d lib_pypy/_ssl_build.py
+--- a/lib_pypy/_ssl_build.py
++++ b/lib_pypy/_ssl_build.py
+@@ -59,22 +59,4 @@
+
+ if __name__ == '__main__':
+     ffi.compile(verbose=True)
+-    if sys.platform == 'win32':
+-        # copy dlls from externals to the pwd
+-        # maybe we should link to libraries instead of the dlls
+-        # to avoid this mess
+-        import os, glob, shutil
+-        path_parts = os.environ['PATH'].split(';')
+-        candidates = [x for x in path_parts if 'externals' in x]
+
+-        def copy_from_path(dll):
+-            for c in candidates:
+-                files = glob.glob(os.path.join(c, dll + '*.dll'))
+-                if files:
+-                    for fname in files:
+-                        print('copying', fname)
+-                        shutil.copy(fname, '.')
+-
+-        if candidates:
+-            for lib in libraries:
+-                copy_from_path(lib)
+
+diff -r e707f2e3bb96 pypy/tool/release/package.py
+--- a/pypy/tool/release/package.py      Sun Oct 17 08:20:21 2021 +0300
++++ b/pypy/tool/release/package.py      Mon Oct 18 20:37:26 2021 +0300
+@@ -271,15 +271,7 @@
+         print('Picking {} as python{}.exe'.format(src, python_ver[0]))
+         # Can't rename a DLL
+         win_extras = [('lib' + POSIX_EXE + '-c.dll', None),
+-                      ('sqlite3.dll', target),
+-                      ('libffi-8.dll', None),
+                      ]
+-        if not options.no__tkinter:
+-            tkinter_dir = target.join('_tkinter')
+-            win_extras += [('tcl86t.dll', tkinter_dir), ('tk86t.dll', tkinter_dir)]
+-            # for testing, copy the dlls to the `base_dir` as well
+-            tkinter_dir = basedir.join('lib_pypy', '_tkinter')
+-            win_extras += [('tcl86t.dll', tkinter_dir), ('tk86t.dll', tkinter_dir)]
+         for extra, target_dir in win_extras:
+             p = pypy_c.dirpath().join(extra)
+             if not p.check():
+@@ -303,23 +295,6 @@
+             # Has the lib moved, was translation not 'shared', or are
+             # there no exported functions in the dll so no import
+             # library was created?
+-        if not options.no__tkinter:
+-            try:
+-                p = pypy_c.dirpath().join('tcl86t.dll')
+-                if not p.check():
+-                    p = py.path.local.sysfind('tcl86t.dll')
+-                    if p is None:
+-                        raise WindowsError("tcl86t.dll not found")
+-                tktcldir = p.dirpath().join('..').join('lib')
+-                copytree(str(tktcldir), str(pypydir.join('tcl')))
+-            except WindowsError:
+-                print("Packaging Tk runtime failed. tk86t.dll and tcl86t.dll "
+-                      "found in %s, expecting to find runtime in %s directory "
+-                      "next to the dlls, as per build "
+-                      "instructions." %(p, tktcldir), file=sys.stderr)
+-                import traceback;traceback.print_exc()
+-                raise MissingDependenciesError('Tk runtime')
+-
+     print('* Binaries:', [source.relto(str(basedir))
+                           for source, dst, target_dir in binaries])
