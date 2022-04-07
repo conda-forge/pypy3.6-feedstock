@@ -35,6 +35,7 @@ source:
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
       # Patches to be removed for the next version
+      - patches/0031-pre-v7.3.10-fix-generic-alias.patch  # [name_suffix=="3.9"]
 
 
 
@@ -43,7 +44,7 @@ source:
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 0
+  number: 1
   skip_compile_pyc:
     - lib*
 
