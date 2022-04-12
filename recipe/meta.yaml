@@ -78,7 +78,6 @@ requirements:
     - openssl
     - sqlite
     - tk
-    - xorg-libx11  # [linux]
     - xz
     - zlib
   run_constrained:
@@ -93,7 +92,7 @@ test:
   commands:
     - pypy3 --help
     - pypy3 -c "import platform; print(platform._sys_version())"
-    - pypy3 -c "import tkinter; tkinter.Tk()"
+    - pypy3 -c "import tkinter; tkinter.Tk()"                                                    # [not unix]
     - test -f $PREFIX/lib/pypy{{ name_suffix }}/lib2to3/Grammar{{ name_suffix }}*.pickle         # [unix]
     - test -f $PREFIX/lib/pypy{{ name_suffix }}/lib2to3/PatternGrammar{{ name_suffix }}*.pickle  # [unix]
     - if not exist %PREFIX%\lib\lib2to3\Grammar{{ name_suffix }}*.pickle exit 1                  # [win]
