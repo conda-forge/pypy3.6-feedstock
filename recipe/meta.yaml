@@ -39,6 +39,7 @@ source:
       - patches/0031-Disable-embedding-and-portable.patch
       - patches/0032a-pre-v7.3.10-fix-object-h.patch  # [name_suffix=="3.8"]
       - patches/0032b-pre-v7.3.10-fix-object-h.patch  # [name_suffix=="3.9"]
+      - patches/0033-pre-v7.3.10-fix-windows-scratch-reg.patch
 
 
 
@@ -47,7 +48,7 @@ source:
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 2
+  number: 3
   skip_compile_pyc:
     - lib*
 
