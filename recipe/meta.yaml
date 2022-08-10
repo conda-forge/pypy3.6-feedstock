@@ -59,6 +59,7 @@ requirements:
     - python >=2.7,<3   # [not win]
     - pkg-config        # [unix]
     - pycparser
+    - expat
   host:
     - bzip2
     - expat
