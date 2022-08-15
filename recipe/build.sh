@@ -93,30 +93,39 @@ rm $PREFIX/LICENSE
 PY_VERSION=$(echo $PKG_NAME | cut -c 5-)
 
 if [[ -d $PREFIX/lib_pypy ]]; then
-	# For pypy<3.8, the layout needs to be fixed up.
+    # For pypy<3.8, the layout needs to be fixed up.
 
-	# Move the generic file name to somewhere that's specific to pypy
-	mv $PREFIX/README.rst $PREFIX/lib_pypy/
-	# Make sure the site-packages dir match with cpython
-	mkdir -p $PREFIX/lib/python${PY_VERSION}/site-packages
-	mv $PREFIX/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
-	rm -rf $PREFIX/site-packages
-	ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/site-packages
-	pushd $PREFIX
-	pypy -m lib2to3.pgen2.driver lib-python/3/lib2to3/Grammar.txt
-	pypy -m lib2to3.pgen2.driver lib-python/3/lib2to3/PatternGrammar.txt
-	popd
+    # Move the generic file name to somewhere that's specific to pypy
+    mv $PREFIX/README.rst $PREFIX/lib_pypy/
+    # Make sure the site-packages dir match with cpython
+    mkdir -p $PREFIX/lib/python${PY_VERSION}/site-packages
+    mv $PREFIX/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
+    rm -rf $PREFIX/site-packages
+    ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/site-packages
+    pushd $PREFIX
+    pypy -m lib2to3.pgen2.driver lib-python/3/lib2to3/Grammar.txt
+    pypy -m lib2to3.pgen2.driver lib-python/3/lib2to3/PatternGrammar.txt
+    popd
 else
-	# Make sure the site-packages dir match with cpython
-	mkdir -p $PREFIX/lib/python${PY_VERSION}/site-packages
-	mv $PREFIX/lib/pypy${PY_VERSION}/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
-	rm -rf $PREFIX/lib/pypy${PY_VERSION}/site-packages
-	ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/lib/pypy${PY_VERSION}/site-packages
-	pushd $PREFIX
-	pypy -m lib2to3.pgen2.driver lib/pypy${PY_VERSION}/lib2to3/Grammar.txt
-	pypy -m lib2to3.pgen2.driver lib/pypy${PY_VERSION}/lib2to3/PatternGrammar.txt
-	popd
+    # Make sure the site-packages dir match with cpython
+    mkdir -p $PREFIX/lib/python${PY_VERSION}/site-packages
+    mv $PREFIX/lib/pypy${PY_VERSION}/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
+    rm -rf $PREFIX/lib/pypy${PY_VERSION}/site-packages
+    ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/lib/pypy${PY_VERSION}/site-packages
+    pushd $PREFIX
+    pypy -m lib2to3.pgen2.driver lib/pypy${PY_VERSION}/lib2to3/Grammar.txt
+    pypy -m lib2to3.pgen2.driver lib/pypy${PY_VERSION}/lib2to3/PatternGrammar.txt
+    popd
 fi
+
+# Regenerate the sysconfigdata__*.py file with paths from $PREFIX, at install
+# those paths will be replaced with the actual user's paths. The generator
+# builds the file in ./build/lib-<platform_tag>
+host_gun_type=$(${RELEASE_DIR}/config.guess)
+pushd /tmp
+pypy -m sysconfig --generate-posix-vars HOST_GNU_TYPE $host_gnu_type
+cp build/*/_sysconfigdata*.py $PREFIX/lib/pypy${PY_VERSION}
+popd
 
 echo sysconfig $(pypy -c "from distutils import sysconfig; print(sysconfig)")
 echo get_python_inc $(pypy -c "from distutils import sysconfig; print(sysconfig.get_python_inc())")
@@ -133,12 +142,12 @@ pypy -c "import _testmultiphase"
 
 
 if [[ -d $PREFIX/lib_pypy ]]; then
-	cd $PREFIX/lib-python
-	pypy3 -m compileall . || true;
-	cd $PREFIX/lib_pypy
-	pypy3 -m compileall . || true;
+    cd $PREFIX/lib-python
+    pypy3 -m compileall . || true;
+    cd $PREFIX/lib_pypy
+    pypy3 -m compileall . || true;
 else
-	pypy3 -m compileall $PREFIX/lib/pypy${PY_VERSION} || true;
+    pypy3 -m compileall $PREFIX/lib/pypy${PY_VERSION} || true;
 fi
 # make sure all pypy3 processes are dead,
 # somehow zombie processes cause problems later

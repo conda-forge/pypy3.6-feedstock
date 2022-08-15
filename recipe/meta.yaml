@@ -40,6 +40,7 @@ source:
       - patches/0032a-pre-v7.3.10-fix-object-h.patch  # [name_suffix=="3.8"]
       - patches/0032b-pre-v7.3.10-fix-object-h.patch  # [name_suffix=="3.9"]
       - patches/0033-pre-v7.3.10-fix-windows-scratch-reg.patch
+      - patches/0034-pre-v7.3.10-libc-darwin-path.patch
 
 
 
@@ -48,7 +49,7 @@ source:
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 3
+  number: 4
   skip_compile_pyc:
     - lib*
 
@@ -58,6 +59,7 @@ requirements:
     - python >=2.7,<3   # [not win]
     - pkg-config        # [unix]
     - pycparser
+    - expat
   host:
     - bzip2
     - expat

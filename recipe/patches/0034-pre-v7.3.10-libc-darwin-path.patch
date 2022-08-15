@@ -1,0 +1,30 @@
+# HG changeset patch
+# User Maciej Fijalkowski
+# Date 1651481758 -10800
+#      Mon May 02 11:55:58 2022 +0300
+# Branch m1
+# Node ID 08f27ba7e2b3d3d0ebb57bbc9310f9cf96403faf
+# Parent  7e763080b759d791cad18b1374a69ba460e6307e
+try a bit harder to run more tests on OS X
+
+diff -r 7e763080b759 -r 08f27ba7e2b3 rpython/rlib/clibffi.py
+--- a/rpython/rlib/clibffi.py	Wed Apr 27 10:29:10 2022 +0300
++++ b/rpython/rlib/clibffi.py	Mon May 02 11:55:58 2022 +0300
+@@ -276,10 +276,14 @@
+ 
+ if not _WIN32:
+     libc_name = ctypes.util.find_library('c')
+-    assert libc_name is not None, "Cannot find C library, ctypes.util.find_library('c') returned None"
++    if libc_name is None and sys.platform == 'darwin':
++        def get_libc_name():
++            return '/usr/lib/libc.dylib'
++    else:
++        assert libc_name is not None, "Cannot find C library, ctypes.util.find_library('c') returned None"
+ 
+-    def get_libc_name():
+-        return libc_name
++        def get_libc_name():
++            return libc_name
+ elif _MSVC:
+     get_libc_handle = external('pypy_get_libc_handle', [], DLLHANDLE)
+ 
