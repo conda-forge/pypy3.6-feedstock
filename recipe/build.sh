@@ -130,6 +130,7 @@ popd
 echo sysconfig $(pypy -c "from distutils import sysconfig; print(sysconfig)")
 echo get_python_inc $(pypy -c "from distutils import sysconfig; print(sysconfig.get_python_inc())")
 echo INCLUDEPY $(pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'))")
+echo HOST_GNU_TYPE $(pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('HOST_GNU_TYPE'))")
 ls $(pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'))")
 # Build the c-extension modules for the standard library
 pypy -c "import _testcapi"
