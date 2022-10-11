@@ -121,7 +121,7 @@ fi
 # Regenerate the sysconfigdata__*.py file with paths from $PREFIX, at install
 # those paths will be replaced with the actual user's paths. The generator
 # builds the file in ./build/lib-<platform_tag>
-host_gun_type=$(${RELEASE_DIR}/config.guess)
+host_gnu_type=$(${RELEASE_DIR}/config.guess)
 pushd /tmp
 pypy -m sysconfig --generate-posix-vars HOST_GNU_TYPE $host_gnu_type
 cp build/*/_sysconfigdata*.py $PREFIX/lib/pypy${PY_VERSION}
