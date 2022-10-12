@@ -125,7 +125,6 @@ host_gnu_type=$(${RELEASE_DIR}/config.guess)
 pushd /tmp
 pypy -m sysconfig --generate-posix-vars HOST_GNU_TYPE $host_gnu_type
 cp build/*/_sysconfigdata*.py $PREFIX/lib/pypy${PY_VERSION}
-rm -rf build
 popd
 
 echo sysconfig $(pypy -c "from distutils import sysconfig; print(sysconfig)")
