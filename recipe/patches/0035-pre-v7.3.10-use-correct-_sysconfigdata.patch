@@ -1,7 +1,8 @@
+
 diff -r aaf8d1b42579 lib-python/3/sysconfig.py
---- a/lib-python/3/sysconfig.py
-+++ b/lib-python/3/sysconfig.py
-@@ -441,14 +441,7 @@
+--- a/lib-python/3/sysconfig.py	Mon Oct 10 20:13:52 2022 +0200
++++ b/lib-python/3/sysconfig.py	Wed Oct 12 13:02:43 2022 +0300
+@@ -441,15 +441,18 @@
  
  def _init_posix(vars):
      """Initialize the module as appropriate for POSIX systems."""
@@ -13,8 +14,20 @@ diff -r aaf8d1b42579 lib-python/3/sysconfig.py
 -    #       To prevent chicken-and-egg problems of needing the values before
 -    #       generating them, use the dynamic version here.
 -    name = os.environ.get('_PYTHON_SYSCONFIGDATA_NAME', '_sysconfigdata')
+-    _temp = __import__(name, globals(), locals(), ['build_time_vars'], 0)
 +    name = _get_sysconfigdata_name()
-     _temp = __import__(name, globals(), locals(), ['build_time_vars'], 0)
++    try:
++        _temp = __import__(name, globals(), locals(), ['build_time_vars'], 0)
++    except ModuleNotFoundError as e:
++        # either someone set _PYTHON_SYSCONFIGDATA_NAME wrong, or we have not
++        # called main() yet
++        name2 = os.environ.get('_PYTHON_SYSCONFIGDATA_NAME', '_sysconfigdata')
++        try:
++            _temp = __import__(name2, globals(), locals(), ['build_time_vars'], 0)
++        except ModuleNotFoundError:
++            raise e from None
++        
      build_time_vars = _temp.build_time_vars
      vars.update(build_time_vars)
+ 
 
