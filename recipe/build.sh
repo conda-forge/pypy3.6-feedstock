@@ -121,16 +121,19 @@ fi
 # Regenerate the sysconfigdata__*.py file with paths from $PREFIX, at install
 # those paths will be replaced with the actual user's paths. The generator
 # builds the file in ./build/lib-<platform_tag>
-host_gun_type=$(${RELEASE_DIR}/config.guess)
+host_gnu_type=$(${RELEASE_DIR}/config.guess)
 pushd /tmp
 pypy -m sysconfig --generate-posix-vars HOST_GNU_TYPE $host_gnu_type
 cp build/*/_sysconfigdata*.py $PREFIX/lib/pypy${PY_VERSION}
+sysconfigdata_name=$(basename $(ls build/*/_sysconfigdata*.py) | rev | cut -b 4- | rev)
 popd
 
 echo sysconfig $(pypy -c "from distutils import sysconfig; print(sysconfig)")
 echo get_python_inc $(pypy -c "from distutils import sysconfig; print(sysconfig.get_python_inc())")
 echo INCLUDEPY $(pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'))")
 ls $(pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'))")
+
+_PYTHON_SYSCONFIGDATA_NAME=$sysconfigdata_name pypy -c "from distutils import sysconfig; assert sysconfig.get_config_var('HOST_GNU_TYPE') != None"
 # Build the c-extension modules for the standard library
 pypy -c "import _testcapi"
 pypy -c "import _ctypes_test"
