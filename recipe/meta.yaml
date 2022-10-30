@@ -41,6 +41,7 @@ source:
       - patches/0032b-pre-v7.3.10-fix-object-h.patch  # [name_suffix=="3.9"]
       - patches/0033-pre-v7.3.10-fix-windows-scratch-reg.patch
       - patches/0034-pre-v7.3.10-libc-darwin-path.patch
+      - recipe/patches/fix_tzpath.patch   # [name_suffix != "3.8"]
 
 
 
@@ -74,7 +75,7 @@ requirements:
     - xorg-libx11  # [linux]
     - xz
     - zlib
-    - tzdata
+    - tzdata   # [name_suffix != "3.8"]
   run:
     - bzip2
     - expat
@@ -86,7 +87,7 @@ requirements:
     - tk
     - xz
     - zlib
-    - tzdata
+    - tzdata   # [name_suffix != "3.8"]
   run_constrained:
     - pypy3.5 ==99999999999
     - pypy3.6 ==99999999999
