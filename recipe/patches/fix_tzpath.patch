@@ -1,0 +1,17 @@
+From: Isuru Fernando <isuruf@gmail.com>
+Date: Sat, 29 Oct 2022 23:09:07 -0500
+Subject: [PATCH 1/1] Fix TZPATH
+
+--- a/lib-python/3/sysconfig.py
++++ b/lib-python/3/sysconfig.py
+@@ -585,9 +585,9 @@
+ 
+         if os.name == 'nt':
+             _init_non_posix(_CONFIG_VARS)
+-            _CONFIG_VARS['TZPATH'] = ''
+         if os.name == 'posix':
+             _init_posix(_CONFIG_VARS)
++        _CONFIG_VARS['TZPATH'] = os.path.join(_PREFIX, "share", "zoneinfo")
+         # For backward compatibility, see issue19555
+         SO = _CONFIG_VARS.get('EXT_SUFFIX')
+         if SO is not None:
