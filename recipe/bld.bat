@@ -117,3 +117,9 @@ REM that entry_points are able to be created by downstream packages.
 if not exist "%PREFIX%\Scripts" mkdir "%PREFIX%\Scripts"
 copy /y NUL "%PREFIX%\Scripts\.keep"
 if errorlevel 1 exit 1
+
+REM Test that the dlls are still accesable when using a venv
+pypy -m venv destination
+destination/Scripts/python -c "import sqlite3"
+if errorlevel 1 exit 1
+rmdir /q /s destination
