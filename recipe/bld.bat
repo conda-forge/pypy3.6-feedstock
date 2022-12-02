@@ -120,6 +120,6 @@ if errorlevel 1 exit 1
 
 REM Test that the dlls are still accesable when using a venv
 pypy -m venv destination
-destination/Scripts/python -c "import sqlite3"
+destination\Scripts\python -c "import sqlite3"
 if errorlevel 1 exit 1
 rmdir /q /s destination
