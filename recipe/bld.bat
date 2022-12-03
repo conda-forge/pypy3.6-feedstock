@@ -120,7 +120,7 @@ if errorlevel 1 exit 1
 
 REM Test that the dlls are still accesable when using a venv
 set CONDA_DLL_SEARCH_MODIFICATION_DEBUG=1
-python -c "import sqlite3"
+pypy -c "import sqlite3"
 pypy -m venv destination
 destination\Scripts\python -c "import sqlite3"
 if errorlevel 1 exit 1
