@@ -95,7 +95,10 @@ requirements:
     - python {{ name_suffix }}.* *_{{ "".join(version.split(".")[:2]) }}_pypy
 
 test:
+  requires:
+    - m2-bash  # [win]
   commands:
+    - bash -c "pypy3 --version"  # [win]
     - pypy3 --help
     - pypy3 -c "import platform; print(platform._sys_version())"
     - pypy3 -c "import tkinter; tkinter.Tk()"                                                    # [not unix]
