@@ -37,7 +37,7 @@ Modified 2022-12-02 to use sys.base_prefix
 +    enable = getenv("CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
 +    if enable and enable == '0':
 +        return
-+    sv_executable_dirname = os.path.dirname(sys.executable)
++    sv_executable_dirname = sys.base_prefix
 +    condaPaths = [os.path.join(sv_executable_dirname, x) for x in [
 +        r'Library\mingw-w64\bin',
 +        r'Library\usr\bin',
