@@ -31,6 +31,9 @@ PYPY_PKG_NAME=pypy3
 BUILD_DIR=${PREFIX}/../build
 TARGET_DIR=${PREFIX}/../target
 ARCHIVE_NAME="${PYPY_PKG_NAME}-${PKG_VERSION}"
+PYPY_PACKAGE_WITHOUTTK=1
+PYPY_NO_EMBED_DEPENDENCIES=1
+PYPY_NO_MAKE_PORTABLE=1
 
 # Build PyPy in stages
 # Force the build to use this directory

@@ -12,6 +12,8 @@ set "PYPY_PKG_NAME=pypy3"
 set "BUILD_DIR=%PREFIX%\..\build"
 set "TARGET_DIR=%PREFIX%\..\target"
 set "ARCHIVE_NAME=%PYPY_PKG_NAME%-%PKG_VERSION%"
+set PYPY_PACKAGE_WITHOUTTK=1
+set PYPY_PACKAGE_NO_DLLS=1
 
 REM Report system info
 systeminfo

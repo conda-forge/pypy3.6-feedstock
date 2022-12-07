@@ -10,10 +10,18 @@ iff -r ab92c5997c51 rpython/rlib/clibffi.py
          separate_module_sources = separate_module_sources,
          post_include_bits = post_include_bits,
          )
-diff -r ab92c5997c51 rpython/translator/driver.py
---- a/rpython/translator/driver.py	Sun Feb 20 17:00:07 2022 +0200
-+++ b/rpython/translator/driver.py	Sun Feb 20 19:41:27 2022 +0200
-@@ -512,12 +512,12 @@
+
+# HG changeset patch
+# Date 1670412092 18000
+#      Wed Dec 07 06:21:32 2022 -0500
+# Branch release-pypy3.8-v7.x
+# Node ID ffffffffffffffffffffffffffffffffffffffff
+# Parent  c20fe3f310f1d209d69a71d903dd17e5c3cf0de9
+
+diff -r c20fe3f310f1 rpython/translator/driver.py
+--- a/rpython/translator/driver.py
++++ b/rpython/translator/driver.py
+@@ -512,11 +512,11 @@
                      # HACK: copy libcffi-*.dll which is required for venvs
                      # At some point, we should stop doing this, and instead
                      # use the artifact from packaging the build instead
@@ -22,10 +30,10 @@ diff -r ab92c5997c51 rpython/translator/driver.py
                      if sys.platform == 'win32' and not libffi:
                          raise RuntimeError('could not find libffi')
                      elif libffi:
-                         # in tests, we can mock using windows without libffi
--                        shutil.copyfile(str(libffi), os.getcwd() + r'\libffi-8.dll')
-+                        shutil.copyfile(str(libffi), os.getcwd() + r'\libffi-7.dll')
-             self.c_entryp = newexename
-         self.log.info("created: %s" % (self.c_entryp,))
- 
+-                        target = os.getcwd() + r'\libffi-8.dll'
++                        target = os.getcwd() + r'\libffi-7.dll'
+                         if not os.path.exists(target):
+                             # in tests, we can mock using windows without libffi
+                             shutil.copyfile(str(libffi), target)
+
 
