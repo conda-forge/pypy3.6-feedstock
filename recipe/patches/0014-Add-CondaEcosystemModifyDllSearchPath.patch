@@ -1,6 +1,7 @@
 diff -r 9ef55f6fc369 -r 6bc5108b0207 pypy/interpreter/app_main.py
 --- a/pypy/interpreter/app_main.py	Sun Oct 24 23:08:46 2021 +0300
 +++ b/pypy/interpreter/app_main.py	Sat Nov 06 14:23:48 2021 +0200
+Modified 2022-12-02 to use sys.base_prefix
 @@ -608,6 +608,56 @@
      return options
  
@@ -14,11 +15,11 @@ diff -r 9ef55f6fc369 -r 6bc5108b0207 pypy/interpreter/app_main.py
 +      In this mode, the python interpreter works as if the python interpreter
 +      was called with the following conda directories.
 +
-+        os.add_dll_directory(join(sys.prefix, 'bin'))
-+        os.add_dll_directory(join(sys.prefix, 'Scripts'))
-+        os.add_dll_directory(join(sys.prefix, 'Library', 'bin'))
-+        os.add_dll_directory(join(sys.prefix, 'Library', 'usr', 'bin'))
-+        os.add_dll_directory(join(sys.prefix, 'Library', 'mingw-w64', 'bin'))
++        os.add_dll_directory(join(sys.base_prefix, 'bin'))
++        os.add_dll_directory(join(sys.base_prefix, 'Scripts'))
++        os.add_dll_directory(join(sys.base_prefix, 'Library', 'bin'))
++        os.add_dll_directory(join(sys.base_prefix, 'Library', 'usr', 'bin'))
++        os.add_dll_directory(join(sys.base_prefix, 'Library', 'mingw-w64', 'bin'))
 +
 +      Search order
 +        - The directory that contains the DLL (if looking for a dependency)
@@ -36,7 +37,7 @@ diff -r 9ef55f6fc369 -r 6bc5108b0207 pypy/interpreter/app_main.py
 +    enable = getenv("CONDA_DLL_SEARCH_MODIFICATION_ENABLE")
 +    if enable and enable == '0':
 +        return
-+    sv_executable_dirname = os.path.dirname(sys.executable)
++    sv_executable_dirname = sys.base_prefix
 +    condaPaths = [os.path.join(sv_executable_dirname, x) for x in [
 +        r'Library\mingw-w64\bin',
 +        r'Library\usr\bin',
