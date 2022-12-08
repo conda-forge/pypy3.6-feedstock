@@ -8,8 +8,8 @@
 
 
 diff -r 8094d9636eb3 lib_pypy/_cffi_ssl/_stdssl/__init__.py
---- a/lib_pypy/_cffi_ssl/_stdssl/__init__.py    Wed Dec 07 06:49:33 2022 -0500
-+++ b/lib_pypy/_cffi_ssl/_stdssl/__init__.py    Wed Dec 07 14:52:36 2022 -0500
+--- a/lib_pypy/_cffi_ssl/_stdssl/__init__.py
++++ b/lib_pypy/_cffi_ssl/_stdssl/__init__.py
 @@ -59,7 +59,7 @@
  HAS_ECDH = True
  HAS_SNI = bool(lib.Cryptography_HAS_TLSEXT_HOSTNAME)
