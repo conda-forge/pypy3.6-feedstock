@@ -1,0 +1,21 @@
+
+# HG changeset patch
+# Date 1670500924 18000
+#      Thu Dec 08 07:02:04 2022 -0500
+# Branch py3.8
+# Node ID ffffffffffffffffffffffffffffffffffffffff
+# Parent  a0f4f69b92f592bf804792ad562f22dbd3623285
+
+
+diff -r a0f4f69b92f5 pypy/tool/release/package.py
+--- a/pypy/tool/release/package.py	Wed Dec 07 19:52:26 2022 -0500
++++ b/pypy/tool/release/package.py	Thu Dec 08 07:02:04 2022 -0500
+@@ -315,7 +315,7 @@
+             # Has the lib moved, was translation not 'shared', or are
+             # there no exported functions in the dll so no import
+             # library was created?
+-        if not options.no__tkinter:
++        if getattr(options, 'copy_dlls', True) and not options.no__tkinter:
+             try:
+                 p = pypy_c.dirpath().join('tcl86t.dll')
+                 if not p.check():
