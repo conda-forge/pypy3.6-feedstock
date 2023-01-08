@@ -2,7 +2,7 @@
 {% set name_suffix = "3.8" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
-{% set version = "7.3.10" %}
+{% set version = "7.3.11" %}
 
 package:
   name: {{ name }}
@@ -10,8 +10,8 @@ package:
 
 source:
   - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
-    sha256: 218a1e062f17aba89f61bc398e8498f13c048b9fcf294343f5d9d56c3ac9b882  # [name_suffix == "3.8"]
-    sha256: 3738d32575ed2513e3e66878e4e4c6c208caed267570f3f9f814748830002967  # [name_suffix == "3.9"]
+    sha256: 4d6769bfca73734e8666fd70503b7ceb06a6e259110e617331bb3899ca4e6058  # [name_suffix == "3.8"]
+    sha256: b0f3166fb2a5aadfd5ceb9db5cdd5f7929a0eccca02b4a26c0dae0492f7ca8ea  # [name_suffix == "3.9"]
     folder: pypy3
     patches:
       - patches/fficurses.patch
@@ -32,12 +32,10 @@ source:
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
       - patches/0014-Add-CondaEcosystemModifyDllSearchPath.patch
+      - patches/0019-Disable-copying-dlls.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
-      - patches/fix_tzpath.patch   # [name_suffix != "3.8"]
       # Patches to be removed for the next version
-      - patches/0040-packing-logic.patch
-      - patches/0041-macos-x86_64-pthread_jit_write_protect_np.patch
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
