@@ -24,8 +24,6 @@ if [[ "$target_platform" == "linux"* ]]; then
    export CPATH=${PREFIX}/include
 fi
 
-PYPY_NO_EMBED_DEPENDENCIES=1
-
 GOAL_DIR=$PYPY3_SRC_DIR/pypy/goal
 RELEASE_DIR=$PYPY3_SRC_DIR/pypy/tool/release
 

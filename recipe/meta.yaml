@@ -21,7 +21,6 @@ source:
       - patches/clibffi.patch     # [osx]
       - patches/darwin.patch      # [osx]
       - patches/0001-Add-conda-forge-version.patch
-      - patches/0015-Disable-NPN.patch  # [name_suffix=="3.8"]
       - patches/0021-Adapt-platform-to-patch-0001.patch
       - patches/0023a-Fix-LIBDIR.patch  # [name_suffix=="3.8"]
       - patches/0023b-Fix-LIBDIR.patch  # [name_suffix=="3.9"]
@@ -32,7 +31,6 @@ source:
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
       - patches/0014-Add-CondaEcosystemModifyDllSearchPath.patch
-      - patches/0019-Disable-copying-dlls.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
       # Patches to be removed for the next version
