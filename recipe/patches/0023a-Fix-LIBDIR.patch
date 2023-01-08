@@ -1,15 +1,12 @@
-conda modifies the build to put the dll in base/lib not base/bin
-
-diff -r cbafdee73af5 lib_pypy/_sysconfigdata.py
---- a/lib_pypy/_sysconfigdata.py	Sun Feb 20 16:59:41 2022 +0200
-+++ b/lib_pypy/_sysconfigdata.py	Sun Feb 20 17:38:50 2022 +0200
-@@ -51,7 +51,7 @@
+diff -r c758c7d7097f lib_pypy/_sysconfigdata.py
+--- a/lib_pypy/_sysconfigdata.py	Fri Jan 06 00:00:39 2023 +0200
++++ b/lib_pypy/_sysconfigdata.py	Sun Jan 08 13:05:27 2023 +0200
+@@ -52,7 +52,7 @@
  else:
      build_time_vars['LDLIBRARY'] = 'libpypy3-c.so'
      build_time_vars['INCLUDEPY'] = os.path.join(mybase, 'include', 'pypy' + pydot)
 -    build_time_vars['LIBDIR'] = os.path.join(mybase, 'bin')
 +    build_time_vars['LIBDIR'] = os.path.join(mybase, 'lib')
+     build_time_vars['CONFINCLUDEPY'] = build_time_vars['INCLUDEPY']
  
- if find_executable("gcc"):
-     build_time_vars.update({
-
+ if which("gcc"):

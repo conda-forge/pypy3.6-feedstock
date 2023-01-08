@@ -1,7 +1,7 @@
-iff -r ab92c5997c51 rpython/rlib/clibffi.py
---- a/rpython/rlib/clibffi.py	Sun Feb 20 17:00:07 2022 +0200
-+++ b/rpython/rlib/clibffi.py	Sun Feb 20 19:41:27 2022 +0200
-@@ -105,7 +105,7 @@
+diff -r cc1e666384ea rpython/rlib/clibffi.py
+--- a/rpython/rlib/clibffi.py	Fri Jan 06 00:01:13 2023 +0200
++++ b/rpython/rlib/clibffi.py	Sun Jan 08 14:37:06 2023 +0200
+@@ -108,7 +108,7 @@
  else:
      eci = ExternalCompilationInfo(
          includes = ['ffi.h', 'windows.h'],
@@ -10,10 +10,10 @@ iff -r ab92c5997c51 rpython/rlib/clibffi.py
          separate_module_sources = separate_module_sources,
          post_include_bits = post_include_bits,
          )
-diff -r ab92c5997c51 rpython/translator/driver.py
---- a/rpython/translator/driver.py	Sun Feb 20 17:00:07 2022 +0200
-+++ b/rpython/translator/driver.py	Sun Feb 20 19:41:27 2022 +0200
-@@ -512,12 +512,12 @@
+diff -r cc1e666384ea rpython/translator/driver.py
+--- a/rpython/translator/driver.py	Fri Jan 06 00:01:13 2023 +0200
++++ b/rpython/translator/driver.py	Sun Jan 08 14:37:06 2023 +0200
+@@ -512,11 +512,11 @@
                      # HACK: copy libcffi-*.dll which is required for venvs
                      # At some point, we should stop doing this, and instead
                      # use the artifact from packaging the build instead
@@ -22,10 +22,8 @@ diff -r ab92c5997c51 rpython/translator/driver.py
                      if sys.platform == 'win32' and not libffi:
                          raise RuntimeError('could not find libffi')
                      elif libffi:
-                         # in tests, we can mock using windows without libffi
--                        shutil.copyfile(str(libffi), os.getcwd() + r'\libffi-8.dll')
-+                        shutil.copyfile(str(libffi), os.getcwd() + r'\libffi-7.dll')
-             self.c_entryp = newexename
-         self.log.info("created: %s" % (self.c_entryp,))
- 
-
+-                        target = os.getcwd() + r'\libffi-8.dll'
++                        target = os.getcwd() + r'\libffi-7.dll'
+                         if not os.path.exists(target):
+                             # in tests, we can mock using windows without libffi
+                             shutil.copyfile(str(libffi), target)
