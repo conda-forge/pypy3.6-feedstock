@@ -1,15 +1,20 @@
 # HG changeset patch
-# Date 1670419241 18000
-#      Wed Dec 07 08:20:41 2022 -0500
-# Branch release-pypy3.8-v7.x
-# Node ID ffffffffffffffffffffffffffffffffffffffff
-# Parent  4b1398fe9d76ad762155d03684c2a153d230b2ef
+# Date 1673190532 -7200
+#      Sun Jan 08 17:08:52 2023 +0200
+# Branch py3.8
+# Node ID d8e6b37f5231c7b59b2b639a651dd696a3732cc3
+# Parent  c758c7d7097f60adffc8d9e8a8fc0dea18902e6f
+make code compatible with conda
 
-
-diff -r 4b1398fe9d76 lib_pypy/_ssl_build.py
---- a/lib_pypy/_ssl_build.py
-+++ b/lib_pypy/_ssl_build.py
-@@ -61,7 +61,7 @@
+diff -r c758c7d7097f -r d8e6b37f5231 lib_pypy/_ssl_build.py
+--- a/lib_pypy/_ssl_build.py	Fri Jan 06 00:00:39 2023 +0200
++++ b/lib_pypy/_ssl_build.py	Sun Jan 08 17:08:52 2023 +0200
+@@ -1,3 +1,4 @@
++import os
+ import sys
+ from _cffi_ssl import _cffi_src
+ sys.modules['_cffi_src'] = _cffi_src
+@@ -60,7 +61,7 @@
  
  if __name__ == '__main__':
      ffi.compile(verbose=True)
