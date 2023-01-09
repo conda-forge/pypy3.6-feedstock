@@ -25,7 +25,6 @@ source:
       - patches/0023a-Fix-LIBDIR.patch  # [name_suffix=="3.8"]
       - patches/0023b-Fix-LIBDIR.patch  # [name_suffix=="3.9"]
       - patches/0030-Swap-libffi8-for-7.patch
-      - patches/0019-Disable-copying-dlls.patch
       # Patches by @mingwandroid from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
@@ -34,6 +33,7 @@ source:
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
       # Patches to be removed for the next version
+      - patches/0019-Disable-copying-dlls.patch
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
