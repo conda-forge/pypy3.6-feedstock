@@ -18,7 +18,7 @@ diff -r 1328cd0b061e lib_pypy/_tkinter/tklib_build.py
 -    # On some Linux distributions, the tcl and tk libraries are
 -    # stored in /usr/include, so we must check this case also
 +    incdirs = []
-+    linklibs = ['tcl86', 'tk86']
++    linklibs = ['tcl8.6', 'tk8.6']
      libdirs = []
 -    found = False
 -    for _ver in ['', '8.6', '8.5']:
