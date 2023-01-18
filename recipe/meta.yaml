@@ -2,7 +2,7 @@
 {% set name_suffix = "3.8" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
-{% set version = "7.3.9" %}
+{% set version = "7.3.11" %}
 
 package:
   name: {{ name }}
@@ -10,8 +10,8 @@ package:
 
 source:
   - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
-    sha256: 5b5d9d9256f12a129af8384e2f581bdfab3bc0fbbe3a0a480d9c1d2e95490eb1  # [name_suffix == "3.8"]
-    sha256: 2abaa1e9fe1ec0e233c9fbc377a0c8e9a0634080a8f4f30eb6898301f6618c12  # [name_suffix == "3.9"]
+    sha256: 4d6769bfca73734e8666fd70503b7ceb06a6e259110e617331bb3899ca4e6058  # [name_suffix == "3.8"]
+    sha256: b0f3166fb2a5aadfd5ceb9db5cdd5f7929a0eccca02b4a26c0dae0492f7ca8ea  # [name_suffix == "3.9"]
     folder: pypy3
     patches:
       - patches/fficurses.patch
@@ -33,22 +33,14 @@ source:
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
       # Patches to be removed for the next version
-      - patches/0019a-Disable-copying-dlls.patch  # [name_suffix=="3.8"]
-      - patches/0019b-Disable-copying-dlls.patch  # [name_suffix=="3.9"]
-      - patches/0031-pre-v7.3.10-fix-generic-alias.patch  # [name_suffix=="3.9"]
-      - patches/0031-Disable-embedding-and-portable.patch
-      - patches/0032a-pre-v7.3.10-fix-object-h.patch  # [name_suffix=="3.8"]
-      - patches/0032b-pre-v7.3.10-fix-object-h.patch  # [name_suffix=="3.9"]
-      - patches/0033-pre-v7.3.10-fix-windows-scratch-reg.patch
-      - patches/0034-pre-v7.3.10-libc-darwin-path.patch
-      - patches/fix_tzpath.patch   # [name_suffix != "3.8"]
+      - patches/0019-Disable-copying-dlls.patch
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 7
+  number: 0
   skip_compile_pyc:
     - lib*
 
