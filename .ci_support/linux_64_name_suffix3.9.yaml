@@ -3,7 +3,7 @@ bzip2:
 c_compiler:
 - gcc
 c_compiler_version:
-- '11'
+- '12'
 cdt_name:
 - cos6
 channel_sources:
@@ -17,11 +17,11 @@ expat:
 libffi:
 - '3.4'
 name_suffix:
-- '3.8'
+- '3.9'
 ncurses:
 - '6'
 openssl:
-- 1.1.1
+- '3'
 sqlite:
 - '3'
 target_platform:

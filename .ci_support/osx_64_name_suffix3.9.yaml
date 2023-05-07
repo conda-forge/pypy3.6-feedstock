@@ -5,7 +5,7 @@ bzip2:
 c_compiler:
 - clang
 c_compiler_version:
-- '14'
+- '15'
 channel_sources:
 - conda-forge
 channel_targets:
@@ -17,11 +17,11 @@ libffi:
 macos_machine:
 - x86_64-apple-darwin13.4.0
 name_suffix:
-- '3.8'
+- '3.9'
 ncurses:
 - '6'
 openssl:
-- 1.1.1
+- '3'
 sqlite:
 - '3'
 target_platform:
