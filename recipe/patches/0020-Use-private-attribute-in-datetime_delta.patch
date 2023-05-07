@@ -1,0 +1,28 @@
+# HG changeset patch
+# User Matti Picus <matti.picus@gmail.com>
+# Date 1683447118 -10800
+#      Sun May 07 11:11:58 2023 +0300
+# Branch py3.9
+# Node ID 267c2f5eca33e0d24a4055ddeca2e029ddcae920
+# Parent  73b614bd46b7572401fc1e92007823c9a0c9463d
+use the internal attributes instead of the public getters, since pandas overrides the getters
+
+diff -r 73b614bd46b7 -r 267c2f5eca33 pypy/module/cpyext/cdatetime.py
+--- a/pypy/module/cpyext/cdatetime.py	Thu May 04 06:56:24 2023 +0300
++++ b/pypy/module/cpyext/cdatetime.py	Sun May 07 11:11:58 2023 +0300
+@@ -206,11 +206,11 @@
+ def timedeltatype_attach(space, py_obj, w_obj, w_userdata=None):
+     "Fills a newly allocated py_obj from the w_obj"
+     py_delta = rffi.cast(PyDateTime_Delta, py_obj)
+-    days = space.int_w(space.getattr(w_obj, space.newtext('days')))
++    days = space.int_w(space.getattr(w_obj, space.newtext('_days')))
+     py_delta.c_days = cts.cast('int', days)
+-    seconds = space.int_w(space.getattr(w_obj, space.newtext('seconds')))
++    seconds = space.int_w(space.getattr(w_obj, space.newtext('_seconds')))
+     py_delta.c_seconds = cts.cast('int', seconds)
+-    microseconds = space.int_w(space.getattr(w_obj, space.newtext('microseconds')))
++    microseconds = space.int_w(space.getattr(w_obj, space.newtext('_microseconds')))
+     py_delta.c_microseconds = cts.cast('int', microseconds)
+ 
+ # Constructors. They are better used as macros.
+
