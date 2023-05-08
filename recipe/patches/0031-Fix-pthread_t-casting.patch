@@ -1,0 +1,92 @@
+# HG changeset patch
+# User Matti Picus <matti.picus@gmail.com>
+# Date 1683523896 -10800
+#      Mon May 08 08:31:36 2023 +0300
+# Node ID 9fbe1654f92bd4f3c67ac26305339235f01a9927
+# Parent  805d1fa67c495f3cefdebf6b3ea84d34e1ec4660
+properly cast first argument of pthread_kill to pthread_t, used in python3
+
+# HG changeset patch
+# User Matti Picus <matti.picus@gmail.com>
+# Date 1683528324 -10800
+#      Mon May 08 09:45:24 2023 +0300
+# Branch py3.9
+# Node ID dd78884928736a920822e82940633c9f3eb1c2e6
+# Parent  d82e662e95f536ee7f48ccf9fe5cacc0cbc647d4
+use version of c_pthread_kill that properly casts tid to a pthread_t
+
+diff -r 805d1fa67c49 -r 9fbe1654f92b rpython/rlib/rsignal.py
+--- a/rpython/rlib/rsignal.py	Thu May 04 07:07:53 2023 +0300
++++ b/rpython/rlib/rsignal.py	Mon May 08 08:31:36 2023 +0300
+@@ -109,9 +109,6 @@
+                            save_err=rffi.RFFI_SAVE_ERRNO)
+     c_getitimer = external('getitimer', [rffi.INT, itimervalP], rffi.INT)
+ 
+-c_pthread_kill = external('pthread_kill', [lltype.Signed, rffi.INT], rffi.INT,
+-                          save_err=rffi.RFFI_SAVE_ERRNO)
+-
+ if sys.platform != 'win32':
+     c_strsignal = external('strsignal', [rffi.INT], rffi.CCHARP)
+     def strsignal(signum):
+diff -r 805d1fa67c49 -r 9fbe1654f92b rpython/rlib/rthread.py
+--- a/rpython/rlib/rthread.py	Thu May 04 07:07:53 2023 +0300
++++ b/rpython/rlib/rthread.py	Mon May 08 08:31:36 2023 +0300
+@@ -53,6 +53,9 @@
+                                               # importantly, reacquire it
+                                               # around the callback
+ 
++c_pthread_kill = llexternal('RPyThread_kill', [lltype.Signed, rffi.INT], rffi.INT,
++                          save_err=rffi.RFFI_SAVE_ERRNO)
++
+ TLOCKP = rffi.COpaquePtr('struct RPyOpaque_ThreadLock',
+                           compilation_info=eci)
+ TLOCKP_SIZE = rffi_platform.sizeof('struct RPyOpaque_ThreadLock', eci)
+diff -r 805d1fa67c49 -r 9fbe1654f92b rpython/translator/c/src/thread_pthread.c
+--- a/rpython/translator/c/src/thread_pthread.c	Thu May 04 07:07:53 2023 +0300
++++ b/rpython/translator/c/src/thread_pthread.c	Mon May 08 08:31:36 2023 +0300
+@@ -225,7 +225,11 @@
+     return (unsigned long) native_id;
+ }
+ 
+-
++int
++RPyThread_kill(Signed id, int signal)
++{
++    return pthread_kill((pthread_t)id, signal);
++}
+ 
+ /************************************************************/
+ #ifdef USE_SEMAPHORES
+diff -r 805d1fa67c49 -r 9fbe1654f92b rpython/translator/c/src/thread_pthread.h
+--- a/rpython/translator/c/src/thread_pthread.h	Thu May 04 07:07:53 2023 +0300
++++ b/rpython/translator/c/src/thread_pthread.h	Mon May 08 08:31:36 2023 +0300
+@@ -80,6 +80,8 @@
+ Signed RPyThreadSetStackSize(Signed);
+ RPY_EXTERN
+ void RPyThreadAfterFork(void);
++RPY_EXTERN
++int RPyThread_kill(Signed id, int signal);
+ 
+ 
+ #define pypy_compare_and_swap(ptr, oldval, newval)  \
+diff -r d82e662e95f5 -r dd7888492873 pypy/module/signal/interp_signal.py
+--- a/pypy/module/signal/interp_signal.py	Mon May 08 09:43:09 2023 +0300
++++ b/pypy/module/signal/interp_signal.py	Mon May 08 09:45:24 2023 +0300
+@@ -11,7 +11,7 @@
+     PeriodicAsyncAction)
+ from pypy.interpreter.gateway import unwrap_spec
+ 
+-from rpython.rlib import jit, rgc, rposix, rposix_stat
++from rpython.rlib import jit, rgc, rposix, rposix_stat, rthread
+ from rpython.rlib.objectmodel import we_are_translated
+ from rpython.rlib.rarithmetic import intmask, widen
+ from rpython.rlib.rsignal import *
+@@ -391,7 +391,7 @@
+ @unwrap_spec(tid=int, signum=int)
+ def pthread_kill(space, tid, signum):
+     "Send a signal to a thread."
+-    ret = c_pthread_kill(tid, signum)
++    ret = rthread.c_pthread_kill(tid, signum)
+     if widen(ret) < 0:
+         raise exception_from_saved_errno(space, space.w_OSError)
+     # the signal may have been send to the current thread
