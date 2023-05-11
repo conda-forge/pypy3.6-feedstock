@@ -8,26 +8,16 @@ jobs:
     vmImage: ubuntu-latest
   strategy:
     matrix:
-      linux_64_name_suffix3.8openssl1.1.1:
-        CONFIG: linux_64_name_suffix3.8openssl1.1.1
+      linux_64_name_suffix3.8:
+        CONFIG: linux_64_name_suffix3.8
         UPLOAD_PACKAGES: 'True'
         DOCKER_IMAGE: quay.io/condaforge/linux-anvil-cos7-x86_64
-        SHORT_CONFIG: linux_64_name_suffix3.8openssl1.1.1
-      linux_64_name_suffix3.8openssl3:
-        CONFIG: linux_64_name_suffix3.8openssl3
+        SHORT_CONFIG: linux_64_name_suffix3.8
+      linux_64_name_suffix3.9:
+        CONFIG: linux_64_name_suffix3.9
         UPLOAD_PACKAGES: 'True'
         DOCKER_IMAGE: quay.io/condaforge/linux-anvil-cos7-x86_64
-        SHORT_CONFIG: linux_64_name_suffix3.8openssl3
-      linux_64_name_suffix3.9openssl1.1.1:
-        CONFIG: linux_64_name_suffix3.9openssl1.1.1
-        UPLOAD_PACKAGES: 'True'
-        DOCKER_IMAGE: quay.io/condaforge/linux-anvil-cos7-x86_64
-        SHORT_CONFIG: linux_64_name_suffix3.9openssl1.1.1
-      linux_64_name_suffix3.9openssl3:
-        CONFIG: linux_64_name_suffix3.9openssl3
-        UPLOAD_PACKAGES: 'True'
-        DOCKER_IMAGE: quay.io/condaforge/linux-anvil-cos7-x86_64
-        SHORT_CONFIG: linux_64_name_suffix3.9openssl3
+        SHORT_CONFIG: linux_64_name_suffix3.9
   timeoutInMinutes: 360
 
   steps:
