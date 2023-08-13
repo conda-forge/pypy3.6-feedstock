@@ -124,3 +124,9 @@ pypy -m venv destination
 destination\Scripts\python -c "import sqlite3"
 if errorlevel 1 exit 1
 rmdir /q /s destination
+
+REM Copy required DLLs so pypy can be used without activating the environment
+copy /b %PREFIX%\Library\bin\libexpat.dll %PREFIX%
+copy /b %PREFIX%\Library\bin\libbz2.dll %PREFIX%
+copy /b %PREFIX%\Library\bin\ffi-8.dll %PREFIX%
+
