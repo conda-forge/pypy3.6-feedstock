@@ -44,8 +44,6 @@ copy /b *.dll %GOAL_DIR%
 copy /b *.exe %GOAL_DIR%
 REM lib goes elsewhere
 copy /b *.lib %PYPY3_SRC_DIR%\libs\python%PY_VERSION_NODOTS%.lib || exit /b 11
-REM how big is the lib? It should be about 200k
-dir *.lib
 
 cd /d %GOAL_DIR%
 

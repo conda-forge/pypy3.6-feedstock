@@ -1,0 +1,66 @@
+# HG changeset patch
+# User Carl Friedrich Bolz-Tereick <cfbolz@gmx.de>
+# Date 1689079860 -7200
+#      Tue Jul 11 14:51:00 2023 +0200
+# Branch conda-3.9-v7.3.12
+# Node ID 163544ab2a142b8e7e040a098ec9013963c9fb64
+# Parent  3f3f2298ddc56db44bbdb4551ce992d8e9401646
+#3961: don't uselessly compile a regex for *every* parsed email message. the
+pattern is anyway always the same, apart from a variable prefix. Instead, first
+check the prefix with str.startswith, and only if that returns True, match the
+rest of the regular expression.
+
+diff -r 3f3f2298ddc5 -r 163544ab2a14 lib-python/3/email/feedparser.py
+--- a/lib-python/3/email/feedparser.py	Thu Jun 15 12:31:24 2023 +0300
++++ b/lib-python/3/email/feedparser.py	Tue Jul 11 14:51:00 2023 +0200
+@@ -37,6 +37,7 @@
+ headerRE = re.compile(r'^(From |[\041-\071\073-\176]*:|[\t ])')
+ EMPTYSTRING = ''
+ NL = '\n'
++boundaryend_re = re.compile(r'(?P<end>--)?(?P<ws>[ \t]*)(?P<linesep>\r\n|\r|\n)?$')
+ 
+ NeedMoreData = object()
+ 
+@@ -329,9 +330,14 @@
+             # this onto the input stream until we've scanned past the
+             # preamble.
+             separator = '--' + boundary
+-            boundaryre = re.compile(
+-                '(?P<sep>' + re.escape(separator) +
+-                r')(?P<end>--)?(?P<ws>[ \t]*)(?P<linesep>\r\n|\r|\n)?$')
++            # PyPy difference: don't compile a new regular expression for every
++            # single message, instead just use str.startswith and a generic re
++            # this prevents the JIT compiling more and more traces for all the
++            # different (random) boundaries of messages
++            def boundarymatch(line):
++                if not line.startswith(separator):
++                    return None
++                return boundaryend_re.match(line, len(separator))
+             capturing_preamble = True
+             preamble = []
+             linesep = False
+@@ -343,7 +349,7 @@
+                     continue
+                 if line == '':
+                     break
+-                mo = boundaryre.match(line)
++                mo = boundarymatch(line)
+                 if mo:
+                     # If we're looking at the end boundary, we're done with
+                     # this multipart.  If there was a newline at the end of
+@@ -375,13 +381,13 @@
+                         if line is NeedMoreData:
+                             yield NeedMoreData
+                             continue
+-                        mo = boundaryre.match(line)
++                        mo = boundarymatch(line)
+                         if not mo:
+                             self._input.unreadline(line)
+                             break
+                     # Recurse to parse this subpart; the input stream points
+                     # at the subpart's first line.
+-                    self._input.push_eof_matcher(boundaryre.match)
++                    self._input.push_eof_matcher(boundarymatch)
+                     for retval in self._parsegen():
+                         if retval is NeedMoreData:
+                             yield NeedMoreData

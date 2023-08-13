@@ -1,18 +1,19 @@
 {% if name_suffix is not defined %}
-{% set name_suffix = "3.8" %}
+{% set name_suffix = "3.9" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
-{% set version = "7.3.11" %}
 
 package:
   name: {{ name }}
-  version: {{ version }}
+  version: 7.3.11  # [name_suffix == "3.8"]
+  version: 7.3.12  # [name_suffix == "3.9"]
 
 source:
-  - url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
+  - folder: pypy3
+    url: https://downloads.python.org/pypy/{{ name }}-v7.3.11-src.tar.bz2  # [name_suffix == "3.8"]
+    url: https://downloads.python.org/pypy/{{ name }}-v7.3.12-src.tar.bz2  # [name_suffix == "3.9"]
     sha256: 4d6769bfca73734e8666fd70503b7ceb06a6e259110e617331bb3899ca4e6058  # [name_suffix == "3.8"]
-    sha256: b0f3166fb2a5aadfd5ceb9db5cdd5f7929a0eccca02b4a26c0dae0492f7ca8ea  # [name_suffix == "3.9"]
-    folder: pypy3
+    sha256: e7a2046c7e6c25fc386abbb5132e92a7cc2491e3935699a946cb5dcbb342c2aa  # [name_suffix == "3.9"]
     patches:
       - patches/fficurses.patch
       - patches/tklib_build.patch
@@ -32,17 +33,28 @@ source:
       - patches/0014-Add-CondaEcosystemModifyDllSearchPath.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
-      # Patches to be removed for the next version
-      - patches/0019-Disable-copying-dlls.patch
-      - patches/0020-Use-private-attribute-in-datetime_delta.patch
-      - patches/0031-Fix-pthread_t-casting.patch
+      # Patches for 3.8 only
+      - patches/0019-Disable-copying-dlls.patch  # [name_suffix == "3.8"]
+      - patches/0020-Use-private-attribute-in-datetime_delta.patch  # [name_suffix == "3.8"]
+      - patches/0031-Fix-pthread_t-casting.patch  # [name_suffix == "3.8"]
+      # Patches after 7.3.12
+      - patches/pypy_107654.patch
+      - patches/pypy_107655.patch
+      - patches/pypy_107656.patch
+      - patches/pypy_107657.patch
+      - patches/pypy_107658.patch
+      - patches/pypy_107659.patch  # [name_suffix == "3.9"]
+      - patches/pypy_107663.patch  # [name_suffix == "3.8"]
+      - patches/pypy_107660.patch  # [name_suffix == "3.9"]
+      - patches/pypy_107661.patch
+
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 1
+  number: 2
   skip_compile_pyc:
     - lib*
 
@@ -86,7 +98,7 @@ requirements:
     - pypy3.7 ==99999999999
     - pypy3.8 ==99999999999  # [name_suffix=="3.9"]
     - pypy3.9 ==99999999999  # [name_suffix=="3.8"]
-    - python {{ name_suffix }}.* *_{{ "".join(version.split(".")[:2]) }}_pypy
+    - python {{ name_suffix }}.* *_7.3_pypy
 
 test:
   commands:
