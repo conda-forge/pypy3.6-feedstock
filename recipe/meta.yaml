@@ -20,7 +20,7 @@ source:
       - patches/tk_app.patch
       - patches/lzma_build.patch  # [win]
       - patches/clibffi.patch     # [osx]
-      - patches/darwin.patch      # [osx]
+      - patches/darwin.patch      # [osx and name_suffix == "3.8"]
       - patches/0001-Add-conda-forge-version.patch
       - patches/0021-Adapt-platform-to-patch-0001.patch
       - patches/0023a-Fix-LIBDIR.patch  # [name_suffix=="3.8"]

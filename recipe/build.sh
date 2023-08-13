@@ -95,31 +95,15 @@ fi
 rm $PREFIX/LICENSE
 PY_VERSION=$(echo $PKG_NAME | cut -c 5-)
 
-if [[ -d $PREFIX/lib_pypy ]]; then
-    # For pypy<3.8, the layout needs to be fixed up.
-
-    # Move the generic file name to somewhere that's specific to pypy
-    mv $PREFIX/README.rst $PREFIX/lib_pypy/
-    # Make sure the site-packages dir match with cpython
-    mkdir -p $PREFIX/lib/python${PY_VERSION}/site-packages
-    mv $PREFIX/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
-    rm -rf $PREFIX/site-packages
-    ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/site-packages
-    pushd $PREFIX
-    pypy -m lib2to3.pgen2.driver lib-python/3/lib2to3/Grammar.txt
-    pypy -m lib2to3.pgen2.driver lib-python/3/lib2to3/PatternGrammar.txt
-    popd
-else
-    # Make sure the site-packages dir match with cpython
-    mkdir -p $PREFIX/lib/python${PY_VERSION}/site-packages
-    mv $PREFIX/lib/pypy${PY_VERSION}/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
-    rm -rf $PREFIX/lib/pypy${PY_VERSION}/site-packages
-    ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/lib/pypy${PY_VERSION}/site-packages
-    pushd $PREFIX
-    pypy -m lib2to3.pgen2.driver lib/pypy${PY_VERSION}/lib2to3/Grammar.txt
-    pypy -m lib2to3.pgen2.driver lib/pypy${PY_VERSION}/lib2to3/PatternGrammar.txt
-    popd
-fi
+# Make sure the site-packages dir match with cpython
+mkdir -p $PREFIX/lib/python${PY_VERSION}/site-packages
+mv $PREFIX/lib/pypy${PY_VERSION}/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
+rm -rf $PREFIX/lib/pypy${PY_VERSION}/site-packages
+ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/lib/pypy${PY_VERSION}/site-packages
+pushd $PREFIX
+pypy -m lib2to3.pgen2.driver lib/pypy${PY_VERSION}/lib2to3/Grammar.txt
+pypy -m lib2to3.pgen2.driver lib/pypy${PY_VERSION}/lib2to3/PatternGrammar.txt
+popd
 
 # Regenerate the sysconfigdata__*.py file with paths from $PREFIX, at install
 # those paths will be replaced with the actual user's paths. The generator
@@ -139,8 +123,13 @@ ls $(pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('I
 _PYTHON_SYSCONFIGDATA_NAME=$sysconfigdata_name pypy -c "from distutils import sysconfig; assert sysconfig.get_config_var('HOST_GNU_TYPE') != None"
 # Build the c-extension modules for the standard library
 pypy -c "import _testcapi"
-pypy -c "import _ctypes_test"
-pypy -c "import _testmultiphase"
+if [[ "${PY_VERSION}" == "3.8" ]]; then
+    pypy -c "import _ctypes_test"
+    pypy -c "import _testmultiphase"
+else
+    pypy -c "import _ctypes_test_build"
+    pypy -c "import _testmultiphase_build"
+fi
 
 # Run the python stdlib tests
 # no timeout on darwin
