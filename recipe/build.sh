@@ -121,14 +121,14 @@ echo INCLUDEPY $(pypy -c "from distutils import sysconfig; print(sysconfig.get_c
 ls $(pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'))")
 
 _PYTHON_SYSCONFIGDATA_NAME=$sysconfigdata_name pypy -c "from distutils import sysconfig; assert sysconfig.get_config_var('HOST_GNU_TYPE') != None"
-# Build the c-extension modules for the standard library
-pypy -c "import _testcapi"
+# Build and copy the c-extension modules for the standard library
+cp $(pypy -c "import _testcapi; print(_testcapi.__file__)") $PREFIX/lib/pypy${PY_VERSION}
 if [[ "${PY_VERSION}" == "3.8" ]]; then
-    pypy -c "import _ctypes_test"
-    pypy -c "import _testmultiphase"
+    cp $(pypy -c "import _ctypes_test; print(_ctypes_test.__file__)") $PREFIX/lib/pypy${PY_VERSION}
+    cp $(pypy -c "import _testmultiphase; print(_testmultiphase.__file__)") $PREFIX/lib/pypy${PY_VERSION}
 else
-    pypy -c "import _ctypes_test_build"
-    pypy -c "import _testmultiphase_build"
+    cp $(pypy -c "import _ctypes_test_build, _ctypes_test; print(_ctypes_test.__file__)") $PREFIX/lib/pypy${PY_VERSION}
+    cp $(pypy -c "import _testmultiphase_build, _testmultiphase; print(_testmultiphase.__file__)") $PREFIX/lib/pypy${PY_VERSION}
 fi
 
 # Run the python stdlib tests

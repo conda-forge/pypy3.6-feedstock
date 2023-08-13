@@ -85,7 +85,7 @@ REM timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
 REM Build the cache for the standard library
 pypy -c "import _testcapi"
 IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
-if %PY_VERSION% == "3.8" (
+if "%PY_VERSION%" == "3.8" (
     pypy -c "import _ctypes_test"
     IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
     pypy -c "import _testmultiphase"
@@ -95,6 +95,7 @@ if %PY_VERSION% == "3.8" (
     pypy -c "import _testmultiphase_build"
 )
 IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
+copy 
 
 REM Include a %PREFIX%\Scripts directory in the package. This ensures
 REM that entry_points are able to be created by downstream packages.
