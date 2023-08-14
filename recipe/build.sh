@@ -121,14 +121,18 @@ echo INCLUDEPY $(pypy -c "from distutils import sysconfig; print(sysconfig.get_c
 ls $(pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('INCLUDEPY'))")
 
 _PYTHON_SYSCONFIGDATA_NAME=$sysconfigdata_name pypy -c "from distutils import sysconfig; assert sysconfig.get_config_var('HOST_GNU_TYPE') != None"
-# Build and copy the c-extension modules for the standard library
+# Build the test c-extension modules
+# PyPy uses a wrapper for _ctypes_test to trick the import system into gettig
+# the c-extension from `/tmp`, so we need to copy it into LIB 
+pypy -c "import _testcapi"
 cp $(pypy -c "import _testcapi; print(_testcapi.__file__)") $PREFIX/lib/pypy${PY_VERSION}
 if [[ "${PY_VERSION}" == "3.8" ]]; then
+    pypy -c "import _ctypes_test, _testmultiphase"
     cp $(pypy -c "import _ctypes_test; print(_ctypes_test.__file__)") $PREFIX/lib/pypy${PY_VERSION}
-    cp $(pypy -c "import _testmultiphase; print(_testmultiphase.__file__)") $PREFIX/lib/pypy${PY_VERSION}
 else
+    pypy -c "import _ctypes_test_build, _testmultiphase_build"
+    # Need to import the *build module to properly import the built module from `/tmp`
     cp $(pypy -c "import _ctypes_test_build, _ctypes_test; print(_ctypes_test.__file__)") $PREFIX/lib/pypy${PY_VERSION}
-    cp $(pypy -c "import _testmultiphase_build, _testmultiphase; print(_testmultiphase.__file__)") $PREFIX/lib/pypy${PY_VERSION}
 fi
 
 # Run the python stdlib tests
