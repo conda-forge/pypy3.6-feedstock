@@ -95,7 +95,6 @@ if "%PY_VERSION%" == "3.8" (
     pypy -c "import _testmultiphase_build"
 )
 IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
-copy 
 
 REM Include a %PREFIX%\Scripts directory in the package. This ensures
 REM that entry_points are able to be created by downstream packages.
@@ -115,4 +114,3 @@ REM Copy required DLLs so pypy can be used without activating the environment
 copy /b %PREFIX%\Library\bin\libexpat.dll %PREFIX%
 copy /b %PREFIX%\Library\bin\libbz2.dll %PREFIX%
 copy /b %PREFIX%\Library\bin\ffi-8.dll %PREFIX%
-

@@ -122,7 +122,7 @@ ls $(pypy -c "from distutils import sysconfig; print(sysconfig.get_config_var('I
 
 _PYTHON_SYSCONFIGDATA_NAME=$sysconfigdata_name pypy -c "from distutils import sysconfig; assert sysconfig.get_config_var('HOST_GNU_TYPE') != None"
 # Build the test c-extension modules
-# PyPy uses a wrapper for _ctypes_test to trick the import system into gettig
+# PyPy uses a wrapper for _ctypes_test to trick the import system into getting
 # the c-extension from `/tmp`, so we need to copy it into LIB 
 pypy -c "import _testcapi"
 cp $(pypy -c "import _testcapi; print(_testcapi.__file__)") $PREFIX/lib/pypy${PY_VERSION}
