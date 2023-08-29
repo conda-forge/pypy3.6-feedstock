@@ -44,8 +44,6 @@ copy /b *.dll %GOAL_DIR%
 copy /b *.exe %GOAL_DIR%
 REM lib goes elsewhere
 copy /b *.lib %PYPY3_SRC_DIR%\libs\python%PY_VERSION_NODOTS%.lib || exit /b 11
-REM how big is the lib? It should be about 200k
-dir *.lib
 
 cd /d %GOAL_DIR%
 
@@ -66,32 +64,11 @@ REM License is packaged separately
 del %PREFIX%\LICENSE
 
 
-if exist %PREFIX%\lib_pypy (
-    REM Make sure the site-packages dir SP_DIR matches with cpython
-    REM See patch site-and-sysconfig-conda.patch
-    mkdir  %SP_DIR%
-    echo Adjusting layout for pre-python3.8
-    move %PREFIX%\README.rst %PREFIX%\lib_pypy\
-    move %PREFIX%\site-packages\README %SP_DIR%
-    rmdir /q /s %PREFIX%\site-packages
-
-    REM Use conda tcl/tk installation in Library/lib
-    rmdir /q /s %PREFIX%\tcl
-    cd %PREFIX%\lib_pypy
-    ..\pypy3 -m compileall .
-    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
-    cd %PREFIX%\lib-python
-    ..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\Grammar.txt
-    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
-    ..\pypy3 -m lib2to3.pgen2.driver 3\lib2to3\PatternGrammar.txt
-    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
-) else (
-    cd %PREFIX%\Lib
-    ..\pypy3 -m lib2to3.pgen2.driver lib2to3\Grammar.txt
-    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
-    ..\pypy3 -m lib2to3.pgen2.driver lib2to3\PatternGrammar.txt
-    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
-)
+cd %PREFIX%\Lib
+..\pypy3 -m lib2to3.pgen2.driver lib2to3\Grammar.txt
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
+..\pypy3 -m lib2to3.pgen2.driver lib2to3\PatternGrammar.txt
+IF %ERRORLEVEL% NEQ 0 (Echo ERROR while compiling &exit /b 11)
 rem still in lib-python or Lib
 
 ..\pypy3 -m compileall .
@@ -108,9 +85,15 @@ REM timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
 REM Build the cache for the standard library
 pypy -c "import _testcapi"
 IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
-pypy -c "import _ctypes_test"
-IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
-pypy -c "import _testmultiphase"
+if "%PY_VERSION%" == "3.8" (
+    pypy -c "import _ctypes_test"
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
+    pypy -c "import _testmultiphase"
+) else (
+    pypy -c "import _ctypes_test_build"
+    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
+    pypy -c "import _testmultiphase_build"
+)
 IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
 
 REM Include a %PREFIX%\Scripts directory in the package. This ensures
@@ -126,3 +109,9 @@ pypy -m venv destination
 destination\Scripts\python -c "import sqlite3"
 if errorlevel 1 exit 1
 rmdir /q /s destination
+
+REM Copy required DLLs so pypy can be used without activating the environment
+REM This would fix issue #101 but did not pass reivew
+REM copy /b %PREFIX%\Library\bin\libexpat.dll %PREFIX%
+REM copy /b %PREFIX%\Library\bin\libbz2.dll %PREFIX%
+REM copy /b %PREFIX%\Library\bin\ffi-8.dll %PREFIX%

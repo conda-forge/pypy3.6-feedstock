@@ -1,0 +1,42 @@
+# HG changeset patch
+# User Matti Picus <matti.picus@gmail.com>
+# Date 1691873148 -10800
+#      Sat Aug 12 23:45:48 2023 +0300
+# Branch conda-3.9-v7.3.12
+# Node ID 98f0ac5929217a22f7c911160b7c21ec18ee6ed2
+# Parent  f371f05be18aedeeb966fd9b657e72a7dbbc5126
+Let tp_iternext raise StopIteration more selectively
+
+diff -r f371f05be18a -r 98f0ac592921 pypy/module/cpyext/slotdefs.py
+--- a/pypy/module/cpyext/slotdefs.py	Wed Jul 12 09:58:38 2023 +0200
++++ b/pypy/module/cpyext/slotdefs.py	Sat Aug 12 23:45:48 2023 +0300
+@@ -712,6 +712,12 @@
+         return space.call_args(call_fn, args)
+     return slot_tp_call
+ 
++# issue 3956
++TP_ITERNEXT_RAISES_STOPITERATION = (
++    "coroutine_wrapper",
++    "generator",
++)
++
+ @slot_factory('tp_iternext')
+ def make_tp_iternext(space, typedef, name, attr):
+     w_type = space.gettypeobject(typedef)
+@@ -719,13 +725,15 @@
+     if iternext_fn is None:
+         return
+ 
++    raises_stopiter = w_type.name in TP_ITERNEXT_RAISES_STOPITERATION
++
+     @slot_function([PyObject], PyObject)
+     @func_renamer("cpyext_%s_%s" % (name.replace('.', '_'), typedef.name))
+     def slot_tp_iternext(space, w_self):
+         try:
+             return space.call_function(iternext_fn, w_self)
+         except OperationError as e:
+-            if not e.match(space, space.w_StopIteration):
++            if raises_stopiter or not e.match(space, space.w_StopIteration):
+                 raise
+             return None
+     return slot_tp_iternext

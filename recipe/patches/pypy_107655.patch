@@ -1,0 +1,40 @@
+# HG changeset patch
+# User Carl Friedrich Bolz-Tereick <cfbolz@gmx.de>
+# Date 1689148718 -7200
+#      Wed Jul 12 09:58:38 2023 +0200
+# Branch conda-3.9-v7.3.12
+# Node ID f371f05be18aedeeb966fd9b657e72a7dbbc5126
+# Parent  163544ab2a142b8e7e040a098ec9013963c9fb64
+#3961: precompile res in csv module
+
+diff -r 163544ab2a14 -r f371f05be18a lib-python/3/csv.py
+--- a/lib-python/3/csv.py	Tue Jul 11 14:51:00 2023 +0200
++++ b/lib-python/3/csv.py	Wed Jul 12 09:58:38 2023 +0200
+@@ -162,6 +162,12 @@
+ except NameError:
+     complex = float
+ 
++_SNIFFER_RES = [re.compile(restr, re.DOTALL | re.MULTILINE) for restr in
++    (r'(?P<delim>[^\w\n"\'])(?P<space> ?)(?P<quote>["\']).*?(?P=quote)(?P=delim)', # ,".*?",
++     r'(?:^|\n)(?P<quote>["\']).*?(?P=quote)(?P<delim>[^\w\n"\'])(?P<space> ?)',   #  ".*?",
++     r'(?P<delim>[^\w\n"\'])(?P<space> ?)(?P<quote>["\']).*?(?P=quote)(?:$|\n)',   # ,".*?"
++     r'(?:^|\n)(?P<quote>["\']).*?(?P=quote)(?:$|\n)')]                            #  ".*?" (no delim, no space)
++
+ class Sniffer:
+     '''
+     "Sniffs" the format of a CSV file (i.e. delimiter, quotechar)
+@@ -214,11 +220,9 @@
+         """
+ 
+         matches = []
+-        for restr in (r'(?P<delim>[^\w\n"\'])(?P<space> ?)(?P<quote>["\']).*?(?P=quote)(?P=delim)', # ,".*?",
+-                      r'(?:^|\n)(?P<quote>["\']).*?(?P=quote)(?P<delim>[^\w\n"\'])(?P<space> ?)',   #  ".*?",
+-                      r'(?P<delim>[^\w\n"\'])(?P<space> ?)(?P<quote>["\']).*?(?P=quote)(?:$|\n)',   # ,".*?"
+-                      r'(?:^|\n)(?P<quote>["\']).*?(?P=quote)(?:$|\n)'):                            #  ".*?" (no delim, no space)
+-            regexp = re.compile(restr, re.DOTALL | re.MULTILINE)
++        # PyPy difference: compile the regular expressions only once, globally,
++        # instead of on every call to sniff
++        for regexp in _SNIFFER_RES:
+             matches = regexp.findall(data)
+             if matches:
+                 break
