@@ -55,7 +55,7 @@ source:
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 2
+  number: 3
   skip_compile_pyc:
     - lib*
 
@@ -99,7 +99,7 @@ requirements:
     - pypy3.7 ==99999999999
     - pypy3.8 ==99999999999  # [name_suffix=="3.9"]
     - pypy3.9 ==99999999999  # [name_suffix=="3.8"]
-    - python {{ name_suffix }}.* *_7.3_pypy
+    - python {{ name_suffix }}.* *_73_pypy
 
 test:
   commands:
