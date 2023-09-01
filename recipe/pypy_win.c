@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
    AddDllDirectory(deps_dir);
 
    wcscpy(pypy_dll, exe_dir);
-   wcscat(pypy_dll, L"\\libpypy3.9-c.dll");
+   wcscat(pypy_dll, L"\\libpypy" PY_VER L"-c.dll");
 
    HMODULE handle = LoadLibraryExW(pypy_dll, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
    if (handle == NULL) {
