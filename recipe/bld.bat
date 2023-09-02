@@ -66,12 +66,22 @@ del %PREFIX%\LICENSE
 REM create an executable that runs adddlldirectory
 REM before loading the pypy DLL
 del %PREFIX%\pypy.exe
-if %PY_VERSION% == "3.8" (
+del %PREFIX%\pypy3.exe
+del %PREFIX%\pypy%PY_VERSION%.exe
+del %PREFIX%\python.exe
+del %PREFIX%\python3.exe
+del %PREFIX%\python%PY_VERSION%.exe
+if "%PY_VERSION%" == "3.8" (
   set "DLL_VER=3"
 ) else (
   set "DLL_VER=%PY_VERSION%"
 )
 cl /O2 %RECIPE_DIR%\pypy_win.c /Fe%PREFIX%\pypy.exe "/DPY_VER=\"%DLL_VER%\""
+cp %PREFIX%\pypy.exe %PREFIX%\pypy3.exe
+cp %PREFIX%\pypy.exe %PREFIX%\pypy%PY_VERSION%.exe
+cp %PREFIX%\pypy.exe %PREFIX%\python.exe
+cp %PREFIX%\pypy.exe %PREFIX%\python3.exe
+cp %PREFIX%\pypy.exe %PREFIX%\python%PY_VERSION%.exe
 
 cd %PREFIX%\Lib
 ..\pypy3 -m lib2to3.pgen2.driver lib2to3\Grammar.txt
