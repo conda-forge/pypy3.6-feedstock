@@ -18,10 +18,17 @@ int main(int argc, char* argv[]) {
    wcscpy(pypy_dll, exe_dir);
    wcscat(pypy_dll, L"\\libpypy" PY_VER L"-c.dll");
 
+   // First, try to load <EXE_DIR>/libpypy<PY_VER>-c.dll with only dependencies in <EXE_DIR>/Library/bin
    HMODULE handle = LoadLibraryExW(pypy_dll, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
    if (handle == NULL) {
-     printf("Error in loading pypy dll");
-     return 1;
+     // Second, try to load <EXE_DIR>/libpypy<PY_VER>-c.dll with dependencies found in PATH env variable
+     // This is useful for venvs where pypy.exe and the pypy DLLs are copied, but not the dependencies.
+     // Note: For venvs to work, the conda environment needs to be activated
+     handle = LoadLibraryExW(pypy_dll, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+     if (handle == NULL) {
+       printf("Error in loading pypy dll");
+       return 1;
+     }
    }
    func_type pypy_main_startup = (func_type)GetProcAddress(handle, "pypy_main_startup");
    if (pypy_main_startup == NULL) {
