@@ -37,6 +37,7 @@ source:
       - patches/0019-Disable-copying-dlls.patch  # [name_suffix == "3.8"]
       - patches/0020-Use-private-attribute-in-datetime_delta.patch  # [name_suffix == "3.8"]
       - patches/0031-Fix-pthread_t-casting.patch  # [name_suffix == "3.8"]
+      - patches/0032-Copy-dependent-libs-for-venvs.patch
       # Patches after 7.3.12
       - patches/pypy_107654.patch
       - patches/pypy_107655.patch

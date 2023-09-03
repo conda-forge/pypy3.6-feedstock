@@ -1,0 +1,29 @@
+From a3e01eab04ba5b1c2631352fcbe3d223749d59f6 Mon Sep 17 00:00:00 2001
+From: Isuru Fernando <isuruf@gmail.com>
+Date: Sun, 3 Sep 2023 01:50:28 -0500
+Subject: [PATCH] Copy dependent libs for venvs
+
+---
+ lib-python/3/venv/__init__.py | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/lib-python/3/venv/__init__.py b/lib-python/3/venv/__init__.py
+index 533781abc7..c9d0d5cbf9 100644
+--- a/lib-python/3/venv/__init__.py
++++ b/lib-python/3/venv/__init__.py
+@@ -326,6 +326,12 @@ class EnvBuilder:
+                     f for f in os.listdir(dirname) if
+                     os.path.normcase(os.path.splitext(f)[1]) in ('.exe', '.dll')
+                 ]
++                suffixes += [
++                    f for f in os.listdir(os.path.join(dirname, "Library", "bin")) if
++                    os.path.normcase(os.path.basename(f)) in ('libexpat.dll', 'ffi-8.dll', 'libbz2.dll')
++                ]
++                os.makedirs(os.path.join(binpath, "Library", "bin"), exist_ok=True)
++
+             for suffix in suffixes:
+                 src = os.path.join(dirname, suffix)
+                 if os.path.lexists(src):
+-- 
+2.38.1
+
