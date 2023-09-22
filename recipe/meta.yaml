@@ -56,7 +56,7 @@ source:
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 4
+  number: 5
   skip_compile_pyc:
     - lib*
 
@@ -114,6 +114,8 @@ test:
     - pypy3 -m test.test_ssl
     # make sure Scripts dir exists so downstream entry_points are created successfully
     - if not exist %PREFIX%\Scripts\ exit 1  # [win]
+    # Check that zoneinfo works from Python 3.9 onwards, see upstream issue: https://foss.heptapod.net/pypy/pypy/-/issues/3653
+    - python -c "from zoneinfo import ZoneInfo; from datetime import datetime; dt = datetime(2020, 10, 31, 12, tzinfo=ZoneInfo('America/Los_Angeles')); print(dt.tzname())"  # [name_suffix!="3.8"]
 
 about:
     home: http://pypy.org/
