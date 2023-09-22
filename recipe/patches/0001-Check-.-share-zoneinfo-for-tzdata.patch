@@ -1,0 +1,24 @@
+From fa40662c26b797dac9f95840aca550c80c38cfeb Mon Sep 17 00:00:00 2001
+From: "Uwe L. Korn" <uwe.korn@quantco.com>
+Date: Fri, 22 Sep 2023 20:03:57 +0200
+Subject: [PATCH] Check ../share/zoneinfo for tzdata
+
+---
+ lib_pypy/_sysconfigdata.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/lib_pypy/_sysconfigdata.py b/lib_pypy/_sysconfigdata.py
+index 34253dd..3661b02 100644
+--- a/lib_pypy/_sysconfigdata.py
++++ b/lib_pypy/_sysconfigdata.py
+@@ -60,6 +60,7 @@ else:
+         os.path.join(mybase, 'lib', 'zoneinfo'),
+         os.path.join(mybase, 'share', 'lib', 'zoneinfo'),
+         os.path.join(mybase, '..', 'etc', 'zoneinfo'),
++        os.path.join(mybase, '..', 'share', 'zoneinfo'),
+     ]
+     # add absolute system paths if sys.base_prefix != "/usr"
+     # (then we'd be adding duplicates)
+-- 
+2.42.0
+
