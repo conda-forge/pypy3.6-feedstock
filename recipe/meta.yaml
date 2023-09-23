@@ -49,7 +49,7 @@ source:
       - patches/pypy_107660.patch  # [name_suffix == "3.9"]
       - patches/pypy_107661.patch
       - patches/pypy_107668.patch  # [name_suffix == "3.9"]
-      - patches/0001-Check-.-share-zoneinfo-for-tzdata.patch  # [name_suffix == "3.9"]
+      - patches/0001-Fix-TZPATH-on-windows.patch  # [name_suffix == "3.9"]
 
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
