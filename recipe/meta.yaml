@@ -5,26 +5,21 @@
 
 package:
   name: {{ name }}
-  version: 7.3.11  # [name_suffix == "3.8"]
-  version: 7.3.12  # [name_suffix == "3.9"]
+  version: 7.3.13  # [name_suffix == "3.9"]
 
 source:
   - folder: pypy3
-    url: https://downloads.python.org/pypy/{{ name }}-v7.3.11-src.tar.bz2  # [name_suffix == "3.8"]
-    url: https://downloads.python.org/pypy/{{ name }}-v7.3.12-src.tar.bz2  # [name_suffix == "3.9"]
-    sha256: 4d6769bfca73734e8666fd70503b7ceb06a6e259110e617331bb3899ca4e6058  # [name_suffix == "3.8"]
-    sha256: e7a2046c7e6c25fc386abbb5132e92a7cc2491e3935699a946cb5dcbb342c2aa  # [name_suffix == "3.9"]
+    url: https://downloads.python.org/pypy/{{ name }}-v7.3.13-src.tar.bz2  # [name_suffix == "3.9"]
+    sha256: bc6147268105e7cb3bd57b401e6d97f66aa4ede269104b2712a7cdd9f02f68cd
     patches:
       - patches/fficurses.patch
       - patches/tklib_build.patch
       - patches/tk_app.patch
       - patches/lzma_build.patch  # [win]
       - patches/clibffi.patch     # [osx]
-      - patches/darwin.patch      # [osx and name_suffix == "3.8"]
       - patches/0001-Add-conda-forge-version.patch
       - patches/0021-Adapt-platform-to-patch-0001.patch
-      - patches/0023a-Fix-LIBDIR.patch  # [name_suffix=="3.8"]
-      - patches/0023b-Fix-LIBDIR.patch  # [name_suffix=="3.9"]
+      - patches/0023b-Fix-LIBDIR.patch
       - patches/0030-Swap-libffi8-for-7.patch
       # Patches by @mingwandroid from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
@@ -33,24 +28,7 @@ source:
       - patches/0014-Add-CondaEcosystemModifyDllSearchPath.patch
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
-      # Patches for 3.8 only
-      - patches/0019-Disable-copying-dlls.patch  # [name_suffix == "3.8"]
-      - patches/0020-Use-private-attribute-in-datetime_delta.patch  # [name_suffix == "3.8"]
-      - patches/0031-Fix-pthread_t-casting.patch  # [name_suffix == "3.8"]
       - patches/0032-Copy-dependent-libs-for-venvs.patch
-      # Patches after 7.3.12
-      - patches/pypy_107654.patch
-      - patches/pypy_107655.patch
-      - patches/pypy_107656.patch
-      - patches/pypy_107657.patch
-      - patches/pypy_107658.patch
-      - patches/pypy_107659.patch  # [name_suffix == "3.9"]
-      - patches/pypy_107663.patch  # [name_suffix == "3.8"]
-      - patches/pypy_107660.patch  # [name_suffix == "3.9"]
-      - patches/pypy_107661.patch
-      - patches/pypy_107668.patch  # [name_suffix == "3.9"]
-      - patches/0001-Fix-TZPATH-on-windows.patch  # [name_suffix == "3.9"]
-
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
