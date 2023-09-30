@@ -71,12 +71,7 @@ del %PREFIX%\pypy%PY_VERSION%.exe
 del %PREFIX%\python.exe
 del %PREFIX%\python3.exe
 del %PREFIX%\python%PY_VERSION%.exe
-if "%PY_VERSION%" == "3.8" (
-  set "DLL_VER=3"
-) else (
-  set "DLL_VER=%PY_VERSION%"
-)
-cl /O2 %RECIPE_DIR%\pypy_win.c /Fe%PREFIX%\pypy.exe "/DPY_VER=\"%DLL_VER%\""
+cl /O2 %RECIPE_DIR%\pypy_win.c /Fe%PREFIX%\pypy.exe "/DPY_VER=\"%PY_VERSION%\""
 copy %PREFIX%\pypy.exe %PREFIX%\pypy3.exe
 copy %PREFIX%\pypy.exe %PREFIX%\pypy%PY_VERSION%.exe
 copy %PREFIX%\pypy.exe %PREFIX%\python.exe
@@ -100,20 +95,6 @@ REM On the PyPy buildbot (4 cores) they require ~30 minutes, here they
 REM take 4 hours. Using --timeout=100 does not work, the kill makes the
 REM process hang
 REM timeout 60m pypy3 -m test --pgo -j%CPU_COUNT% || true;
-
-REM Build the cache for the standard library
-pypy -c "import _testcapi"
-IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
-if "%PY_VERSION%" == "3.8" (
-    pypy -c "import _ctypes_test"
-    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
-    pypy -c "import _testmultiphase"
-) else (
-    pypy -c "import _ctypes_test_build"
-    IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
-    pypy -c "import _testmultiphase_build"
-)
-IF %ERRORLEVEL% NEQ 0 (Echo ERROR while building &exit /b 11)
 
 REM Include a %PREFIX%\Scripts directory in the package. This ensures
 REM that entry_points are able to be created by downstream packages.
