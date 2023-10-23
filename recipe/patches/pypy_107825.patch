@@ -1,0 +1,20 @@
+# HG changeset patch
+# User Matti Picus <matti.picus@gmail.com>
+# Date 1696354573 -10800
+#      Tue Oct 03 20:36:13 2023 +0300
+# Branch py3.9
+# Node ID ace9163e9aef99b21975e41cf7310e79cb1a7941
+# Parent  0cd6219975228e371806f079bfa378ae2363a2ce
+remove extraneous print from _ssl (issue 4010_)
+
+diff -r 0cd621997522 -r ace9163e9aef lib_pypy/_cffi_ssl/_stdssl/__init__.py
+--- a/lib_pypy/_cffi_ssl/_stdssl/__init__.py	Mon Oct 02 14:49:13 2023 +0300
++++ b/lib_pypy/_cffi_ssl/_stdssl/__init__.py	Tue Oct 03 20:36:13 2023 +0300
+@@ -1461,7 +1461,6 @@
+ 
+             # load cafile or capath
+             if cafile is not None or capath is not None:
+-                print(cafile, capath)
+                 if cafile is None:
+                     cafilebuf = ffi.NULL
+                 else:
