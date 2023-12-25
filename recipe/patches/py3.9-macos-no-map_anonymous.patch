@@ -1,0 +1,26 @@
+# HG changeset patch
+# User Matti Picus
+# Date 1703495167 -7200
+#      Mon Dec 25 11:06:07 2023 +0200
+# Branch py3.9
+# Node ID 28e6fa4cc469dcc16df150e8f476280edfe6af2c
+# Parent  9259ae0f7702c75d14925d2f776ebce0ed324b9e
+newer clang on older macos target needs this (should upstream)
+
+diff -r 9259ae0f7702 -r 28e6fa4cc469 pypy/module/_hpy_universal/_vendored/hpy/debug/src/memprotect.c
+--- a/pypy/module/_hpy_universal/_vendored/hpy/debug/src/memprotect.c	Sun Dec 24 21:15:00 2023 +0200
++++ b/pypy/module/_hpy_universal/_vendored/hpy/debug/src/memprotect.c	Mon Dec 25 11:06:07 2023 +0200
+@@ -11,6 +11,12 @@
+ #include <sys/mman.h>
+ #include <string.h>
+ 
++// For macos < 11
++#if defined(MAP_ANON) && !defined(MAP_ANONYMOUS)
++#define MAP_ANONYMOUS MAP_ANON
++#endif
++
++
+ void *raw_data_copy(const void* data, HPy_ssize_t size, bool write_protect) {
+     void* new_ptr;
+     new_ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
