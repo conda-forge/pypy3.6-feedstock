@@ -31,6 +31,7 @@ source:
       - patches/0032-Copy-dependent-libs-for-venvs.patch
       - patches/0001-Fix-TZPATH-on-windows.patch
       # Patches to be removed in the next version
+      - patches/py3.9-macos-no-map_anonymous.patch
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
