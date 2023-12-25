@@ -5,12 +5,12 @@
 
 package:
   name: {{ name }}
-  version: 7.3.13  # [name_suffix == "3.9"]
+  version: 7.3.14  # [name_suffix == "3.9"]
 
 source:
   - folder: pypy3
-    url: https://downloads.python.org/pypy/{{ name }}-v7.3.13-src.tar.bz2  # [name_suffix == "3.9"]
-    sha256: bc6147268105e7cb3bd57b401e6d97f66aa4ede269104b2712a7cdd9f02f68cd
+    url: https://downloads.python.org/pypy/{{ name }}-v7.3.14-src.tar.bz2  # [name_suffix == "3.9"]
+    sha256: 560fe6161e159557e1fe612aaadf9b293eefded1da372e70b8e3b23bba598366
     patches:
       - patches/fficurses.patch
       - patches/tklib_build.patch
@@ -31,14 +31,13 @@ source:
       - patches/0032-Copy-dependent-libs-for-venvs.patch
       - patches/0001-Fix-TZPATH-on-windows.patch
       # Patches to be removed in the next version
-      - patches/pypy_107825.patch
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 1
+  number: 0
   skip_compile_pyc:
     - lib*
 
