@@ -29,39 +29,4 @@ diff -r eb0e00489863 -r bedf30f142e8 rpython/translator/platform/darwin.py
  class Darwin(posix.BasePosix):
      name = "darwin"
 
-# HG changeset patch
-# User Matti Picus
-# Date 1703572834 -7200
-#      Tue Dec 26 08:40:34 2023 +0200
-# Branch py3.9
-# Node ID ffffffffffffffffffffffffffffffffffffffff
-# Parent  bedf30f142e821a853b50fd75e6c4195225dd170
-
-
-diff -r bedf30f142e8 rpython/translator/c/src/precommondefs.h
---- a/rpython/translator/c/src/precommondefs.h	Mon Dec 25 15:21:03 2023 +0200
-+++ b/rpython/translator/c/src/precommondefs.h	Tue Dec 26 08:40:34 2023 +0200
-@@ -8,8 +8,6 @@
- #define __PYPY_PRECOMMONDEFS_H
- 
- 
--/* Define on Darwin to activate all library features */
--#define _DARWIN_C_SOURCE 1
- /* This must be set to 64 on some systems to enable large file support. */
- #define _FILE_OFFSET_BITS 64
- /* Define on Linux to activate all library features */
-@@ -18,13 +16,6 @@
- #define _LARGEFILE_SOURCE 1
- /* Define on NetBSD to activate all library features */
- #define _NETBSD_SOURCE 1
--/* Define to activate features from IEEE Stds 1003.1-2008, except on
--   macOS where it hides a lot symbols */
--#ifndef __APPLE__
--#  ifndef _POSIX_C_SOURCE
--#    define _POSIX_C_SOURCE 200809L
--#  endif
--#endif
- /* Define on FreeBSD to activate all library features */
- #define __BSD_VISIBLE 1
- #define __XSI_VISIBLE 700
 
