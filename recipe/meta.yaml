@@ -23,7 +23,7 @@ source:
       - patches/0021-Adapt-platform-to-patch-0001.patch
       - patches/0023b-Fix-LIBDIR.patch
       - patches/0030-Swap-libffi8-for-7.patch
-      # Patches by @mingwandroid from python-feedstock
+      # Patches from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
@@ -32,6 +32,7 @@ source:
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
       - patches/0032-Copy-dependent-libs-for-venvs.patch
       - patches/0001-Fix-TZPATH-on-windows.patch  # [name_suffix == "3.9"]
+      - patches/0001-Fix-TZPATH-on-windows-py3.10.patch  # [name_suffix == "3.10"]
       # Patches since the release
       - patches/0001-fix-os.scandir-for-unicode-filenames-on-windows.patch
       - patches/0003-add-coding-to-test-file-for-cpython2-pypy2-does-not-.patch
