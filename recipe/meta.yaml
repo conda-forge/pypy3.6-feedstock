@@ -37,7 +37,7 @@ source:
       - patches/0003-add-coding-to-test-file-for-cpython2-pypy2-does-not-.patch
       - patches/0004-PyPy-is-not-affected-by-bpo-35797.patch
       - patches/0005-underlying-_putwch-on-windows-accepts-a-chr-not-an-i.patch
-      - patches/0006-refactor-to-properly-create-ppc64-import-suffixes.patch
+      - patches/0006-refactor-to-properly-create-ppc64-import-suffixes.patch  # [name_suffix == "3.9"]
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
