@@ -31,10 +31,9 @@ source:
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
       - patches/0032-Copy-dependent-libs-for-venvs.patch
-      - patches/0001-Fix-TZPATH-on-windows.patch
+      - patches/0001-Fix-TZPATH-on-windows.patch  # [name_suffix == "3.9"]
       # Patches since the release
       - patches/0001-fix-os.scandir-for-unicode-filenames-on-windows.patch
-      - patches/0002-remove-unwanted-static-libraries.patch
       - patches/0003-add-coding-to-test-file-for-cpython2-pypy2-does-not-.patch
       - patches/0004-PyPy-is-not-affected-by-bpo-35797.patch
       - patches/0005-underlying-_putwch-on-windows-accepts-a-chr-not-an-i.patch
