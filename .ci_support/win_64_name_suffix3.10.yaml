@@ -1,0 +1,26 @@
+bzip2:
+- '1'
+c_compiler:
+- vs2019
+channel_sources:
+- conda-forge
+channel_targets:
+- conda-forge main
+expat:
+- '2'
+libffi:
+- '3.4'
+name_suffix:
+- '3.10'
+openssl:
+- '3'
+sqlite:
+- '3'
+target_platform:
+- win-64
+tk:
+- '8.6'
+xz:
+- '5'
+zlib:
+- '1.2'
