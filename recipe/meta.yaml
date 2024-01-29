@@ -2,10 +2,11 @@
 {% set name_suffix = "3.9" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
+{% set version = "7.3.15" %}
 
 package:
   name: {{ name }}
-  version: 7.3.15  # [name_suffix == "3.9"]
+  version: {{ version }}
 
 source:
   - folder: pypy3
