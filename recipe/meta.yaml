@@ -5,12 +5,13 @@
 
 package:
   name: {{ name }}
-  version: 7.3.14  # [name_suffix == "3.9"]
+  version: 7.3.15  # [name_suffix == "3.9"]
 
 source:
   - folder: pypy3
-    url: https://downloads.python.org/pypy/{{ name }}-v7.3.14-src.tar.bz2  # [name_suffix == "3.9"]
-    sha256: 560fe6161e159557e1fe612aaadf9b293eefded1da372e70b8e3b23bba598366
+    url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
+    sha256: 6bb9537d85aa7ad13c0aad2e41ff7fd55080bc9b4d1361b8f502df51db816e18  # [name_suffix == "3.9"]
+    sha256: 837622130b36603a1893899bd9f529961a8e4a56c9eb67268d72ddf8920c9579  # [name_suffix == "3.10"]
     patches:
       - patches/fficurses.patch
       - patches/tklib_build.patch
@@ -30,8 +31,13 @@ source:
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
       - patches/0032-Copy-dependent-libs-for-venvs.patch
       - patches/0001-Fix-TZPATH-on-windows.patch
-      # Patches to be removed in the next version
-      - patches/py3.9-macos-no-map_anonymous.patch
+      # Patches since the release
+      - patches/0001-fix-os.scandir-for-unicode-filenames-on-windows.patch
+      - patches/0002-remove-unwanted-static-libraries.patch
+      - patches/0003-add-coding-to-test-file-for-cpython2-pypy2-does-not-.patch
+      - patches/0004-PyPy-is-not-affected-by-bpo-35797.patch
+      - patches/0005-underlying-_putwch-on-windows-accepts-a-chr-not-an-i.patch
+      - patches/0006-refactor-to-properly-create-ppc64-import-suffixes.patch
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
@@ -80,7 +86,9 @@ requirements:
     - pypy3.5 ==99999999999
     - pypy3.6 ==99999999999
     - pypy3.7 ==99999999999
-    - pypy3.8 ==99999999999  # [name_suffix=="3.9"]
+    - pypy3.8 ==99999999999
+    - pypy3.9 ==99999999999  # [name_suffix=="3.10"]
+    - pypy3.10 ==99999999999  # [name_suffix=="3.9"]
     - python {{ name_suffix }}.* *_73_pypy
 
 test:
