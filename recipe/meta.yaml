@@ -83,6 +83,7 @@ requirements:
     - xz
     - zlib
     - tzdata
+    - __osx >={{ MACOSX_DEPLOYMENT_TARGET }}  # [osx and x86_64]
   run_constrained:
     - pypy3.5 ==99999999999
     - pypy3.6 ==99999999999
