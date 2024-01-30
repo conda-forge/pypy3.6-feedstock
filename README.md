@@ -28,45 +28,24 @@ Current build status
         <table>
           <thead><tr><th>Variant</th><th>Status</th></tr></thead>
           <tbody><tr>
-              <td>linux_64_name_suffix3.10</td>
+              <td>linux_64</td>
               <td>
                 <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=main">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=main&jobName=linux&configuration=linux%20linux_64_name_suffix3.10" alt="variant">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=main&jobName=linux&configuration=linux%20linux_64_" alt="variant">
                 </a>
               </td>
             </tr><tr>
-              <td>linux_64_name_suffix3.9</td>
+              <td>osx_64</td>
               <td>
                 <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=main">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=main&jobName=linux&configuration=linux%20linux_64_name_suffix3.9" alt="variant">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=main&jobName=osx&configuration=osx%20osx_64_" alt="variant">
                 </a>
               </td>
             </tr><tr>
-              <td>osx_64_name_suffix3.10</td>
+              <td>win_64</td>
               <td>
                 <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=main">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=main&jobName=osx&configuration=osx%20osx_64_name_suffix3.10" alt="variant">
-                </a>
-              </td>
-            </tr><tr>
-              <td>osx_64_name_suffix3.9</td>
-              <td>
-                <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=main">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=main&jobName=osx&configuration=osx%20osx_64_name_suffix3.9" alt="variant">
-                </a>
-              </td>
-            </tr><tr>
-              <td>win_64_name_suffix3.10</td>
-              <td>
-                <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=main">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=main&jobName=win&configuration=win%20win_64_name_suffix3.10" alt="variant">
-                </a>
-              </td>
-            </tr><tr>
-              <td>win_64_name_suffix3.9</td>
-              <td>
-                <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=6451&branchName=main">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=main&jobName=win&configuration=win%20win_64_name_suffix3.9" alt="variant">
+                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/pypy3.6-feedstock?branchName=main&jobName=win&configuration=win%20win_64_" alt="variant">
                 </a>
               </td>
             </tr>
@@ -82,7 +61,6 @@ Current release info
 
 | Name | Downloads | Version | Platforms |
 | --- | --- | --- | --- |
-| [![Conda Recipe](https://img.shields.io/badge/recipe-pypy3.10-green.svg)](https://anaconda.org/conda-forge/pypy3.10) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/pypy3.10.svg)](https://anaconda.org/conda-forge/pypy3.10) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pypy3.10.svg)](https://anaconda.org/conda-forge/pypy3.10) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/pypy3.10.svg)](https://anaconda.org/conda-forge/pypy3.10) |
 | [![Conda Recipe](https://img.shields.io/badge/recipe-pypy3.9-green.svg)](https://anaconda.org/conda-forge/pypy3.9) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/pypy3.9.svg)](https://anaconda.org/conda-forge/pypy3.9) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pypy3.9.svg)](https://anaconda.org/conda-forge/pypy3.9) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/pypy3.9.svg)](https://anaconda.org/conda-forge/pypy3.9) |
 
 Installing pypy3.9
@@ -95,41 +73,41 @@ conda config --add channels conda-forge
 conda config --set channel_priority strict
 ```
 
-Once the `conda-forge` channel has been enabled, `pypy3.10, pypy3.9` can be installed with `conda`:
+Once the `conda-forge` channel has been enabled, `pypy3.9` can be installed with `conda`:
 
 ```
-conda install pypy3.10 pypy3.9
-```
-
-or with `mamba`:
-
-```
-mamba install pypy3.10 pypy3.9
-```
-
-It is possible to list all of the versions of `pypy3.10` available on your platform with `conda`:
-
-```
-conda search pypy3.10 --channel conda-forge
+conda install pypy3.9
 ```
 
 or with `mamba`:
 
 ```
-mamba search pypy3.10 --channel conda-forge
+mamba install pypy3.9
+```
+
+It is possible to list all of the versions of `pypy3.9` available on your platform with `conda`:
+
+```
+conda search pypy3.9 --channel conda-forge
+```
+
+or with `mamba`:
+
+```
+mamba search pypy3.9 --channel conda-forge
 ```
 
 Alternatively, `mamba repoquery` may provide more information:
 
 ```
 # Search all versions available on your platform:
-mamba repoquery search pypy3.10 --channel conda-forge
+mamba repoquery search pypy3.9 --channel conda-forge
 
-# List packages depending on `pypy3.10`:
-mamba repoquery whoneeds pypy3.10 --channel conda-forge
+# List packages depending on `pypy3.9`:
+mamba repoquery whoneeds pypy3.9 --channel conda-forge
 
-# List dependencies of `pypy3.10`:
-mamba repoquery depends pypy3.10 --channel conda-forge
+# List dependencies of `pypy3.9`:
+mamba repoquery depends pypy3.9 --channel conda-forge
 ```
 
 
