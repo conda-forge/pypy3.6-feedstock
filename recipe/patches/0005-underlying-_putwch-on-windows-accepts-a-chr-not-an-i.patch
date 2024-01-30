@@ -1,0 +1,26 @@
+From 74162f2cc05166e03d2804672f7cd778d12ef87d Mon Sep 17 00:00:00 2001
+From: mattip <matti.picus@gmail.com>
+Date: Sat, 27 Jan 2024 21:53:57 +0200
+Subject: [PATCH 5/6] underlying _putwch on windows accepts a chr not an int
+ (issue #4881)
+
+---
+ lib_pypy/msvcrt.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib_pypy/msvcrt.py b/lib_pypy/msvcrt.py
+index 2b0fb5dd1e5..007cb306250 100644
+--- a/lib_pypy/msvcrt.py
++++ b/lib_pypy/msvcrt.py
+@@ -109,7 +109,7 @@ def putch(ch):
+ 
+ @builtinify
+ def putwch(ch):
+-    _lib._putwch(ord(ch))
++    _lib._putwch(ch)
+ 
+ @builtinify
+ def ungetch(ch):
+-- 
+2.34.1
+

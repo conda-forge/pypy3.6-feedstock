@@ -97,7 +97,7 @@ PY_VERSION=$(echo $PKG_NAME | cut -c 5-)
 
 # Make sure the site-packages dir match with cpython
 mkdir -p $PREFIX/lib/python${PY_VERSION}/site-packages
-mv $PREFIX/lib/pypy${PY_VERSION}/site-packages/README $PREFIX/lib/python${PY_VERSION}/site-packages/
+mv $PREFIX/lib/pypy${PY_VERSION}/site-packages/README* $PREFIX/lib/python${PY_VERSION}/site-packages/
 rm -rf $PREFIX/lib/pypy${PY_VERSION}/site-packages
 ln -sf $PREFIX/lib/python${PY_VERSION}/site-packages $PREFIX/lib/pypy${PY_VERSION}/site-packages
 pushd $PREFIX

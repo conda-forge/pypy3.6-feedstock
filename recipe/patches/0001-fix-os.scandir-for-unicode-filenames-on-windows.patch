@@ -1,0 +1,75 @@
+From f98fef2741780bfcb1870ad61b6a66ae4400a2e4 Mon Sep 17 00:00:00 2001
+From: Matti Picus <matti.picus@gmail.com>
+Date: Mon, 15 Jan 2024 21:59:18 +0200
+Subject: [PATCH 1/6] fix os.scandir for unicode filenames on windows
+
+---
+ pypy/module/posix/interp_scandir.py    | 10 +++++-----
+ pypy/module/posix/test/test_scandir.py | 10 +++++++++-
+ 2 files changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/pypy/module/posix/interp_scandir.py b/pypy/module/posix/interp_scandir.py
+index 027be819ba2..e1e9ac44af8 100644
+--- a/pypy/module/posix/interp_scandir.py
++++ b/pypy/module/posix/interp_scandir.py
+@@ -13,7 +13,7 @@ from pypy.interpreter.buffer import BufferInterfaceNotFound
+ from pypy.objspace.std.util import generic_alias_class_getitem
+ 
+ from pypy.module.posix.interp_posix import (path_or_fd, build_stat_result,
+-                                            _WIN32, dup)
++                                            _WIN32, dup, FileEncoder)
+ 
+ 
+ # XXX: update os.supports_fd when fd support is implemented
+@@ -335,8 +335,8 @@ class W_DirEntry(W_Root):
+         def get_lstat(self):
+             """Get the lstat() of the direntry."""
+             if (self.flags & FLAG_LSTAT) == 0:
+-                w_path = self.space.utf8_0_w(self.fget_path(self.space))
+-                st = rposix_stat.lstat(w_path)
++                path = FileEncoder(self.space, self.fget_path(self.space))
++                st = rposix_stat.lstat(path)
+                 self.d_lstat = st
+                 self.flags |= FLAG_LSTAT
+             return self.d_lstat
+@@ -356,8 +356,8 @@ class W_DirEntry(W_Root):
+                 must_call_stat = stat.S_ISLNK(self.d_lstat.st_mode)
+ 
+                 if must_call_stat:
+-                    w_path = self.space.utf8_0_w(self.fget_path(self.space))
+-                    st = rposix_stat.stat(w_path)
++                    path = FileEncoder(self.space, self.fget_path(self.space))
++                    st = rposix_stat.stat(path)
+                 else:
+                     st = self.d_lstat
+ 
+diff --git a/pypy/module/posix/test/test_scandir.py b/pypy/module/posix/test/test_scandir.py
+index 45f3abe7bab..619ccd47680 100644
+--- a/pypy/module/posix/test/test_scandir.py
++++ b/pypy/module/posix/test/test_scandir.py
+@@ -41,9 +41,11 @@ class AppTestScandir(object):
+         cls.w_dir_empty = space.wrap(_make_dir('empty', {}))
+         cls.w_dir0 = space.wrap(_make_dir('dir0', {'f1': 'file',
+                                                    'f2': 'file',
+-                                                   'f3': 'file'}))
++                                                   'f3': 'file',
++                                                  }))
+         cls.w_dir1 = space.wrap(_make_dir('dir1', {'file1': 'file'}))
+         cls.w_dir2 = space.wrap(_make_dir('dir2', {'subdir2': 'dir'}))
++        cls.w_dir4860 = space.wrap(_make_dir('dir4860', {'ünicode': 'dir'}))
+         if has_os_symlink:
+             cls.w_dir3 = space.wrap(_make_dir('dir3', {'sfile3': 'symlink-file'}))
+             cls.w_dir4 = space.wrap(_make_dir('dir4', {'sdir4': 'symlink-dir'}))
+@@ -255,3 +257,9 @@ class AppTestScandir(object):
+         with open(d) as fp:
+             length = len(fp.read())
+         assert posix.lstat(d).st_size == length
++
++    def test_unicode_dir(self):
++        # issue 4860: windows and scandir
++        posix = self.posix
++        files = list(posix.scandir(self.dir4860))
++        assert files[0].is_dir()
+-- 
+2.34.1
+

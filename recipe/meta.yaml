@@ -2,15 +2,17 @@
 {% set name_suffix = "3.9" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
+{% set version = "7.3.15" %}
 
 package:
   name: {{ name }}
-  version: 7.3.13  # [name_suffix == "3.9"]
+  version: {{ version }}
 
 source:
   - folder: pypy3
-    url: https://downloads.python.org/pypy/{{ name }}-v7.3.13-src.tar.bz2  # [name_suffix == "3.9"]
-    sha256: bc6147268105e7cb3bd57b401e6d97f66aa4ede269104b2712a7cdd9f02f68cd
+    url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
+    sha256: 6bb9537d85aa7ad13c0aad2e41ff7fd55080bc9b4d1361b8f502df51db816e18  # [name_suffix == "3.9"]
+    sha256: 837622130b36603a1893899bd9f529961a8e4a56c9eb67268d72ddf8920c9579  # [name_suffix == "3.10"]
     patches:
       - patches/fficurses.patch
       - patches/tklib_build.patch
@@ -21,7 +23,7 @@ source:
       - patches/0021-Adapt-platform-to-patch-0001.patch
       - patches/0023b-Fix-LIBDIR.patch
       - patches/0030-Swap-libffi8-for-7.patch
-      # Patches by @mingwandroid from python-feedstock
+      # Patches from python-feedstock
       - patches/0009-runtime_library_dir_option-Use-1st-word-of-CC-as-com.patch
       - patches/0012-Fix-find_library-so-that-it-looks-in-sys.prefix-lib-.patch
       - patches/0013-Disable-new-dtags-in-unixccompiler.py.patch
@@ -29,16 +31,21 @@ source:
       - patches/0020-Use-ranlib-from-env-if-env-variable-is-set.patch
       - patches/0024-Fix-LDSHARED-when-CC-is-overriden-on-Linux-too.patch
       - patches/0032-Copy-dependent-libs-for-venvs.patch
-      - patches/0001-Fix-TZPATH-on-windows.patch
-      # Patches to be removed in the next version
-      - patches/pypy_107825.patch
+      - patches/0001-Fix-TZPATH-on-windows.patch  # [name_suffix == "3.9"]
+      - patches/0001-Fix-TZPATH-on-windows-py3.10.patch  # [name_suffix == "3.10"]
+      # Patches since the release
+      - patches/0001-fix-os.scandir-for-unicode-filenames-on-windows.patch
+      - patches/0003-add-coding-to-test-file-for-cpython2-pypy2-does-not-.patch
+      - patches/0004-PyPy-is-not-affected-by-bpo-35797.patch
+      - patches/0005-underlying-_putwch-on-windows-accepts-a-chr-not-an-i.patch
+      - patches/0006-refactor-to-properly-create-ppc64-import-suffixes.patch  # [name_suffix == "3.9"]
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 1
+  number: 0
   skip_compile_pyc:
     - lib*
 
@@ -76,11 +83,14 @@ requirements:
     - xz
     - zlib
     - tzdata
+    - __osx >={{ MACOSX_DEPLOYMENT_TARGET }}  # [osx and x86_64]
   run_constrained:
     - pypy3.5 ==99999999999
     - pypy3.6 ==99999999999
     - pypy3.7 ==99999999999
-    - pypy3.8 ==99999999999  # [name_suffix=="3.9"]
+    - pypy3.8 ==99999999999
+    - pypy3.9 ==99999999999  # [name_suffix=="3.10"]
+    - pypy3.10 ==99999999999  # [name_suffix=="3.9"]
     - python {{ name_suffix }}.* *_73_pypy
 
 test:

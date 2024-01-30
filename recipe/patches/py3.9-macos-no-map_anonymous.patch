@@ -1,0 +1,32 @@
+# HG changeset patch
+# User Matti Picus
+# Date 1703510463 -7200
+#      Mon Dec 25 15:21:03 2023 +0200
+# Branch py3.9
+# Node ID bedf30f142e821a853b50fd75e6c4195225dd170
+# Parent  eb0e00489863414022d3dadbafdd9d2fb6ad8c0f
+bumpy minimum macos version support to 10.13 for hpy
+
+diff -r eb0e00489863 -r bedf30f142e8 lib_pypy/_sysconfigdata.py
+--- a/lib_pypy/_sysconfigdata.py
++++ b/lib_pypy/_sysconfigdata.py
+@@ -97,5 +97,5 @@
+     #
+     # In any case, keep this in sync with DARWIN_VERSION_MIN in
+     # rpython/translator/platform/darwin.py and Lib/_osx_support.py
+-    build_time_vars['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
++    build_time_vars['MACOSX_DEPLOYMENT_TARGET'] = '10.13'
+ 
+diff -r eb0e00489863 -r bedf30f142e8 rpython/translator/platform/darwin.py
+--- a/rpython/translator/platform/darwin.py
++++ b/rpython/translator/platform/darwin.py
+@@ -14,7 +14,7 @@
+ # Keep in sync with MACOSX_DEPLOYMENT_TARGET, for pypy see
+ # lib_pypy/_sysconfigdata.py
+ #
+-DARWIN_VERSION_MIN = '-mmacosx-version-min=10.9'
++DARWIN_VERSION_MIN = '-mmacosx-version-min=10.13'
+ 
+ class Darwin(posix.BasePosix):
+     name = "darwin"
+
