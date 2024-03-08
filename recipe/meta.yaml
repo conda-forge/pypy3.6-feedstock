@@ -39,13 +39,14 @@ source:
       - patches/0004-PyPy-is-not-affected-by-bpo-35797.patch
       - patches/0005-underlying-_putwch-on-windows-accepts-a-chr-not-an-i.patch
       - patches/0006-refactor-to-properly-create-ppc64-import-suffixes.patch  # [name_suffix == "3.9"]
+      - patches/0033-remove-top-level-__init__.py-issue-4885.patch
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 0
+  number: 1
   skip_compile_pyc:
     - lib*
 
