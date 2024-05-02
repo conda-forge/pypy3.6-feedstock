@@ -33,6 +33,7 @@ source:
       - patches/0001-Fix-TZPATH-on-windows.patch  # [name_suffix == "3.9"]
       - patches/0001-Fix-TZPATH-on-windows-py3.10.patch  # [name_suffix == "3.10"]
       # Patches since the release
+      - patches/0010-make-compilation-work-on-old-glibc-2.17-for-conda-fo.patch
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
@@ -46,6 +47,7 @@ build:
 requirements:
   build:
     - {{ compiler('c') }}
+    - {{ stdlib("c") }}
     - python >=2.7,<3   # [not win]
     - pkg-config        # [unix]
     - pycparser
