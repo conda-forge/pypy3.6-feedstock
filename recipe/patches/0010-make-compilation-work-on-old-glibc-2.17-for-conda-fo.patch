@@ -1,11 +1,11 @@
-From 2f613764e77a91474cd77f16689b6b55bad3d7c8 Mon Sep 17 00:00:00 2001
+From 9a634321829c35fe2b1c5dd37df4d1614e358485 Mon Sep 17 00:00:00 2001
 Date: Thu, 2 May 2024 22:53:25 +0800
-Subject: [PATCH] make compilation work on old glibc<2.17 (for conda-forge)
+Subject: [PATCH 1/2] make compilation work on old glibc<2.17 (for conda-forge)
 
 ---
  pypy/module/pyexpat/src/expat/expat_config.h | 8 ++++++--
- pypy/module/pyexpat/src/expat/xmlparse.c     | 4 ++++
- 2 files changed, 10 insertions(+), 2 deletions(-)
+ pypy/module/pyexpat/src/expat/xmlparse.c     | 5 +++++
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
 diff --git a/pypy/module/pyexpat/src/expat/expat_config.h b/pypy/module/pyexpat/src/expat/expat_config.h
 index 266ef52cbf..affa3c8fc8 100644
@@ -27,7 +27,7 @@ index 266ef52cbf..affa3c8fc8 100644
    #define HAVE_LINUX_RANDOM_H = 1
    // #define HAVE_SYS_RANDOM_H 1
 diff --git a/pypy/module/pyexpat/src/expat/xmlparse.c b/pypy/module/pyexpat/src/expat/xmlparse.c
-index c210c28fb7..76f0bfea40 100644
+index c210c28fb7..c0f9b2a4ad 100644
 --- a/pypy/module/pyexpat/src/expat/xmlparse.c
 +++ b/pypy/module/pyexpat/src/expat/xmlparse.c
 @@ -63,6 +63,10 @@
@@ -41,5 +41,14 @@ index c210c28fb7..76f0bfea40 100644
  #include "expat_config.h"
  
  #if ! defined(XML_GE) || (1 - XML_GE - 1 == 2) || (XML_GE < 0) || (XML_GE > 1)
+@@ -115,6 +119,7 @@
+ #  include "winconfig.h"
+ #endif
+ 
++#include "expat_external.h"
+ #include "ascii.h"
+ #include "expat.h"
+ #include "siphash.h"
 -- 
+2.39.3 (Apple Git-146)
 
