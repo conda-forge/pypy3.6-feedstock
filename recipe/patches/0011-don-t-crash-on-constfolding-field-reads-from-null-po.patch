@@ -1,0 +1,66 @@
+From 0e850b73d04e81eb939d4aaebc39d6b10b9cb1e0 Mon Sep 17 00:00:00 2001
+Date: Fri, 26 Apr 2024 12:30:51 +0200
+Subject: [PATCH 2/2] don't crash on constfolding field reads from null
+ pointers
+
+should fix issue #4941
+---
+ rpython/translator/backendopt/storesink.py    |  1 +
+ .../backendopt/test/test_storesink.py         | 26 +++++++++++++++++++
+ 2 files changed, 27 insertions(+)
+
+diff --git a/rpython/translator/backendopt/storesink.py b/rpython/translator/backendopt/storesink.py
+index be59264741..fe244e0cf3 100644
+--- a/rpython/translator/backendopt/storesink.py
++++ b/rpython/translator/backendopt/storesink.py
+@@ -93,6 +93,7 @@ def _storesink_block(block, cache, inputlink):
+             if (
+                     isinstance(arg0, Constant) and
+                     arg0.concretetype.TO._immutable_field(field) and
++                    arg0.value and # exclude null ptrs
+                     not isinstance(arg0.value._obj, int) # tagged int
+             ):
+                 # reading an immutable field from a constant
+diff --git a/rpython/translator/backendopt/test/test_storesink.py b/rpython/translator/backendopt/test/test_storesink.py
+index d41d817a5e..e725e2b161 100644
+--- a/rpython/translator/backendopt/test/test_storesink.py
++++ b/rpython/translator/backendopt/test/test_storesink.py
+@@ -1,5 +1,6 @@
+ 
+ import py
++from rpython.rlib.nonconst import NonConstant
+ from rpython.translator.translator import TranslationContext, graphof
+ from rpython.translator.backendopt.storesink import storesink_graph
+ from rpython.translator.backendopt import removenoops
+@@ -185,3 +186,28 @@ class TestStoreSink(object):
+ 
+         self.check(f, [int], 0)
+ 
++    def test_read_none_field_bug(self):
++        from rpython.translator.backendopt import inline, constfold
++        class A(object):
++            _immutable_fields_ = ['next']
++
++        def g(i):
++            if i == 1:
++                return None
++            a = A()
++            a.next = 12 * i
++            return a
++
++        def f(i):
++            g(i)
++            a = g(1)
++            return a.next
++
++        t = self.translate(f, [int])
++        graph = graphof(t, f)
++        inline.auto_inline_graphs(t, [graph, graphof(t, g)], 100)
++        constfold.constant_fold_graph(graph)
++        removenoops.remove_same_as(graph)
++        checkgraph(graph)
++        storesink_graph(graph)
++        checkgraph(graph)
+-- 
+2.39.3 (Apple Git-146)
+

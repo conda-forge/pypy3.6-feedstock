@@ -1,0 +1,46 @@
+From 2be627cf25960c29e8c8a5e49c7012d0ae1390a6 Mon Sep 17 00:00:00 2001
+From: Matti Picus <matti.picus@gmail.com>
+Date: Wed, 8 May 2024 10:40:30 +1000
+Subject: [PATCH] include pyexpatns.h when building pyexpat
+
+---
+ pypy/module/cpyext/include/pytime.h   | 4 ++--
+ pypy/module/pyexpat/interp_pyexpat.py | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/pypy/module/cpyext/include/pytime.h b/pypy/module/cpyext/include/pytime.h
+index 6d553f5d95..7b2e033547 100644
+--- a/pypy/module/cpyext/include/pytime.h
++++ b/pypy/module/cpyext/include/pytime.h
+@@ -91,13 +91,13 @@ PyAPI_FUNC(_PyTime_t) _PyTime_FromNanoseconds(_PyTime_t ns);
+ PyAPI_FUNC(int) _PyTime_FromNanosecondsObject(_PyTime_t *t,
+     PyObject *obj);
+ 
+-/* Convert a number of seconds (Python float or int) to a timetamp.
++/* Convert a number of seconds (Python float or int) to a timestamp.
+    Raise an exception and return -1 on error, return 0 on success. */
+ PyAPI_FUNC(int) _PyTime_FromSecondsObject(_PyTime_t *t,
+     PyObject *obj,
+     _PyTime_round_t round);
+ 
+-/* Convert a number of milliseconds (Python float or int, 10^-3) to a timetamp.
++/* Convert a number of milliseconds (Python float or int, 10^-3) to a timestamp.
+    Raise an exception and return -1 on error, return 0 on success. */
+ PyAPI_FUNC(int) _PyTime_FromMillisecondsObject(_PyTime_t *t,
+     PyObject *obj,
+diff --git a/pypy/module/pyexpat/interp_pyexpat.py b/pypy/module/pyexpat/interp_pyexpat.py
+index b7fb8384a6..3eedbd27e8 100644
+--- a/pypy/module/pyexpat/interp_pyexpat.py
++++ b/pypy/module/pyexpat/interp_pyexpat.py
+@@ -22,7 +22,7 @@ else:
+     pre_include_bits = []
+ 
+ eci = ExternalCompilationInfo(
+-    includes=['expat.h'],
++    includes=['expat.h', 'pyexpatns.h'],
+     include_dirs=[str(srcdir), cdir],
+     pre_include_bits = pre_include_bits,
+     separate_module_files=[
+-- 
+2.39.3 (Apple Git-146)
+

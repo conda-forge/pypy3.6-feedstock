@@ -1,0 +1,54 @@
+From 9a634321829c35fe2b1c5dd37df4d1614e358485 Mon Sep 17 00:00:00 2001
+Date: Thu, 2 May 2024 22:53:25 +0800
+Subject: [PATCH 1/2] make compilation work on old glibc<2.17 (for conda-forge)
+
+---
+ pypy/module/pyexpat/src/expat/expat_config.h | 8 ++++++--
+ pypy/module/pyexpat/src/expat/xmlparse.c     | 5 +++++
+ 2 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/pypy/module/pyexpat/src/expat/expat_config.h b/pypy/module/pyexpat/src/expat/expat_config.h
+index 266ef52cbf..affa3c8fc8 100644
+--- a/pypy/module/pyexpat/src/expat/expat_config.h
++++ b/pypy/module/pyexpat/src/expat/expat_config.h
+@@ -11,8 +11,12 @@
+ #ifdef __APPLE__
+   #define HAVE_ARC4RANDOM_BUF
+ #elif defined __GNUC__
+-  // #define HAVE_GETRANDOM 1
+-  #define HAVE_SYSCALL_GETRANDOM
++  // requires features.h, via unistd.h
++  #if __GLIBC__ == 2 && __GLIBC_MINOR__ < 17
++    #define XML_DEV_URANDOM
++  #else
++    #define HAVE_SYSCALL_GETRANDOM
++  #endif
+   //#define HAVE_GETRANDOM_SYSCALL = 1
+   #define HAVE_LINUX_RANDOM_H = 1
+   // #define HAVE_SYS_RANDOM_H 1
+diff --git a/pypy/module/pyexpat/src/expat/xmlparse.c b/pypy/module/pyexpat/src/expat/xmlparse.c
+index c210c28fb7..c0f9b2a4ad 100644
+--- a/pypy/module/pyexpat/src/expat/xmlparse.c
++++ b/pypy/module/pyexpat/src/expat/xmlparse.c
+@@ -63,6 +63,10 @@
+ 
+ #define XML_BUILDING_EXPAT 1
+ 
++#if defined _WIN32 || defined __APPLE__
++#else
++#include <unistd.h>  // for possible __GLIBC__ macro (if glibc is used)
++#endif
+ #include "expat_config.h"
+ 
+ #if ! defined(XML_GE) || (1 - XML_GE - 1 == 2) || (XML_GE < 0) || (XML_GE > 1)
+@@ -115,6 +119,7 @@
+ #  include "winconfig.h"
+ #endif
+ 
++#include "expat_external.h"
+ #include "ascii.h"
+ #include "expat.h"
+ #include "siphash.h"
+-- 
+2.39.3 (Apple Git-146)
+

@@ -2,7 +2,7 @@
 {% set name_suffix = "3.9" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
-{% set version = "7.3.15" %}
+{% set version = "7.3.16" %}
 
 package:
   name: {{ name }}
@@ -11,8 +11,7 @@ package:
 source:
   - folder: pypy3
     url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
-    sha256: 6bb9537d85aa7ad13c0aad2e41ff7fd55080bc9b4d1361b8f502df51db816e18  # [name_suffix == "3.9"]
-    sha256: 837622130b36603a1893899bd9f529961a8e4a56c9eb67268d72ddf8920c9579  # [name_suffix == "3.10"]
+    sha256: 5b75af3f8e76041e79c1ef5ce22ce63f8bd131733e9302081897d8f650e81843  # [name_suffix == "3.9"]
     patches:
       - patches/fficurses.patch
       - patches/tklib_build.patch
@@ -34,32 +33,30 @@ source:
       - patches/0001-Fix-TZPATH-on-windows.patch  # [name_suffix == "3.9"]
       - patches/0001-Fix-TZPATH-on-windows-py3.10.patch  # [name_suffix == "3.10"]
       # Patches since the release
-      - patches/0001-fix-os.scandir-for-unicode-filenames-on-windows.patch
-      - patches/0003-add-coding-to-test-file-for-cpython2-pypy2-does-not-.patch
-      - patches/0004-PyPy-is-not-affected-by-bpo-35797.patch
-      - patches/0005-underlying-_putwch-on-windows-accepts-a-chr-not-an-i.patch
-      - patches/0006-refactor-to-properly-create-ppc64-import-suffixes.patch  # [name_suffix == "3.9"]
-      - patches/0033-remove-top-level-__init__.py-issue-4885.patch
+      - patches/0010-make-compilation-work-on-old-glibc-2.17-for-conda-fo.patch
+      - patches/0011-don-t-crash-on-constfolding-field-reads-from-null-po.patch
+      - patches/0012-include-pyexpatns.h-when-building-pyexpat.patch
+
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
     sha256: fcc8f6b3b472a77eaa754951f288fe234b4953bfba845888dd839b9b862cb891  # [win]
     folder: pypy2-binary                                                      # [win]
 
 build:
-  number: 1
+  number: 0
   skip_compile_pyc:
     - lib*
 
 requirements:
   build:
     - {{ compiler('c') }}
+    - {{ stdlib("c") }}
     - python >=2.7,<3   # [not win]
     - pkg-config        # [unix]
     - pycparser
     - expat
   host:
     - bzip2
-    - expat
     - gdbm     # [not win]
     - jom ==1.1.2  # [win]
     - libffi
@@ -74,7 +71,6 @@ requirements:
     - tzdata
   run:
     - bzip2
-    - expat
     - gdbm     # [not win]
     - libffi
     - ncurses  # [not win]
@@ -84,7 +80,6 @@ requirements:
     - xz
     - zlib
     - tzdata
-    - __osx >={{ MACOSX_DEPLOYMENT_TARGET }}  # [osx and x86_64]
   run_constrained:
     - pypy3.5 ==99999999999
     - pypy3.6 ==99999999999
