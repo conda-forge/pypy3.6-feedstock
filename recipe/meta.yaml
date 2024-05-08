@@ -35,6 +35,7 @@ source:
       # Patches since the release
       - patches/0010-make-compilation-work-on-old-glibc-2.17-for-conda-fo.patch
       - patches/0011-don-t-crash-on-constfolding-field-reads-from-null-po.patch
+      - patches/0012-include-pyexpatns.h-when-building-pyexpat.patch
 
 
   - url: https://downloads.python.org/pypy/pypy2.7-v7.3.6-win64.zip           # [win]
@@ -56,7 +57,6 @@ requirements:
     - expat
   host:
     - bzip2
-    - expat
     - gdbm     # [not win]
     - jom ==1.1.2  # [win]
     - libffi
@@ -71,7 +71,6 @@ requirements:
     - tzdata
   run:
     - bzip2
-    - expat
     - gdbm     # [not win]
     - libffi
     - ncurses  # [not win]
@@ -81,7 +80,6 @@ requirements:
     - xz
     - zlib
     - tzdata
-    - __osx >={{ MACOSX_DEPLOYMENT_TARGET }}  # [osx and x86_64]
   run_constrained:
     - pypy3.5 ==99999999999
     - pypy3.6 ==99999999999
