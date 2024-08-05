@@ -13,7 +13,7 @@ expat:
 libffi:
 - '3.4'
 name_suffix:
-- '3.9'
+- '3.10'
 openssl:
 - '3'
 sqlite:

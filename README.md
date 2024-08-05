@@ -1,5 +1,5 @@
-About pypy3.9-feedstock
-=======================
+About pypy3.10-feedstock
+========================
 
 Feedstock license: [BSD-3-Clause](https://github.com/conda-forge/pypy3.6-feedstock/blob/main/LICENSE.txt)
 
@@ -61,53 +61,53 @@ Current release info
 
 | Name | Downloads | Version | Platforms |
 | --- | --- | --- | --- |
-| [![Conda Recipe](https://img.shields.io/badge/recipe-pypy3.9-green.svg)](https://anaconda.org/conda-forge/pypy3.9) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/pypy3.9.svg)](https://anaconda.org/conda-forge/pypy3.9) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pypy3.9.svg)](https://anaconda.org/conda-forge/pypy3.9) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/pypy3.9.svg)](https://anaconda.org/conda-forge/pypy3.9) |
+| [![Conda Recipe](https://img.shields.io/badge/recipe-pypy3.10-green.svg)](https://anaconda.org/conda-forge/pypy3.10) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/pypy3.10.svg)](https://anaconda.org/conda-forge/pypy3.10) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pypy3.10.svg)](https://anaconda.org/conda-forge/pypy3.10) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/pypy3.10.svg)](https://anaconda.org/conda-forge/pypy3.10) |
 
-Installing pypy3.9
-==================
+Installing pypy3.10
+===================
 
-Installing `pypy3.9` from the `conda-forge` channel can be achieved by adding `conda-forge` to your channels with:
+Installing `pypy3.10` from the `conda-forge` channel can be achieved by adding `conda-forge` to your channels with:
 
 ```
 conda config --add channels conda-forge
 conda config --set channel_priority strict
 ```
 
-Once the `conda-forge` channel has been enabled, `pypy3.9` can be installed with `conda`:
+Once the `conda-forge` channel has been enabled, `pypy3.10` can be installed with `conda`:
 
 ```
-conda install pypy3.9
-```
-
-or with `mamba`:
-
-```
-mamba install pypy3.9
-```
-
-It is possible to list all of the versions of `pypy3.9` available on your platform with `conda`:
-
-```
-conda search pypy3.9 --channel conda-forge
+conda install pypy3.10
 ```
 
 or with `mamba`:
 
 ```
-mamba search pypy3.9 --channel conda-forge
+mamba install pypy3.10
+```
+
+It is possible to list all of the versions of `pypy3.10` available on your platform with `conda`:
+
+```
+conda search pypy3.10 --channel conda-forge
+```
+
+or with `mamba`:
+
+```
+mamba search pypy3.10 --channel conda-forge
 ```
 
 Alternatively, `mamba repoquery` may provide more information:
 
 ```
 # Search all versions available on your platform:
-mamba repoquery search pypy3.9 --channel conda-forge
+mamba repoquery search pypy3.10 --channel conda-forge
 
-# List packages depending on `pypy3.9`:
-mamba repoquery whoneeds pypy3.9 --channel conda-forge
+# List packages depending on `pypy3.10`:
+mamba repoquery whoneeds pypy3.10 --channel conda-forge
 
-# List dependencies of `pypy3.9`:
-mamba repoquery depends pypy3.9 --channel conda-forge
+# List dependencies of `pypy3.10`:
+mamba repoquery depends pypy3.10 --channel conda-forge
 ```
 
 
@@ -152,17 +152,17 @@ Terminology
                   produce the finished article (built conda distributions)
 
 
-Updating pypy3.9-feedstock
-==========================
+Updating pypy3.10-feedstock
+===========================
 
-If you would like to improve the pypy3.9 recipe or build a new
+If you would like to improve the pypy3.10 recipe or build a new
 package version, please fork this repository and submit a PR. Upon submission,
 your changes will be run on the appropriate platforms to give the reviewer an
 opportunity to confirm that the changes result in a successful build. Once
 merged, the recipe will be re-built and uploaded automatically to the
 `conda-forge` channel, whereupon the built conda packages will be available for
 everybody to install and use from the `conda-forge` channel.
-Note that all branches in the conda-forge/pypy3.9-feedstock are
+Note that all branches in the conda-forge/pypy3.10-feedstock are
 immediately built and any created packages are uploaded, so PRs should be based
 on branches in forks and branches in the main repository should only be used to
 build distinct package versions.
