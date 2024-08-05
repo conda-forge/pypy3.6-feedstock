@@ -1,5 +1,5 @@
 {% if name_suffix is not defined %}
-{% set name_suffix = "3.9" %}
+{% set name_suffix = "3.10" %}
 {% endif %}
 {% set name = "pypy" ~ name_suffix %}
 {% set version = "7.3.16" %}
@@ -12,6 +12,7 @@ source:
   - folder: pypy3
     url: https://downloads.python.org/pypy/{{ name }}-v{{ version }}-src.tar.bz2
     sha256: 5b75af3f8e76041e79c1ef5ce22ce63f8bd131733e9302081897d8f650e81843  # [name_suffix == "3.9"]
+    sha256: 404e6180d6caf9258eaab0c02c72018e9aa8eb03ab9094a0ff17ee5e3b265ac1  # [name_suffix == "3.10"]
     patches:
       - patches/fficurses.patch
       - patches/tklib_build.patch
