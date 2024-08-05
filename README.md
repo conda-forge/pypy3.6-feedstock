@@ -183,6 +183,3 @@ Feedstock Maintainers
 * [@ohadravid](https://github.com/ohadravid/)
 * [@omerbenamram](https://github.com/omerbenamram/)
 
-
-<!-- dummy commit to enable rerendering -->
-
