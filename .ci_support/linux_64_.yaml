@@ -7,9 +7,9 @@ c_compiler_version:
 c_stdlib:
 - sysroot
 c_stdlib_version:
-- '2.12'
+- '2.17'
 cdt_name:
-- cos6
+- cos7
 channel_sources:
 - conda-forge
 channel_targets:
@@ -21,7 +21,7 @@ expat:
 libffi:
 - '3.4'
 name_suffix:
-- '3.9'
+- '3.10'
 ncurses:
 - '6'
 openssl:
@@ -38,4 +38,4 @@ zip_keys:
 - - c_stdlib_version
   - cdt_name
 zlib:
-- '1.2'
+- '1'

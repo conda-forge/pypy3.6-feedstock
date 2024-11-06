@@ -1,5 +1,7 @@
 MACOSX_DEPLOYMENT_TARGET:
 - '10.13'
+MACOSX_SDK_VERSION:
+- '10.13'
 bzip2:
 - '1'
 c_compiler:
@@ -21,7 +23,7 @@ libffi:
 macos_machine:
 - x86_64-apple-darwin13.4.0
 name_suffix:
-- '3.9'
+- '3.10'
 ncurses:
 - '6'
 openssl:
@@ -35,4 +37,4 @@ tk:
 xz:
 - '5'
 zlib:
-- '1.2'
+- '1'
